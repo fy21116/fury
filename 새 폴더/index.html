@@ -1,0 +1,3611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>퓨리 혈맹 통합 관리 시스템</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #0d0918; color: white; font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; margin: 0; padding: 0; min-height: 100vh; padding-bottom: 70px; }
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0918; display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .login-box { background: #18122d; border: 2px solid #805ad5; border-radius: 14px; padding: 35px 25px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .login-box h1 { color: #d6bcfa; margin: 0 0 8px 0; font-size: 22px; }
+        .login-box p { color: #a0aec0; font-size: 13px; margin-bottom: 22px; line-height: 1.5; }
+        .input-group { margin-bottom: 12px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; color: #b794f4; margin-bottom: 5px; font-weight: bold; }
+        .login-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #44337a; background: #0d0918; color: white; font-size: 15px; }
+        .login-input:focus { outline: none; border-color: #b794f4; }
+        .login-btn { width: 100%; padding: 14px; background: #805ad5; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; min-height: 48px; }
+        .login-btn:hover { background: #6b46c1; }
+        .toggle-auth { margin-top: 15px; font-size: 13px; color: #a0aec0; cursor: pointer; }
+        .toggle-auth span { color: #b794f4; font-weight: bold; text-decoration: underline; }
+        .app-wrapper { display: none; min-height: 100vh; flex-direction: row; }
+        .sidebar { width: 240px; background-color: #120d22; border-right: 1px solid #2a1f4e; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; flex-shrink: 0; }
+        
+        /* 6. 좌측 상단 로고 이미지 크기 확대 (보스 참여 버튼 가로 폭과 동일하게 맞춤) */
+        .logo-area { margin-bottom: 20px; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .logo-img { width: 100%; height: auto; max-height: 170px; object-fit: contain; display: block; }
+        
+        .menu-list { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .menu-item { width: 100%; padding: 14px 15px; border-radius: 8px; color: #a0aec0; font-size: 14px; cursor: pointer; border: none; background: none; text-align: left; font-weight: bold; min-height: 48px; }
+        .menu-item.active, .menu-item:hover { background-color: #2a1f4e; color: #d6bcfa; }
+        .user-profile { padding-top: 15px; border-top: 1px solid #2a1f4e; display: flex; justify-content: space-between; align-items: center; }
+        .role-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #44337a; color: #d6bcfa; }
+        .role-badge.admin { background: #9b2c2c; color: #feb2b2; }
+        .logout-btn { background: #2d224d; color: #a0aec0; border: 1px solid #44337a; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; min-height: 38px; }
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 18px 25px; border-bottom: 1px solid #2a1f4e; background-color: #0d0918; flex-wrap: wrap; gap: 10px; }
+        .live-clock { background: #1b1433; padding: 8px 14px; border-radius: 8px; border: 1px solid #44337a; font-size: 14px; font-weight: bold; color: #b794f4; }
+        .tab-content { padding: 25px; max-width: 1250px; display: none; }
+        .tab-content.active { display: block; }
+        .section-title { font-size: 18px; font-weight: bold; color: #d6bcfa; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        .admin-sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #2a1f4e; padding-bottom: 12px; flex-wrap: wrap; }
+        .sub-tab-btn { padding: 10px 18px; background: #18122d; border: 1px solid #44337a; border-radius: 8px; color: #a0aec0; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .sub-tab-btn.active, .sub-tab-btn:hover { background: #805ad5; color: white; border-color: #805ad5; }
+        .admin-sub-content { display: none; }
+        .admin-sub-content.active { display: block; }
+
+        .boss-card { background-color: #18122d; border: 1px solid #44337a; border-radius: 14px; padding: 22px; margin-bottom: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .boss-card.custom-card { border: 2px solid #d69e2e; }
+
+        /* 7. 보스 카드 상단 배너 (좌측 대형 일러스트 + 중앙 보스 정보 + 우측 참여 인원) */
+        .boss-banner {
+            display: flex;
+            align-items: stretch;
+            justify-content: space-between;
+            background: linear-gradient(90deg, #120b24 0%, #1d1138 60%, #150d2a 100%);
+            border: 1px solid #553c9a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            min-height: 135px;
+            box-shadow: 0 0 18px rgba(128, 90, 213, 0.25);
+        }
+        .boss-illust-wrap {
+            width: 190px;
+            min-height: 135px;
+            position: relative;
+            flex-shrink: 0;
+            background: #0d0918;
+            overflow: hidden;
+        }
+        .boss-illust-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            mask-image: linear-gradient(to right, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+        }
+        .boss-banner-center {
+            flex: 1;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .boss-banner-right {
+            min-width: 170px;
+            padding: 18px 24px;
+            border-left: 1px solid rgba(183, 148, 244, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(13, 9, 24, 0.35);
+        }
+        .boss-count-label { font-size: 13px; color: #cbd5e0; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-weight: bold; }
+        .boss-count-num { font-size: 32px; font-weight: 900; color: #e9d8fd; text-shadow: 0 0 14px rgba(183, 148, 244, 0.85); letter-spacing: -0.5px; }
+
+        .badge-status { background-color: #2f855a; color: #9cdfdf; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-status.closed { background-color: #9b2c2c; color: #feb2b2; }
+        .badge-status.waiting { background-color: #744210; color: #fbd38d; }
+        .badge-status.ongoing { background-color: #22543d; color: #68d391; border: 1px solid #48bb78; }
+        .boss-time-text { font-size: 26px; font-weight: 900; margin-top: 8px; color: #fff; letter-spacing: 0.5px; }
+        .action-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 16px; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .participate-btn { background-color: #805ad5; color: white; border: none; padding: 12px 22px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; min-height: 44px; }
+        .participate-btn.cancel { background-color: #e53e3e; }
+        .participate-btn.end-btn { background-color: #319795; }
+        .participate-btn.pre-btn { background-color: #d69e2e; color: #0d0918; }
+        .participate-btn:disabled { background-color: #2d224d; color: #718096; cursor: not-allowed; }
+        .card-party-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 15px; overflow-x: auto; margin-bottom: 10px; }
+        .panel-box { background-color: #18122d; border: 1px solid #44337a; border-radius: 12px; padding: 20px; margin-bottom: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 500px; }
+        th { color: #a0aec0; padding: 10px 8px; border-bottom: 1px solid #2a1f4e; background: #120d22; }
+        td { padding: 11px 8px; border-bottom: 1px solid #1f1738; }
+        .my-row { background-color: rgba(128, 90, 213, 0.22); font-weight: bold; color: #d6bcfa; }
+        .highlight-row { background-color: rgba(214, 158, 46, 0.35) !important; color: #fbd38d !important; font-weight: bold; }
+        
+        .sched-table tr.main-time-row { background: linear-gradient(90deg, rgba(155, 44, 44, 0.38) 0%, rgba(214, 158, 46, 0.22) 100%); font-weight: bold; }
+        .sched-table tr.main-time-row td { color: #fbd38d; border-bottom: 1px solid #744210; }
+        .sched-table tr.ongoing-row { background: linear-gradient(90deg, rgba(49, 151, 149, 0.38) 0%, rgba(56, 161, 105, 0.22) 100%); font-weight: bold; }
+        .sched-table tr.ongoing-row td { color: #9cdfdf; border-bottom: 1px solid #319795; }
+        .sched-table tr.next-upcoming-row { background: rgba(128, 90, 213, 0.22); font-weight: bold; }
+        .sched-table tr.next-upcoming-row td { color: #e9d8fd; border-bottom: 1px solid #6b46c1; }
+
+        .sched-table tr.siege-row { background-color: rgba(107, 70, 193, 0.28); font-weight: bold; }
+        .tag-main { background: #e53e3e; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .tag-ongoing { background: #319795; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .tag-next { background: #805ad5; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .tag-fixed { background: #2d3748; color: #cbd5e0; padding: 2px 7px; border-radius: 4px; font-size: 11px; }
+        .tag-siege { background: #805ad5; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .admin-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
+        .admin-input, .month-select { padding: 10px; border-radius: 6px; border: 1px solid #44337a; background: #0d0918; color: white; font-size: 14px; min-height: 40px; }
+        .btn-sm { padding: 8px 14px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 13px; color: white; background: #805ad5; min-height: 38px; }
+        .btn-sm.danger { background: #c53030; }
+        .btn-sm.secondary { background: #2d3748; }
+        .btn-sm.success { background: #2f855a; }
+        .sub-box { background: #120d22; border: 1px solid #2a1f4e; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+        .chk-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; max-height: 160px; overflow-y: auto; padding: 6px; background: #0d0918; border-radius: 6px; border: 1px solid #2a1f4e; }
+        .chk-label { display: flex; align-items: center; gap: 5px; font-size: 13px; background: #18122d; padding: 8px 12px; border-radius: 6px; border: 1px solid #44337a; cursor: pointer; min-height: 40px; }
+        .excel-table-wrapper { position: relative; max-height: 500px; overflow: auto; border: 1px solid #2a1f4e; border-radius: 8px; }
+        .excel-table { width: max-content; border-collapse: collapse; text-align: center; font-size: 13px; }
+        .excel-table th, .excel-table td { padding: 10px 12px; border: 1px solid #2a1f4e; white-space: nowrap; }
+        .excel-table th { background: #18122d; color: #d6bcfa; position: sticky; top: 0; z-index: 3; }
+        .excel-table th.date-group-header { background: #120d22; color: #fbd38d; top: 0; z-index: 5; font-size: 12px; border-bottom: 2px solid #44337a; }
+        .excel-table th.time-sub-header { top: 37px; }
+        .excel-table th:first-child, .excel-table td:first-child { position: sticky; left: 0; background: #120d22; z-index: 4; }
+        .excel-table th:nth-child(2), .excel-table td:nth-child(2) { position: sticky; left: 95px; background: #120d22; z-index: 4; }
+
+        .mobile-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #120d22; border-top: 1px solid #2a1f4e; z-index: 1500; justify-content: space-around; padding: 8px 0; }
+        .mobile-nav-item { background: none; border: none; color: #a0aec0; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1; }
+        .mobile-nav-item.active { color: #d6bcfa; }
+
+        @media (max-width: 800px) {
+            .app-wrapper { flex-direction: column; }
+            .sidebar { width: 100%; padding: 15px; border-right: none; border-bottom: 1px solid #2a1f4e; }
+            .logo-img { max-width: 220px; margin: 0 auto; }
+            .menu-list { display: none; }
+            .mobile-bottom-nav { display: flex; }
+            body { padding-bottom: 70px; }
+            .boss-banner { flex-direction: column; }
+            .boss-illust-wrap { width: 100%; height: 130px; }
+            .boss-illust-img {
+                mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+                -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+            }
+            .boss-banner-right { border-left: none; border-top: 1px solid rgba(183, 148, 244, 0.2); padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 긴급 공지 팝업 모달 -->
+    <div id="notice-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:3000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:#18122d; border:2px solid #d69e2e; border-radius:12px; padding:25px; max-width:450px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
+            <div style="font-size:18px; font-weight:bold; color:#fbd38d; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <span>📢 혈맹 긴급 공지사항</span>
+                <button onclick="closeNoticeModal()" style="background:none; border:none; color:#a0aec0; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+            <div id="notice-modal-content" style="font-size:14px; color:#cbd5e0; line-height:1.6; margin-bottom:15px; white-space:pre-wrap; background:#120d22; padding:12px; border-radius:8px; border:1px solid #2a1f4e;">등록된 공지가 없습니다.</div>
+            <div id="notice-deadline-text" style="font-size:11px; color:#a0aec0; margin-bottom:15px;"></div>
+            <div style="display:flex; gap:10px;">
+                <button class="login-btn" onclick="acknowledgeNotice()" style="margin-top:0; background:#2f855a;">확인했습니다 (다시 안보기)</button>
+                <button class="login-btn" onclick="closeNoticeModal()" style="margin-top:0; background:#2d3748;">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 혈원 성향 프로필 모달 -->
+    <div id="profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:3000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:#18122d; border:2px solid #805ad5; border-radius:12px; padding:25px; max-width:480px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
+            <div style="font-size:18px; font-weight:bold; color:#d6bcfa; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span id="profile-modal-title">혈원 성향 및 출석 프로필</span>
+                <button onclick="closeProfileModal()" style="background:none; border:none; color:#a0aec0; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+            <div id="profile-modal-body" style="font-size:13px; color:#cbd5e0; line-height:1.6; margin-bottom:20px;">정보 로딩 중...</div>
+            <button class="login-btn" onclick="closeProfileModal()" style="margin-top:0;">닫기</button>
+        </div>
+    </div>
+
+    <!-- 닉네임 변경 모달 -->
+    <div id="nickname-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:3000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:#18122d; border:2px solid #805ad5; border-radius:12px; padding:25px; max-width:380px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
+            <div style="font-size:18px; font-weight:bold; color:#d6bcfa; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span>캐릭터명(닉네임) 변경</span>
+                <button onclick="closeNicknameModal()" style="background:none; border:none; color:#a0aec0; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+            <div class="input-group" style="margin-bottom:15px;">
+                <label>새로운 캐릭터명</label>
+                <input type="text" id="new-nickname-input" class="login-input" placeholder="변경할 닉네임 입력">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="login-btn" onclick="submitNicknameChange()" style="margin-top:0; background:#2f855a;">변경하기</button>
+                <button class="login-btn" onclick="closeNicknameModal()" style="margin-top:0; background:#2d3748;">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모바일 하단 퀵 네비게이션 바 -->
+    <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-item active" onclick="switchTabMobile('boss', this)">
+            <span>⚔️</span><span>보스참여</span>
+        </button>
+        <button class="mobile-nav-item" onclick="switchTabMobile('items', this)">
+            <span>💎</span><span>전리품</span>
+        </button>
+        <button class="mobile-nav-item" onclick="switchTabMobile('ranking', this)">
+            <span>📊</span><span>점수/출석부</span>
+        </button>
+        <button class="mobile-nav-item" id="mobile-admin-btn" style="display:none;" onclick="switchTabMobile('admin', this)">
+            <span>⚙️</span><span>운영진관리</span>
+        </button>
+    </nav>
+
+    <div class="login-screen" id="login-screen">
+        <div class="login-box">
+            <h1 id="auth-title">퓨리 혈맹 로그인</h1>
+            <p id="auth-desc">캐릭터명과 4자리 고유번호를 입력하세요.</p>
+            <div class="input-group">
+                <label>캐릭터명 (닉네임)</label>
+                <input type="text" id="auth-name" class="login-input" placeholder="닉네임 입력" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>고유번호 (4자리 비밀번호)</label>
+                <input type="password" id="auth-code" class="login-input" placeholder="비밀번호 입력" maxlength="6" autocomplete="new-password" onkeyup="if(event.key==='Enter') handleAuthAction()">
+            </div>
+            <button class="login-btn" id="auth-action-btn" onclick="handleAuthAction()">접속하기</button>
+            <div id="auth-error" style="color: #fc8181; font-size: 12px; margin-top: 12px;"></div>
+            <div class="toggle-auth" id="toggle-auth-text" onclick="toggleAuthMode()">
+                계정이 없으신가요? <span>회원가입 신청하기</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-wrapper" id="app-wrapper">
+        <div class="sidebar">
+            <div>
+                <div class="logo-area">
+                    <img src="image_1.png" alt="FURY CLAN" class="logo-img" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div style=\'font-weight:bold; font-size:24px; color:#b794f4; padding:20px 0; text-align:center;\'>FURY CLAN</div>';">
+                </div>
+                <div class="menu-list">
+                    <button class="menu-item active" onclick="switchTab('boss', this)">보스 참여</button>
+                    <button class="menu-item" onclick="switchTab('items', this)">보스 전리품 내역</button>
+                    <button class="menu-item" onclick="switchTab('ranking', this)">점수 및 엑셀 출석부</button>
+                    <button class="menu-item" id="admin-menu-btn" style="display: none; color: #feb2b2;" onclick="switchTab('admin', this)">운영진 관리</button>
+                    <button class="menu-item" id="master-db-menu-btn" style="display: none; color: #fc8181;" onclick="switchTab('master_db', this)">🚨 DB 원본 관리</button>
+                </div>
+                <div id="sidebar-pending-section" style="display: none; margin-top: 15px; padding: 10px; background: rgba(214, 158, 46, 0.12); border: 1px dashed #d69e2e; border-radius: 8px;">
+                    <div style="font-size: 12px; font-weight: bold; color: #fbd38d; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>🔔 가입 승인 대기</span>
+                        <span id="sidebar-pending-count" style="background: #d69e2e; color: #0d0918; padding: 1px 6px; border-radius: 10px; font-size: 10px;">0</span>
+                    </div>
+                    <div id="sidebar-pending-list" style="max-height: 120px; overflow-y: auto; font-size: 11px; color: #cbd5e0;"></div>
+                </div>
+            </div>
+            <div class="user-profile">
+                <div>
+                    <div style="font-size: 14px; font-weight: bold; display:flex; align-items:center; gap:6px;">
+                        <span id="profile-name">-</span>
+                        <button class="btn-sm secondary" style="padding:2px 6px; font-size:10px; min-height:22px;" onclick="openNicknameModal()">닉네임 변경</button>
+                    </div>
+                    <span class="role-badge" id="profile-role">일반 혈원</span>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <header>
+                <div style="font-weight: bold; color: #d6bcfa;">FURY CLAN BOSS SYSTEM</div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="notice-bell-btn" class="btn-sm secondary" style="display:none; padding:6px 10px; font-size:12px;" onclick="openNoticeModal()">📢 긴급 공지</button>
+                    <div class="live-clock" id="live-clock">시간 동기화 중...</div>
+                </div>
+            </header>
+
+            <div id="tab-boss" class="tab-content active">
+                <div class="section-title">현재 보스 및 일정 참여 현황</div>
+                <div id="boss-cards-container"></div>
+
+                <div class="panel-box">
+                    <div style="font-weight: bold; margin-bottom: 12px; color: #d6bcfa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>보스 시간표 (다가올 일정 4개)</span>
+                        <span style="font-size: 12px; color: #fbd38d;">★ 메인타임(03, 09, 15, 21시) 혈맹 필수 참여</span>
+                    </div>
+                    <table class="sched-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 90px;">시간</th>
+                                <th style="width: 110px;">구분</th>
+                                <th>보스 / 컨텐츠 명칭</th>
+                                <th style="width: 80px;">배점</th>
+                                <th>참여 규칙 / 비고</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetable-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-items" class="tab-content">
+                <div class="section-title">
+                    <span>보스 전리품 내역</span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <select id="loot-period-select" class="month-select" onchange="filterLootTable()" style="padding: 6px; font-size: 13px;">
+                            <option value="all">전체 기간 보기</option>
+                            <option value="day">일별 보기</option>
+                            <option value="week">주별 보기</option>
+                            <option value="month" selected>월별 보기</option>
+                        </select>
+                        <input type="date" id="loot-date-filter" class="admin-input" onchange="filterLootTable()" style="display:none; padding: 5px; font-size: 13px;">
+                        <input type="text" id="loot-search-input" class="admin-input" placeholder="🔍 아이템명 또는 득템자 검색..." oninput="filterLootTable()" style="width: 160px; padding: 8px; font-size: 13px;">
+                        <button class="btn-sm secondary" onclick="downloadLootCSV()" style="padding: 8px 12px; font-size: 12px;">📥 엑셀 다운로드</button>
+                    </div>
+                </div>
+                <div class="panel-box">
+                    <p style="font-size: 13px; color: #a0aec0; margin-top: 0;">
+- 혈원 누구나 득템한 아이템과 수량을 등록할 수 있으며, 운영진은 잘못된 내역을 수정 및 관리할 수 있습니다.
+                    </p>
+                    <div class="admin-form" style="background: #120d22; padding: 15px; border-radius: 8px; border: 1px solid #2a1f4e; margin-bottom: 20px;">
+                        <input type="text" id="item-boss-name" class="admin-input" placeholder="보스 이름 (예: 드레이크)" style="flex: 1; min-width: 130px;">
+                        <input type="text" id="item-name" class="admin-input" placeholder="아이템 명" style="flex: 1; min-width: 150px;">
+                        <input type="number" id="item-count" class="admin-input" placeholder="수량" value="1" min="1" style="width: 80px;">
+                        <input type="text" id="item-owner" class="admin-input" placeholder="득템자 캐릭터명" style="flex: 1; min-width: 120px;">
+                        <button class="btn-sm" onclick="registerItem()">아이템 등록</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>등록일시</th>
+                                <th>보스명</th>
+                                <th>아이템 명</th>
+                                <th>수량</th>
+                                <th>득템자</th>
+                                <th>등록자</th>
+                                <th id="loot-action-th" style="display:none;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="item-table-body">
+                            <tr><td colspan="7" style="text-align: center; color: #a0aec0; padding: 20px;">등록된 전리품 내역이 없습니다.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-ranking" class="tab-content">
+                <div class="section-title">
+                    <span>주간 / 월간 점수 랭킹 및 세부 항목 <span style="font-size: 12px; color: #a0aec0; font-weight: normal;">(닉네임 클릭 시 성향 프로필 열람)</span></span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="ranking-search-input" class="admin-input" placeholder="🔍 닉네임 검색..." oninput="filterRankingAndExcel()" style="width: 150px; padding: 8px; font-size: 13px;">
+                        <select id="ranking-month-select" class="month-select" onchange="loadRankingData()"></select>
+                        <select id="ranking-week-select" class="month-select" onchange="loadRankingData()">
+                            <option value="all">한 달 전체 보기</option>
+                            <option value="1">1주차</option>
+                            <option value="2">2주차</option>
+                            <option value="3">3주차</option>
+                            <option value="4">4주차</option>
+                            <option value="5">5주차</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="weekly-attendance-king-banner" style="display:none; background: linear-gradient(135deg, rgba(214,158,46,0.25) 0%, rgba(128,90,213,0.3) 100%); border: 2px solid #d69e2e; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div style="font-size: 12px; color: #fbd38d; font-weight: bold; margin-bottom: 3px;">👑 이번 주 주간 출석왕 (참여 1위)</div>
+                        <div id="weekly-king-name" style="font-size: 20px; font-weight: bold; color: #fff;">-</div>
+                    </div>
+                    <div id="weekly-king-stat" style="font-size: 13px; color: #d6bcfa; background: #120d22; padding: 8px 14px; border-radius: 8px; border: 1px solid #44337a;">
+                        이번 주 총 참여 점수: 0점
+                    </div>
+                </div>
+
+                <div class="panel-box">
+                    <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <!-- 4. 일일 참여 점수 세부 요약 -> *참여 점수 세부요약* 변경 -->
+                        <span>*참여 점수 세부요약*</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span style="font-size: 12px; color: #a0aec0;">날짜 선택:</span>
+                            <input type="date" id="daily-score-date" class="admin-input" onchange="loadRankingData()" style="padding: 5px; font-size: 13px;">
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">순위</th>
+                                <th>캐릭터명</th>
+                                <th>★메인(3점)</th>
+                                <th>이프/드레(2점)</th>
+                                <th>카스파(1점)</th>
+                                <th>공성/특수</th>
+                                <th>가감점(사유)</th>
+                                <th style="color: #fbd38d;">일일 합계</th>
+                                <th style="color: #b794f4;">전체 통산 총점</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-summary-tbody">
+                            <tr><td colspan="9" style="text-align: center; color: #a0aec0; padding: 20px;">기록이 없습니다.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel-box">
+                    <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>엑셀형 시간대별 출석부 (전원 열람 가능)</span>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <button class="btn-sm secondary" onclick="downloadAttendanceCSV()" style="padding: 6px 12px; font-size: 12px;">📥 출석부 엑셀 다운로드</button>
+                            <button class="btn-sm" id="excel-mode-time" onclick="setExcelMode('time')">시간대별 상세 보기</button>
+                            <button class="btn-sm secondary" id="excel-mode-day" onclick="setExcelMode('day')">일자별 합산 보기</button>
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
+- 좌측 캐릭터명 고정 상태로 우측 스크롤을 통해 각 보스 타임 참여 여부 및 가감점 내용을 확인할 수 있습니다.
+                    </p>
+                    <div class="excel-table-wrapper" id="excel-table-container">
+                        <div style="text-align: center; color: #a0aec0; padding: 30px;">출석 데이터를 불러오는 중입니다...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-admin" class="tab-content">
+                <div class="section-title">
+                    <span>운영진 관리</span>
+                    <button class="btn-sm secondary" onclick="forceRefreshAdminData()">🔄 데이터 새로고침</button>
+                </div>
+
+                <div class="admin-sub-tabs">
+                    <button class="sub-tab-btn active" onclick="switchAdminSubTab('schedule', this)">📅 일정 및 이미지 등록</button>
+                    <button class="sub-tab-btn" onclick="switchAdminSubTab('score', this)">⭐ 점수 관리</button>
+                    <button class="sub-tab-btn" onclick="switchAdminSubTab('member', this)">👥 혈원 관리</button>
+                    <button class="sub-tab-btn" onclick="switchAdminSubTab('notice', this)">📢 긴급 공지 관리</button>
+                </div>
+
+                <div id="admin-sub-schedule" class="admin-sub-content active">
+                    <!-- 5. 정규보스(고정 일정) 추가 및 관리 란 신설 -->
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 6px;">📌 정규 고정 보스 일정 추가 및 관리</div>
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
+- 기본 정규 시간표 외에 매일 또는 특정 요일마다 정각/지정 분에 열리는 정규 고정 보스를 직접 추가하고 관리할 수 있습니다.
+                        </p>
+                        <div class="admin-form">
+                            <select id="fixed-sched-day" class="admin-input">
+                                <option value="ALL">매일</option>
+                                <option value="0">일요일</option>
+                                <option value="1">월요일</option>
+                                <option value="2">화요일</option>
+                                <option value="3">수요일</option>
+                                <option value="4">목요일</option>
+                                <option value="5">금요일</option>
+                                <option value="6">토요일</option>
+                            </select>
+                            <select id="fixed-sched-hour" class="admin-input">
+                                <option value="0">00시</option><option value="1">01시</option><option value="2">02시</option><option value="3">03시</option>
+                                <option value="4">04시</option><option value="5">05시</option><option value="6">06시</option><option value="7">07시</option>
+                                <option value="8">08시</option><option value="9">09시</option><option value="10">10시</option><option value="11">11시</option>
+                                <option value="12">12시</option><option value="13">13시</option><option value="14">14시</option><option value="15">15시</option>
+                                <option value="16">16시</option><option value="17">17시</option><option value="18">18시</option><option value="19">19시</option>
+                                <option value="20">20시</option><option value="21">21시</option><option value="22">22시</option><option value="23">23시</option>
+                            </select>
+                            <input type="number" id="fixed-sched-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;">
+                            <input type="text" id="fixed-sched-title" class="admin-input" placeholder="정규 보스 명칭 (예: 데스나이트 / 거대모래전갈)" style="flex: 1; min-width: 180px;">
+                            <select id="fixed-sched-main" class="admin-input">
+                                <option value="normal">일반 고정</option>
+                                <option value="main">★ 메인타임 지정</option>
+                            </select>
+                            <button class="btn-sm success" onclick="addFixedSchedule()">정규 보스 추가</button>
+                        </div>
+                        <div id="fixed-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">등록된 추가 정규 보스가 없습니다.</div>
+                    </div>
+
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px;">추가 유동 보스 일정 등록 (매일, 요일별 반복 또는 1회성 특정 날짜 지정 가능)</div>
+                        <div class="admin-form">
+                            <select id="schedule-type" class="admin-input" onchange="toggleScheduleTypeInput()">
+                                <option value="recurring">요일/매일 반복</option>
+                                <option value="once">1회성 특정 날짜 지정</option>
+                            </select>
+                            <div id="schedule-recurring-box" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex:1;">
+                                <select id="schedule-day" class="admin-input">
+                                    <option value="ALL">매일</option>
+                                    <option value="0">일요일</option>
+                                    <option value="1">월요일</option>
+                                    <option value="2">화요일</option>
+                                    <option value="3">수요일</option>
+                                    <option value="4">목요일</option>
+                                    <option value="5">금요일</option>
+                                    <option value="6">토요일</option>
+                                </select>
+                            </div>
+                            <div id="schedule-once-box" style="display:none; gap:10px; align-items:center; flex-wrap:wrap; flex:1;">
+                                <input type="date" id="schedule-date" class="admin-input" style="padding: 8px;">
+                            </div>
+                            <select id="schedule-hour" class="admin-input">
+                                <option value="0">00시</option><option value="1">01시</option><option value="2">02시</option><option value="3">03시</option>
+                                <option value="4">04시</option><option value="5">05시</option><option value="6">06시</option><option value="7">07시</option>
+                                <option value="8">08시</option><option value="9">09시</option><option value="10">10시</option><option value="11">11시</option>
+                                <option value="12">12시</option><option value="13">13시</option><option value="14">14시</option><option value="15">15시</option>
+                                <option value="16">16시</option><option value="17">17시</option><option value="18">18시</option><option value="19">19시</option>
+                                <option value="20">20시</option><option value="21" selected>21시</option><option value="22">22시</option><option value="23">23시</option>
+                            </select>
+                            <input type="number" id="schedule-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;">
+                            <input type="text" id="schedule-title" class="admin-input" placeholder="일정 명칭 (예: 오만 보스)" style="flex: 1; min-width: 150px;">
+                            <input type="number" id="schedule-score" class="admin-input" placeholder="배점" value="2" min="1" max="50" style="width: 75px;">
+                            <button class="btn-sm" onclick="addCustomSchedule()">유동 일정 등록</button>
+                        </div>
+                        <div id="custom-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">등록된 유동 일정이 없습니다.</div>
+                    </div>
+
+                    <!-- 7. 보스별 카드 일러스트 이미지 매칭 관리 란 -->
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #fbd38d; margin-bottom: 6px;">🖼️ 보스별 카드 좌측 대형 일러스트 이미지 설정</div>
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
+- 보스 이름에 특정 키워드(예: <b>메인타임</b>, <b>드레이크</b>, <b>카스파</b>, <b>오만</b>, <b>공성전</b> 등)가 포함될 때 카드 왼쪽에 띄울 이미지 파일명(예: <code>boss_main.png</code>) 또는 이미지 URL을 지정합니다.
+                        </p>
+                        <div class="admin-form">
+                            <input type="text" id="boss-img-keyword" class="admin-input" placeholder="보스 키워드 (예: 오만)" style="width: 180px;">
+                            <input type="text" id="boss-img-url" class="admin-input" placeholder="이미지 파일명 또는 URL (예: boss_oman.png)" style="flex: 1; min-width: 220px;">
+                            <button class="btn-sm" onclick="saveBossImageMapping()">이미지 매칭 등록</button>
+                        </div>
+                        <div id="boss-image-mapping-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">로딩 중...</div>
+                    </div>
+                </div>
+
+                <div id="admin-sub-score" class="admin-sub-content">
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 4px;">보스별 차등 점수 관리</div>
+                        <div style="font-size: 12px; color: #fbd38d; margin-bottom: 12px;">* 차후 보스부터 수정 점수 적용</div>
+                        <div class="admin-form">
+                            <input type="text" id="boss-score-key" class="admin-input" placeholder="보스/일정 명칭 (예: 카스파 / 네크)" style="flex: 1; min-width: 180px;">
+                            <input type="number" id="boss-score-val" class="admin-input" placeholder="점수" min="1" max="50" style="width: 90px;">
+                            <button class="btn-sm" onclick="addNewBossScoreSetting()">기준 신규 추가</button>
+                        </div>
+                        <div id="boss-score-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">로딩 중...</div>
+                    </div>
+
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 12px;">가감점(추가/차감 점수 및 사유) 부여 및 일자별 관리/삭제</div>
+                        <div class="sub-box" style="margin-bottom: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 13px; font-weight: bold; color: #d6bcfa;">혈원 직접 선택 일괄 부여 (다중 체크 가능) 및 일자별 보스 타임 전체선택</span>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <input type="date" id="bonus-filter-date" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="populateBonusSlotSelect()">
+                                    <select id="bonus-select-slot-target" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="checkSlotParticipantsForBonus()">
+                                        <option value="">-- 보스 타임 선택 일괄체크 --</option>
+                                    </select>
+                                    <button class="btn-sm secondary" style="padding: 6px 10px; font-size: 11px;" onclick="toggleAllBonusCheckboxes(true)">전체 선택</button>
+                                    <button class="btn-sm secondary" style="padding: 6px 10px; font-size: 11px;" onclick="toggleAllBonusCheckboxes(false)">선택 해제</button>
+                                </div>
+                            </div>
+                            <div id="bonus-checkbox-list" class="chk-grid"></div>
+                            <div class="admin-form" style="margin-bottom: 0; margin-top: 8px; flex-direction: column; align-items: stretch;">
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <input type="number" id="bonus-multi-score" class="admin-input" placeholder="점수 (예: 2 또는 -10)" style="width: 180px;">
+                                    <input type="text" id="bonus-multi-reason" class="admin-input" placeholder="사유 입력 (예: 지각, 무단 불참, 이벤트 보너스 등)" style="flex: 1; min-width: 220px;">
+                                </div>
+                                <button class="btn-sm" onclick="grantBonusToCheckedUsers()" style="margin-top: 8px;">선택 인원 점수(가감점/사유) 일괄 부여</button>
+                            </div>
+                        </div>
+
+                        <div class="sub-box" style="margin-top: 15px; margin-bottom: 0;">
+                            <div style="font-weight: bold; color: #fbd38d; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <span>📋 일자별 가감점 부여 내역 및 개별 삭제</span>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <span style="font-size: 12px; color: #a0aec0;">조회 날짜:</span>
+                                    <input type="date" id="bonus-log-view-date" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="renderRecentBonusLogs()">
+                                </div>
+                            </div>
+                            <div id="recent-bonus-logs-container" style="max-height: 200px; overflow-y: auto; font-size: 12px; color: #cbd5e0;">
+                                내역을 불러오는 중...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px;">보스 타임 인원 및 출석 관리 (날짜별 조회)</div>
+                        <div class="sub-box" style="margin-bottom: 0;">
+                            <div class="admin-form" style="margin-bottom: 8px;">
+                                <input type="date" id="attendance-manage-date" class="admin-input" style="padding: 6px; font-size: 13px;" onchange="populateBonusSlotSelect()">
+                                <select id="bonus-slot-select" class="admin-input" style="flex: 1; min-width: 220px;" onchange="previewBonusSlotTargets()">
+                                    <option value="">-- 보스 타임 기록 선택 --</option>
+                                </select>
+                                <button class="btn-sm danger" onclick="deleteSelectedAttendanceSlot()">전체 출석 삭제</button>
+                            </div>
+                            <div id="bonus-slot-preview" style="font-size: 12px; color: #a0aec0; margin-bottom: 10px;">보스 타임을 선택하면 참여했던 혈원 명단과 개별 관리 버튼이 여기에 표시됩니다.</div>
+                            <div id="slot-participants-edit-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-sub-member" class="admin-sub-content">
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px;">혈원 직급 및 권한 관리 (직급 서열순 자동 배치)</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>캐릭터명</th>
+                                    <th>고유번호</th>
+                                    <th>직급(권한)</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-member-list">
+                                <tr><td colspan="4" style="text-align: center; color: #a0aec0; padding: 15px;">회원 목록을 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #fbd38d; margin-bottom: 10px;">📋 혈원 닉네임 변경 이력 로그</div>
+                        <div id="nickname-history-list" style="font-size: 13px; color: #cbd5e0; max-height: 200px; overflow-y: auto;">
+                            변경 이력이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-sub-notice" class="admin-sub-content">
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px;">혈원 대상 긴급 공지사항 및 마감일시 설정</div>
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
+- 지정한 만료 일시까지 모든 혈원에게 팝업으로 노출되며, 시간이 지나면 자동으로 사라집니다.
+                        </p>
+                        <textarea id="admin-notice-input" class="admin-input" placeholder="긴급 공지 내용을 입력하세요..." style="width: 100%; height: 120px; resize: vertical; margin-bottom: 12px;"></textarea>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px;">
+                            <span style="font-size: 13px; color: #b794f4; font-weight: bold;">만료 일시 지정:</span>
+                            <input type="datetime-local" id="admin-notice-deadline" class="admin-input" style="padding: 8px;">
+                        </div>
+                        <button class="btn-sm" onclick="saveAdminNotice()">공지 등록 및 배포</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 최고관리자 전용 DB 원본 전체 관리: 캐릭터명 검색 및 총 인원 표시 추가 -->
+            <div id="tab-master_db" class="tab-content">
+                <div class="section-title" style="color: #feb2b2;">
+                    <span>🚨 최고관리자 전용: 데이터베이스 회원 원본 전체 관리 (Raw Data Viewer)</span>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <span id="raw-member-total-badge" style="background: #2a1f4e; color: #fbd38d; padding: 6px 12px; border-radius: 8px; font-size: 13px; border: 1px solid #805ad5;">총 인원: 0명</span>
+                        <input type="text" id="raw-member-search" class="admin-input" placeholder="🔍 캐릭터명 검색..." oninput="renderRawMembersViewer()" style="width: 180px; padding: 7px 10px; font-size: 13px;">
+                        <button class="btn-sm secondary" onclick="forceRefreshAdminData()">🔄 새로고침</button>
+                    </div>
+                </div>
+
+                <div class="panel-box" style="border: 2px solid #e53e3e;">
+                    <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 14px;">
+- Firebase DB `members` 노드에 저장된 모든 회원 데이터를 비밀번호(고유번호)까지 포함하여 투명하게 보여줍니다. 추방했는데도 잔존하는 유령 데이터를 여기서 검색·확인하고 즉시 **DB 영구삭제**할 수 있습니다. (최고관리자 전용)
+                    </p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DB Key (UID)</th>
+                                <th>캐릭터명</th>
+                                <th>고유번호(비번)</th>
+                                <th>승인상태</th>
+                                <th>권한(직급)</th>
+                                <th>DB 영구삭제</th>
+                            </tr>
+                        </thead>
+                        <tbody id="raw-members-tbody">
+                            <tr><td colspan="6" style="text-align: center; color: #a0aec0; padding: 15px;">데이터를 불러오는 중입니다...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            databaseURL: "https://fury-7-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let serverTimeOffset = 0;
+        onValue(ref(db, ".info/serverTimeOffset"), (snap) => {
+            serverTimeOffset = snap.val() || 0;
+        });
+
+        function getSyncedCurrentTime() {
+            return new Date(Date.now() + serverTimeOffset);
+        }
+
+        const kaspaHours = [1, 5, 7, 11, 13, 17, 19, 23];
+        const ifritHours = [0, 6, 12, 18];
+        const mainHours = [3, 9, 15, 21];
+
+        // 직급 서열 레벨 (낮을수록 높은 권한)
+        const ROLE_LEVELS = {
+            'master': 0,
+            'king': 1,
+            'sub_king': 2,
+            'staff': 3,
+            'member': 4
+        };
+
+        function getRoleLevel(role) {
+            return ROLE_LEVELS[role] !== undefined ? ROLE_LEVELS[role] : 4;
+        }
+
+        let customSchedules = {};
+        let extraFixedSchedules = {};
+
+        const DEFAULT_BOSS_SCORES = {
+            "카스파 / 네크": 1,
+            "이프리트 / 드레이크": 2,
+            "메인타임": 3,
+            "오만": 4,
+            "공성전": 5,
+            "안타레이드": 10
+        };
+        let bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
+
+        // 7. 보스별 일러스트 이미지 기본 매핑
+        const DEFAULT_BOSS_IMAGES = {
+            "메인타임": "boss_main.png",
+            "드레이크": "boss_drake.png",
+            "이프리트": "boss_ifrit.png",
+            "카스파": "boss_kaspa.png",
+            "오만": "boss_oman.png",
+            "공성전": "boss_siege.png",
+            "안타": "boss_anta.png"
+        };
+        let bossImagesConfig = { ...DEFAULT_BOSS_IMAGES };
+
+        let currentUser = null;
+        let membersData = {};
+        let attendanceByMonth = {};
+        let preSignupsBySlot = {};
+        let subscribedMonths = {};
+        let isSignupMode = false;
+        let excelViewMode = 'time';
+        let currentNotice = { text: "", deadline: 0, id: "" };
+        let nicknameHistoryData = {};
+
+        function isOperator(user) {
+            if (!user) return false;
+            if (user.name === 'admin') return true;
+            return user.role && user.role !== 'member';
+        }
+
+        function isMasterAdmin(user) {
+            if (!user) return false;
+            if (user.name === 'admin') return true;
+            return user.role === 'master';
+        }
+
+        function ensureMonthSubscribed(monthKey) {
+            if (subscribedMonths[monthKey]) return;
+            subscribedMonths[monthKey] = true;
+            onValue(ref(db, `attendance/${monthKey}`), (snap) => {
+                attendanceByMonth[monthKey] = snap.val() || {};
+                populateBonusSlotSelect();
+                updateDashboard();
+                loadRankingData();
+            });
+            onValue(ref(db, `pre_signups/${monthKey}`), (snap) => {
+                preSignupsBySlot[monthKey] = snap.val() || {};
+                updateDashboard();
+            });
+        }
+
+        function getCurrentMonthKey() {
+            const now = getSyncedCurrentTime();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function attachRealtimeListeners() {
+            onValue(ref(db, 'members'), (snap) => {
+                membersData = snap.val() || {};
+
+                if (currentUser && membersData[currentUser.id]) {
+                    currentUser = { id: currentUser.id, ...membersData[currentUser.id] };
+                    if (currentUser.approved === false && currentUser.name !== 'admin') {
+                        alert("운영진 승인이 취소되었거나 거절되었습니다.");
+                        handleLogout();
+                        return;
+                    }
+                    updateProfileDisplay();
+                } else if (currentUser && currentUser.name !== 'admin' && !membersData[currentUser.id]) {
+                    alert("추방되었거나 계정 정보가 삭제되었습니다.");
+                    handleLogout();
+                    return;
+                }
+                renderAdminMemberList();
+                renderRawMembersViewer();
+                renderPendingSidebarList();
+                populateBonusUserCheckboxes();
+                updateDashboard();
+                loadRankingData();
+            });
+
+            onValue(ref(db, 'settings/customSchedules'), (snap) => {
+                customSchedules = snap.val() || {};
+                renderCustomScheduleList();
+                renderTimetable();
+                updateDashboard();
+            });
+
+            onValue(ref(db, 'settings/fixedSchedules'), (snap) => {
+                extraFixedSchedules = snap.val() || {};
+                renderFixedScheduleList();
+                renderTimetable();
+                updateDashboard();
+            });
+
+            onValue(ref(db, 'settings/bossImages'), (snap) => {
+                if (snap.exists() && snap.val() !== null) {
+                    bossImagesConfig = snap.val();
+                } else {
+                    bossImagesConfig = { ...DEFAULT_BOSS_IMAGES };
+                    set(ref(db, 'settings/bossImages'), bossImagesConfig);
+                }
+                renderBossImageMappingList();
+                updateDashboard();
+            });
+
+            onValue(ref(db, 'settings/bossScores'), (snap) => {
+                if (snap.exists() && snap.val() !== null) {
+                    bossScoresConfig = snap.val();
+                } else {
+                    bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
+                    set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                }
+                renderBossScoreSettingsList();
+                renderTimetable();
+                updateDashboard();
+                loadRankingData();
+            });
+
+            onValue(ref(db, 'items'), (snap) => {
+                renderItemList(snap.val() || {});
+            });
+
+            onValue(ref(db, 'settings/notice'), (snap) => {
+                const val = snap.val() || {};
+                currentNoticeTextHandler(val);
+            });
+
+            onValue(ref(db, 'nickname_history'), (snap) => {
+                nicknameHistoryData = snap.val() || {};
+                renderNicknameHistoryList();
+            });
+        }
+
+        function currentNoticeTextHandler(val) {
+            if (typeof val === 'string') {
+                currentNotice = { text: val, deadline: Date.now() + 86400000, id: 'legacy' };
+            } else {
+                currentNotice = val || { text: "", deadline: 0, id: "" };
+            }
+
+            const nowTs = getSyncedCurrentTime().getTime();
+            const bellBtn = document.getElementById('notice-bell-btn');
+            const hasActiveNotice = currentNotice.text && (currentNotice.deadline > nowTs);
+
+            if (bellBtn) bellBtn.style.display = hasActiveNotice ? "inline-block" : "none";
+        }
+
+        window.forceRefreshAdminData = async function() {
+            try {
+                const [mSnap, cSnap, fSnap, imgSnap, bSnap, nSnap, hSnap] = await Promise.all([
+                    get(ref(db, 'members')),
+                    get(ref(db, 'settings/customSchedules')),
+                    get(ref(db, 'settings/fixedSchedules')),
+                    get(ref(db, 'settings/bossImages')),
+                    get(ref(db, 'settings/bossScores')),
+                    get(ref(db, 'settings/notice')),
+                    get(ref(db, 'nickname_history'))
+                ]);
+                if (mSnap.exists()) membersData = mSnap.val() || {};
+                if (cSnap.exists()) customSchedules = cSnap.val() || {};
+                if (fSnap.exists()) extraFixedSchedules = fSnap.val() || {};
+                if (imgSnap.exists() && imgSnap.val() !== null) {
+                    bossImagesConfig = imgSnap.val();
+                }
+                if (bSnap.exists() && bSnap.val() !== null) {
+                    bossScoresConfig = bSnap.val();
+                } else {
+                    bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
+                    set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                }
+                if (nSnap.exists()) currentNoticeTextHandler(nSnap.val());
+                if (hSnap.exists()) nicknameHistoryData = hSnap.val() || {};
+
+                renderAdminMemberList();
+                renderRawMembersViewer();
+                renderPendingSidebarList();
+                renderCustomScheduleList();
+                renderFixedScheduleList();
+                renderBossImageMappingList();
+                renderBossScoreSettingsList();
+                populateBonusSlotSelect();
+                populateBonusUserCheckboxes();
+                renderRecentBonusLogs();
+                renderTimetable();
+                renderNicknameHistoryList();
+                updateDashboard();
+                loadRankingData();
+            } catch (e) {
+                console.error("데이터 새로고침 오류:", e);
+            }
+        };
+
+        async function initSystem() {
+            ensureMonthSubscribed(getCurrentMonthKey());
+            populateRankingMonthSelector();
+            
+            const todayStr = getSyncedCurrentTime().toISOString().split('T')[0];
+            const dateInput = document.getElementById('daily-score-date');
+            if (dateInput) dateInput.value = todayStr;
+            const schedDateInput = document.getElementById('schedule-date');
+            if (schedDateInput) schedDateInput.value = todayStr;
+            const bonusFilterDate = document.getElementById('bonus-filter-date');
+            if (bonusFilterDate) bonusFilterDate.value = todayStr;
+            const attManageDate = document.getElementById('attendance-manage-date');
+            if (attManageDate) attManageDate.value = todayStr;
+            const bonusLogViewDate = document.getElementById('bonus-log-view-date');
+            if (bonusLogViewDate) bonusLogViewDate.value = todayStr;
+
+            renderBossScoreSettingsList();
+            renderCustomScheduleList();
+            renderFixedScheduleList();
+            renderBossImageMappingList();
+            renderTimetable();
+            attachRealtimeListeners();
+            updateDashboard();
+            setInterval(updateDashboard, 1000);
+
+            try {
+                const savedSession = localStorage.getItem('fury_session');
+                if (savedSession) {
+                    const parsed = JSON.parse(savedSession);
+                    const latestSnap = await get(ref(db, `members/${parsed.id}`));
+                    if (latestSnap.exists() && latestSnap.val().code === parsed.code && latestSnap.val().approved !== false) {
+                        loginSuccess({ id: parsed.id, ...latestSnap.val() });
+                    } else if (parsed.name === 'admin') {
+                        loginSuccess({ id: 'admin_account', name: 'admin', code: '0004', role: 'master', approved: true });
+                    }
+                }
+
+                const membersSnap = await get(ref(db, 'members'));
+                const membersList = membersSnap.val() || {};
+                let hasAdmin = Object.values(membersList).some(v => v && v.name === 'admin');
+                if (!hasAdmin) {
+                    await set(ref(db, 'members/admin_account'), { name: 'admin', code: '0004', role: 'master', approved: true });
+                }
+
+                const scoresSnap = await get(ref(db, 'settings/bossScores'));
+                if (!scoresSnap.exists() || scoresSnap.val() === null) {
+                    await set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                }
+            } catch (err) {
+                console.error("초기화 백그라운드 점검:", err);
+            }
+        }
+
+        window.toggleAuthMode = function() {
+            isSignupMode = !isSignupMode;
+            document.getElementById('auth-error').innerText = '';
+            if (isSignupMode) {
+                document.getElementById('auth-title').innerText = "퓨리 혈맹 회원가입";
+                document.getElementById('auth-desc').innerHTML = "사용할 캐릭터명과 4자리 고유번호를 입력하세요.<br>(운영진 승인 후 로그인 가능합니다.)";
+                document.getElementById('auth-action-btn').innerText = "가입 신청하기";
+                document.getElementById('toggle-auth-text').innerHTML = "이미 계정이 있으신가요? <span>로그인하기</span>";
+            } else {
+                document.getElementById('auth-title').innerText = "퓨리 혈맹 로그인";
+                document.getElementById('auth-desc').innerText = "캐릭터명과 4자리 고유번호를 입력하세요.";
+                document.getElementById('auth-action-btn').innerText = "접속하기";
+                document.getElementById('toggle-auth-text').innerHTML = "계정이 없으신가요? <span>회원가입 신청하기</span>";
+            }
+            document.getElementById('auth-name').value = '';
+            document.getElementById('auth-code').value = '';
+        };
+
+        window.handleAuthAction = async function() {
+            const nameInput = document.getElementById('auth-name').value.trim();
+            const codeInput = document.getElementById('auth-code').value.trim();
+            const errEl = document.getElementById('auth-error');
+
+            if (!nameInput || !codeInput) {
+                errEl.innerText = "캐릭터명과 고유번호를 모두 입력해 주세요.";
+                return;
+            }
+
+            if (!isSignupMode && nameInput === 'admin' && codeInput === '0004') {
+                const adminUser = { id: 'admin_account', name: 'admin', code: '0004', role: 'master', approved: true };
+                set(ref(db, 'members/admin_account'), adminUser);
+                localStorage.setItem('fury_session', JSON.stringify(adminUser));
+                loginSuccess(adminUser);
+                return;
+            }
+
+            const membersRef = ref(db, 'members');
+            let snap = await get(membersRef);
+            let list = snap.val() || {};
+
+            if (isSignupMode) {
+                if (codeInput.length < 4) {
+                    errEl.innerText = "고유번호는 4자리 이상으로 설정해 주세요.";
+                    return;
+                }
+                const exists = Object.values(list).some(m => m && m.name === nameInput);
+                if (exists) {
+                    errEl.innerText = "이미 사용 중이거나 승인 대기 중인 캐릭터명입니다.";
+                    return;
+                }
+
+                const newId = 'user_' + Date.now();
+                await set(ref(db, `members/${newId}`), { name: nameInput, code: codeInput, role: 'member', approved: false });
+
+                alert("회원가입 신청이 완료되었습니다.\n운영진 승인 후 로그인하실 수 있습니다.");
+                isSignupMode = false;
+                toggleAuthMode();
+            } else {
+                let matchedUser = null;
+                for (const [id, info] of Object.entries(list)) {
+                    if (info && info.name === nameInput && String(info.code) === String(codeInput)) {
+                        matchedUser = { id, ...info };
+                        break;
+                    }
+                }
+
+                if (!matchedUser) {
+                    errEl.innerText = "등록되지 않은 캐릭터명이거나 고유번호가 일치하지 않습니다.";
+                    return;
+                }
+
+                if (matchedUser.approved === false) {
+                    errEl.innerText = "아직 운영진 승인을 받지 못한 계정입니다.";
+                    return;
+                }
+
+                errEl.innerText = "";
+                localStorage.setItem('fury_session', JSON.stringify({ id: matchedUser.id, name: matchedUser.name, code: matchedUser.code }));
+                loginSuccess(matchedUser);
+            }
+        };
+
+        function loginSuccess(user) {
+            currentUser = user;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-wrapper').style.display = 'flex';
+            updateProfileDisplay();
+            renderAdminMemberList();
+            renderRawMembersViewer();
+            renderPendingSidebarList();
+            populateBonusSlotSelect();
+            populateBonusUserCheckboxes();
+            renderRecentBonusLogs();
+            updateDashboard();
+            loadRankingData();
+
+            checkAndShowNoticePopup();
+        }
+
+        window.openNicknameModal = function() {
+            if (!currentUser) return;
+            document.getElementById('new-nickname-input').value = currentUser.name;
+            document.getElementById('nickname-modal').style.display = 'flex';
+        };
+
+        window.closeNicknameModal = function() {
+            document.getElementById('nickname-modal').style.display = 'none';
+        };
+
+        window.submitNicknameChange = async function() {
+            if (!currentUser) return;
+            const newName = document.getElementById('new-nickname-input').value.trim();
+            if (!newName) {
+                alert("변경할 닉네임을 입력해 주세요.");
+                return;
+            }
+            if (newName === currentUser.name) {
+                closeNicknameModal();
+                return;
+            }
+
+            const exists = Object.entries(membersData).some(([uid, m]) => m && m.name === newName && uid !== currentUser.id);
+            if (exists) {
+                alert("이미 사용 중인 캐릭터명입니다.");
+                return;
+            }
+
+            const oldName = currentUser.name;
+            const uid = currentUser.id;
+
+            const now = getSyncedCurrentTime();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const logPushRef = push(ref(db, 'nickname_history'));
+            await set(logPushRef, {
+                uid: uid,
+                oldName: oldName,
+                newName: newName,
+                date: dateStr
+            });
+
+            await update(ref(db, `members/${uid}`), { name: newName });
+            currentUser.name = newName;
+            
+            const savedSession = localStorage.getItem('fury_session');
+            if (savedSession) {
+                let parsed = JSON.parse(savedSession);
+                parsed.name = newName;
+                localStorage.setItem('fury_session', JSON.stringify(parsed));
+            }
+
+            alert(`캐릭터명이 [${newName}] (으)로 성공적으로 변경되었습니다.`);
+            closeNicknameModal();
+            updateProfileDisplay();
+            loadRankingData();
+        };
+
+        function checkAndShowNoticePopup() {
+            const nowTs = getSyncedCurrentTime().getTime();
+            if (!currentNotice.text || currentNotice.deadline <= nowTs) return;
+
+            const ackKey = `fury_ack_notice_${currentNotice.id || 'current'}`;
+            const alreadyAck = localStorage.getItem(ackKey);
+            if (!alreadyAck) {
+                openNoticeModal();
+            }
+        }
+
+        window.openNoticeModal = function() {
+            if (!currentNotice.text) return;
+            document.getElementById('notice-modal-content').innerText = currentNotice.text;
+            const dDate = new Date(currentNotice.deadline);
+            const dStr = `${dDate.getFullYear()}-${String(dDate.getMonth()+1).padStart(2,'0')}-${String(dDate.getDate()).padStart(2,'0')} ${String(dDate.getHours()).padStart(2,'0')}:${String(dDate.getMinutes()).padStart(2,'0')}`;
+            document.getElementById('notice-deadline-text').innerText = `⏰ 공지 만료 일시: ${dStr}까지`;
+            document.getElementById('notice-modal').style.display = 'flex';
+        };
+
+        window.closeNoticeModal = function() {
+            document.getElementById('notice-modal').style.display = 'none';
+        };
+
+        window.acknowledgeNotice = function() {
+            if (currentNotice.id) {
+                localStorage.setItem(`fury_ack_notice_${currentNotice.id}`, 'true');
+            }
+            closeNoticeModal();
+        };
+
+        window.saveAdminNotice = async function() {
+            if (!isOperator(currentUser)) return;
+            const text = document.getElementById('admin-notice-input').value.trim();
+            const deadlineInput = document.getElementById('admin-notice-deadline').value;
+
+            if (!text || !deadlineInput) {
+                alert("공지 내용과 만료 일시를 모두 입력해 주세요.");
+                return;
+            }
+
+            const deadlineTs = new Date(deadlineInput).getTime();
+            const noticeObj = {
+                text: text,
+                deadline: deadlineTs,
+                id: 'notice_' + Date.now()
+            };
+
+            await set(ref(db, 'settings/notice'), noticeObj);
+            alert("긴급 공지가 마감일시와 함께 등록 및 배포되었습니다.");
+            document.getElementById('admin-notice-input').value = '';
+        };
+
+        function updateProfileDisplay() {
+            if (!currentUser) return;
+            document.getElementById('profile-name').innerText = currentUser.name;
+            const roleBadge = document.getElementById('profile-role');
+            const adminMenu = document.getElementById('admin-menu-btn');
+            const mobileAdminBtn = document.getElementById('mobile-admin-btn');
+            const masterDbMenu = document.getElementById('master-db-menu-btn');
+            const lootActionTh = document.getElementById('loot-action-th');
+
+            const roleNames = {
+                'master': '최고관리자',
+                'king': '군주',
+                'sub_king': '부군주',
+                'staff': '간부진/총무',
+                'member': '일반 혈원'
+            };
+
+            const effectiveRole = currentUser.name === 'admin' ? 'master' : (currentUser.role || 'member');
+            roleBadge.innerText = roleNames[effectiveRole] || '일반 혈원';
+            
+            if (isOperator(currentUser)) {
+                roleBadge.className = "role-badge admin";
+                adminMenu.style.display = "block";
+                if (mobileAdminBtn) mobileAdminBtn.style.display = "flex";
+                if (lootActionTh) lootActionTh.style.display = "table-cell";
+            } else {
+                roleBadge.className = "role-badge";
+                adminMenu.style.display = "none";
+                if (mobileAdminBtn) mobileAdminBtn.style.display = "none";
+                if (lootActionTh) lootActionTh.style.display = "none";
+            }
+
+            if (isMasterAdmin(currentUser)) {
+                masterDbMenu.style.display = "block";
+            } else {
+                masterDbMenu.style.display = "none";
+            }
+
+            renderPendingSidebarList();
+        }
+
+        function renderPendingSidebarList() {
+            const section = document.getElementById('sidebar-pending-section');
+            const countEl = document.getElementById('sidebar-pending-count');
+            const listEl = document.getElementById('sidebar-pending-list');
+            if (!section || !countEl || !listEl) return;
+
+            if (!isOperator(currentUser)) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+
+            let pendingUsers = [];
+            Object.entries(membersData).forEach(([uid, m]) => {
+                if (m && m.approved === false && m.name !== 'admin') {
+                    pendingUsers.push({ uid, name: m.name });
+                }
+            });
+
+            countEl.innerText = pendingUsers.length;
+
+            if (pendingUsers.length > 0) {
+                let html = '';
+                pendingUsers.forEach(u => {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; background: #18122d; padding: 4px 6px; border-radius: 4px;">
+                            <span><b>${u.name}</b></span>
+                            <div>
+                                <button onclick="approveMember('${u.uid}')" style="background:#2f855a; color:#fff; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">승인</button>
+                                <button onclick="deleteMember('${u.uid}', '${u.name}')" style="background:#c53030; color:#fff; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">거절</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                listEl.innerHTML = html;
+            } else {
+                listEl.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 4px;">승인 대기 중인 인원이 없습니다.</div>`;
+            }
+        }
+
+        window.handleLogout = function() {
+            currentUser = null;
+            localStorage.removeItem('fury_session');
+            document.getElementById('app-wrapper').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('auth-name').value = '';
+            document.getElementById('auth-code').value = '';
+        };
+
+        window.switchTab = function(tabName, btnEl) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            if (btnEl) btnEl.classList.add('active');
+
+            document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+            if (tabName === 'boss') document.querySelector('.mobile-nav-item:nth-child(1)').classList.add('active');
+            if (tabName === 'items') document.querySelector('.mobile-nav-item:nth-child(2)').classList.add('active');
+            if (tabName === 'ranking') document.querySelector('.mobile-nav-item:nth-child(3)').classList.add('active');
+            if (tabName === 'admin') {
+                const adminMobile = document.getElementById('mobile-admin-btn');
+                if (adminMobile) adminMobile.classList.add('active');
+            }
+
+            if (tabName === 'ranking') loadRankingData();
+            if (tabName === 'admin') forceRefreshAdminData();
+            if (tabName === 'master_db') forceRefreshAdminData();
+            if (tabName === 'items') renderItemList(window.lastItemsObj || {});
+        };
+
+        window.switchTabMobile = function(tabName, btnEl) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            btnEl.classList.add('active');
+
+            if (tabName === 'ranking') loadRankingData();
+            if (tabName === 'admin') forceRefreshAdminData();
+            if (tabName === 'items') renderItemList(window.lastItemsObj || {});
+        };
+
+        window.switchAdminSubTab = function(subName, btnEl) {
+            document.querySelectorAll('.admin-sub-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`admin-sub-${subName}`).classList.add('active');
+            btnEl.classList.add('active');
+        };
+
+        function getScoreForBossName(bossName) {
+            let maxScore = 1;
+            for (const [key, score] of Object.entries(bossScoresConfig)) {
+                if (bossName.includes(key)) {
+                    const num = Number(score) || 1;
+                    if (num > maxScore) maxScore = num;
+                }
+            }
+            return maxScore;
+        }
+
+        // 7. 보스 명칭에 따른 일러스트 이미지 URL/파일명 반환 및 기본 SVG 폴백 생성
+        function getBossImageForName(bossName) {
+            for (const [keyword, imgUrl] of Object.entries(bossImagesConfig)) {
+                if (bossName.includes(keyword) && imgUrl) {
+                    return imgUrl;
+                }
+            }
+            return "image_1.png";
+        }
+
+        function getFallbackBossSvg(bossName) {
+            let accent = "#805ad5";
+            let label = "BOSS RAID";
+            if (bossName.includes("메인타임")) { accent = "#e53e3e"; label = "MAIN BOSS"; }
+            else if (bossName.includes("드레이크") || bossName.includes("이프리트")) { accent = "#9f7aea"; label = "DRAKE / IFRIT"; }
+            else if (bossName.includes("오만")) { accent = "#d69e2e"; label = "OMAN TOWER"; }
+            else if (bossName.includes("공성전")) { accent = "#ed8936"; label = "CASTLE SIEGE"; }
+            else if (bossName.includes("카스파")) { accent = "#38b2ac"; label = "KASPA"; }
+
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+                <defs>
+                    <radialGradient id="g" cx="40%" cy="50%" r="70%">
+                        <stop offset="0%" stop-color="${accent}" stop-opacity="0.55"/>
+                        <stop offset="100%" stop-color="#0d0918" stop-opacity="1"/>
+                    </radialGradient>
+                </defs>
+                <rect width="300" height="200" fill="url(#g)"/>
+                <path d="M40 160 L90 50 L140 120 L190 40 L240 160 Z" fill="${accent}" opacity="0.22"/>
+                <text x="25" y="108" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="20" font-weight="900" opacity="0.85">${label}</text>
+            </svg>`;
+            return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+        }
+
+        function parseCustomEntry(key, val) {
+            if (!val) return null;
+            if (typeof val === 'object') {
+                return {
+                    id: key,
+                    type: val.type || 'recurring',
+                    day: String(val.day ?? 'ALL'),
+                    date: val.date || '',
+                    hour: parseInt(val.hour ?? 0, 10),
+                    min: parseInt(val.min ?? 0, 10),
+                    title: val.title || '추가 보스',
+                    score: Number(val.score ?? 2)
+                };
+            }
+            const parts = key.split('_');
+            return {
+                id: key,
+                type: 'recurring',
+                day: parts[0] || 'ALL',
+                date: '',
+                hour: parseInt(parts[1] || 0, 10),
+                min: parts[2] ? parseInt(parts[2], 10) : 0,
+                title: String(val),
+                score: 2
+            };
+        }
+
+        window.toggleScheduleTypeInput = function() {
+            const type = document.getElementById('schedule-type').value;
+            const recBox = document.getElementById('schedule-recurring-box');
+            const onceBox = document.getElementById('schedule-once-box');
+            if (type === 'once') {
+                recBox.style.display = 'none';
+                onceBox.style.display = 'flex';
+            } else {
+                recBox.style.display = 'flex';
+                onceBox.style.display = 'none';
+            }
+        };
+
+        // 5. 기본 정규 보스 + 운영진이 추가한 정규 보스(extraFixedSchedules) 통합 후보 생성
+        function buildFixedCandidatesForDate(baseDate) {
+            const y = baseDate.getFullYear();
+            const m = baseDate.getMonth();
+            const d = baseDate.getDate();
+            const dow = baseDate.getDay();
+            const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const monthKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+            let list = [];
+
+            for (let h = 0; h < 24; h++) {
+                let titles = [];
+                if (kaspaHours.includes(h)) titles.push("카스파 / 네크");
+                if (ifritHours.includes(h)) titles.push("이프리트 / 드레이크");
+                if (mainHours.includes(h)) titles.push("메인타임");
+                if (dow === 0 && h === 20) titles.push("공성전 (20:00~21:00)");
+
+                // 운영진이 추가한 정각(00분) 정규 보스 병합
+                Object.values(extraFixedSchedules).forEach(ef => {
+                    if (!ef) return;
+                    const efHour = parseInt(ef.hour ?? 0, 10);
+                    const efMin = parseInt(ef.min ?? 0, 10);
+                    const efDay = String(ef.day ?? 'ALL');
+                    if (efMin === 0 && efHour === h && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
+                        const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                        titles.push(prefix + ef.title);
+                    }
+                });
+
+                if (titles.length > 0) {
+                    const hh = String(h).padStart(2, '0');
+                    list.push({
+                        isCustom: false,
+                        time: new Date(y, m, d, h, 0, 0),
+                        monthKey: monthKey,
+                        slotKey: `${dateStr}_${hh}00_fixed`,
+                        legacySlotKey: `${dateStr}_${hh}`,
+                        name: `${hh}:00 ${titles.join(' / ')}`
+                    });
+                }
+            }
+
+            // 운영진이 추가한 분 단위(min > 0) 정규 보스 별도 슬롯 생성
+            Object.entries(extraFixedSchedules).forEach(([efKey, ef]) => {
+                if (!ef) return;
+                const efHour = parseInt(ef.hour ?? 0, 10);
+                const efMin = parseInt(ef.min ?? 0, 10);
+                const efDay = String(ef.day ?? 'ALL');
+                if (efMin > 0 && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
+                    const hh = String(efHour).padStart(2, '0');
+                    const mm = String(efMin).padStart(2, '0');
+                    const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                    list.push({
+                        isCustom: false,
+                        time: new Date(y, m, d, efHour, efMin, 0),
+                        monthKey: monthKey,
+                        slotKey: `${dateStr}_${hh}${mm}_fixed_${efKey}`,
+                        name: `${hh}:${mm} ${prefix}${ef.title}`
+                    });
+                }
+            });
+
+            list.sort((a, b) => a.time - b.time);
+            return list;
+        }
+
+        function getActiveFixedSchedule(now) {
+            const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+            const candidates = [
+                ...buildFixedCandidatesForDate(yesterday),
+                ...buildFixedCandidatesForDate(today),
+                ...buildFixedCandidatesForDate(tomorrow)
+            ];
+            candidates.sort((a, b) => a.time - b.time);
+
+            for (let i = 0; i < candidates.length; i++) {
+                const c = candidates[i];
+                const closeTime = new Date(c.time.getTime() + 30 * 60 * 1000);
+                const slotObj = getSlotDataObj(c);
+                // 만약 해당 보스가 이미 토벌 완료(isClosed) 되었고 정각 시간도 지났다면 다음 예정 보스로 넘김
+                if (slotObj.isClosed && now >= c.time) {
+                    continue;
+                }
+                if (now < closeTime) return c;
+            }
+            return candidates[candidates.length - 1];
+        }
+
+        function getActiveCustomSchedules(now) {
+            let activeList = [];
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+
+            Object.entries(customSchedules).forEach(([key, val]) => {
+                const parsed = parseCustomEntry(key, val);
+                if (!parsed) return;
+
+                if (parsed.type === 'once') {
+                    if (!parsed.date) return;
+                    const dateParts = parsed.date.split('-').map(Number);
+                    if (dateParts.length < 3) return;
+                    const targetTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], parsed.hour, parsed.min, 0);
+                    const closeTime = new Date(targetTime.getTime() + 30 * 60 * 1000);
+
+                    if (now < closeTime) {
+                        const y = targetTime.getFullYear();
+                        const m = String(targetTime.getMonth() + 1).padStart(2, '0');
+                        const d = String(targetTime.getDate()).padStart(2, '0');
+                        const hh = String(parsed.hour).padStart(2, '0');
+                        const mm = String(parsed.min).padStart(2, '0');
+
+                        activeList.push({
+                            isCustom: true,
+                            customId: key,
+                            time: targetTime,
+                            monthKey: `${y}-${m}`,
+                            slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
+                            name: `[1회성] ${m}/${d} ${hh}:${mm} ${parsed.title}`,
+                            customScore: parsed.score
+                        });
+                    }
+                } else {
+                    for (let offset = 0; offset <= 7; offset++) {
+                        const dObj = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+                        const dow = dObj.getDay();
+                        if (parsed.day === 'ALL' || parseInt(parsed.day, 10) === dow) {
+                            const targetTime = new Date(dObj.getFullYear(), dObj.getMonth(), dObj.getDate(), parsed.hour, parsed.min, 0);
+                            const closeTime = new Date(targetTime.getTime() + 30 * 60 * 1000);
+                            
+                            if (offset === 0 && now >= closeTime) continue;
+
+                            if (now < closeTime) {
+                                const y = targetTime.getFullYear();
+                                const m = String(targetTime.getMonth() + 1).padStart(2, '0');
+                                const d = String(targetTime.getDate()).padStart(2, '0');
+                                const hh = String(parsed.hour).padStart(2, '0');
+                                const mm = String(parsed.min).padStart(2, '0');
+                                const dayPrefix = offset === 0 ? '' : `(${m}/${d} ${dayNames[dow]}) `;
+                                activeList.push({
+                                    isCustom: true,
+                                    customId: key,
+                                    time: targetTime,
+                                    monthKey: `${y}-${m}`,
+                                    slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
+                                    name: `${dayPrefix}${hh}:${mm} ${parsed.title}`,
+                                    customScore: parsed.score
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+
+            activeList.sort((a, b) => a.time - b.time);
+            return activeList;
+        }
+
+        function getCustomScheduleScore(slotKey) {
+            if (!slotKey.includes('_custom_')) return null;
+            const customKey = slotKey.split('_custom_')[1];
+            const val = customSchedules[customKey];
+            if (!val) return null;
+            const parsed = parseCustomEntry(customKey, val);
+            return parsed ? parsed.score : null;
+        }
+
+        function getSlotDataObj(sched) {
+            const monthObj = attendanceByMonth[sched.monthKey] || {};
+            return monthObj[sched.slotKey] || (sched.legacySlotKey ? monthObj[sched.legacySlotKey] : null) || {};
+        }
+
+        function getSlotParticipants(sched) {
+            const slotObj = getSlotDataObj(sched);
+            return slotObj.participants || {};
+        }
+
+        function getPreSignups(sched) {
+            const monthObj = preSignupsBySlot[sched.monthKey] || {};
+            const slotObj = monthObj[sched.slotKey] || {};
+            return slotObj.signups || {};
+        }
+
+        // 1. 과반수 참여 완료 또는 30분 경과 시 슬롯 자체에 isClosed: true 플래그를 기록해 다른 인원의 추가 참여를 완전 차단
+        function checkAndAutoCompletePastSlots(now) {
+            const curMonth = getCurrentMonthKey();
+            const monthObj = attendanceByMonth[curMonth] || {};
+
+            Object.entries(monthObj).forEach(([slotKey, slotData]) => {
+                if (!slotData || !slotData.participants) return;
+                const targetTs = slotData.targetTimestamp;
+                if (!targetTs) return;
+
+                let shouldCloseByTime = (now.getTime() >= targetTs + 30 * 60 * 1000);
+
+                let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin');
+                let totalCount = validParticipants.length;
+                let completedCount = validParticipants.filter(p => p.status && p.status.includes("참여 완료")).length;
+                let shouldCloseByMajority = (totalCount > 0 && completedCount >= Math.ceil(totalCount / 2));
+
+                if (shouldCloseByTime || shouldCloseByMajority || slotData.isClosed) {
+                    if (!slotData.isClosed) {
+                        update(ref(db, `attendance/${curMonth}/${slotKey}`), {
+                            isClosed: true,
+                            closedReason: shouldCloseByMajority ? "과반수 참여 완료 마감" : "시간 경과 자동 마감"
+                        });
+                    }
+                    Object.entries(slotData.participants).forEach(([uid, pData]) => {
+                        if (pData && pData.status === "참여 중") {
+                            const endDate = getSyncedCurrentTime();
+                            const endStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}:${String(endDate.getSeconds()).padStart(2, '0')}`;
+                            update(ref(db, `attendance/${curMonth}/${slotKey}/participants/${uid}`), {
+                                status: shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (자동)",
+                                endTime: endStr,
+                                endTimestamp: endDate.getTime()
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function buildBossCardHTML(sched, now) {
+            ensureMonthSubscribed(sched.monthKey);
+            const slotObj = getSlotDataObj(sched);
+            const participants = slotObj.participants || {};
+            const pList = Object.entries(participants)
+                .filter(([uid]) => {
+                    if (uid === 'admin_account') return false;
+                    const m = membersData[uid];
+                    return m && m.approved !== false && m.name !== 'admin';
+                })
+                .map(([uid, data]) => ({ uid, ...data }));
+            pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+            // 1. 슬롯이 이미 종료(isClosed)되었는지 확인
+            const completedCount = pList.filter(p => p.status && p.status.includes("참여 완료")).length;
+            const isSlotClosed = Boolean(slotObj.isClosed) || (pList.length > 0 && completedCount >= Math.ceil(pList.length / 2));
+
+            const preSignups = getPreSignups(sched);
+            const preList = Object.entries(preSignups)
+                .filter(([uid]) => {
+                    if (uid === 'admin_account') return false;
+                    const m = membersData[uid];
+                    return m && m.approved !== false && m.name !== 'admin';
+                })
+                .map(([uid, data]) => ({ uid, ...data }));
+
+            const diffMinutes = (now.getTime() - sched.time.getTime()) / (1000 * 60);
+            const assignedScore = sched.customScore !== undefined ? sched.customScore : getScoreForBossName(sched.name);
+            const myRecord = currentUser ? participants[currentUser.id] : null;
+            const myPre = currentUser ? preSignups[currentUser.id] : null;
+
+            let badgeText = "오픈 대기";
+            let badgeClass = "badge-status waiting";
+            let statusDesc = "";
+            let statusColor = "#ecc94b";
+            let buttonsHtml = "";
+
+            const encMonth = sched.monthKey;
+            const encSlot = sched.slotKey;
+            const encName = sched.name.replace(/'/g, "\\'");
+            const targetTs = sched.time.getTime();
+
+            if (isSlotClosed) {
+                badgeText = "토벌 완료 (마감)";
+                badgeClass = "badge-status closed";
+                statusDesc = myRecord
+                    ? `[${currentUser.name}]님 보스 참여 완료 (해당 보스 타임이 최종 마감되었습니다)`
+                    : "해당 보스 타임은 토벌 완료로 마감되어 더 이상 참여할 수 없습니다.";
+                statusColor = "#a0aec0";
+                buttonsHtml = `<button class="participate-btn" disabled>참여 마감됨</button>`;
+                if (isOperator(currentUser)) {
+                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="운영진 권한으로 마감 해제">🔄 마감 해제</button>`;
+                }
+            } else if (diffMinutes < -30) {
+                const remainMin = Math.ceil(Math.abs(diffMinutes) - 30);
+                badgeText = sched.isCustom ? "오픈 대기 (사전 신청 가능)" : "오픈 대기";
+                badgeClass = "badge-status waiting";
+                statusDesc = sched.isCustom ? `지정 시간 30분 전까지 참여 예정 체크가 가능합니다 (약 ${remainMin}분 후 오픈)` : `정각 30분 전 오픈됩니다 (약 ${remainMin}분 후)`;
+                statusColor = "#ecc94b";
+                
+                if (sched.isCustom) {
+                    const preBtnText = myPre ? "✋ 참여 예정 취소" : "✋ 참여 예정 체크";
+                    const preBtnClass = myPre ? "participate-btn cancel" : "participate-btn pre-btn";
+                    buttonsHtml = `
+                        <button class="${preBtnClass}" onclick="togglePreSignup('${encMonth}','${encSlot}')">${preBtnText}</button>
+                        <button class="participate-btn" disabled>정각 30분 전 오픈</button>
+                    `;
+                } else {
+                    buttonsHtml = `<button class="participate-btn" disabled>정각 30분 전 오픈</button>`;
+                }
+            } else if (diffMinutes >= -30 && diffMinutes <= 30) {
+                badgeText = "진행 중";
+                badgeClass = "badge-status ongoing";
+                if (!myRecord) {
+                    statusDesc = "보스가 진행 중입니다! [▶ 참여하기]를 눌러 참여하세요.";
+                    statusColor = "#ffffff";
+                    buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs})">▶ 참여하기</button>`;
+                } else if (myRecord.status === "참여 중") {
+                    statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작)`;
+                    statusColor = "#48bb78";
+                    buttonsHtml = `
+                        <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}')">참여 종료 (완료)</button>
+                        <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}',${targetTs})">참여 취소하기</button>
+                    `;
+                } else {
+                    statusDesc = `[${currentUser.name}]님 보스 참여 완료 (${myRecord.endTime || ''} 종료 확정)`;
+                    statusColor = "#68d391";
+                    buttonsHtml = `<button class="participate-btn" disabled>참여 완료됨</button>`;
+                }
+                if (isOperator(currentUser) && pList.length > 0) {
+                    buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 전체 마감</button>`;
+                }
+            } else {
+                badgeText = "종료됨";
+                badgeClass = "badge-status closed";
+                statusDesc = "보스 타임이 종료되었습니다.";
+                statusColor = "#a0aec0";
+                buttonsHtml = `<button class="participate-btn" disabled>종료됨</button>`;
+            }
+
+            const preNames = preList.map(item => (membersData[item.uid] && membersData[item.uid].name) ? membersData[item.uid].name : item.name);
+
+            let rowsHtml = '';
+            if (pList.length === 0) {
+                rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #a0aec0; padding: 16px;">현재 참여한 혈맹원이 없습니다.</td></tr>`;
+            } else {
+                pList.forEach((item, idx) => {
+                    const latestName = (membersData[item.uid] && membersData[item.uid].name) ? membersData[item.uid].name : item.name;
+                    const isMe = currentUser && item.uid === currentUser.id;
+                    const endCompare = item.endTimestamp ? item.endTimestamp : now.getTime();
+                    const elapsedSec = Math.max(0, Math.floor((endCompare - (item.timestamp || now.getTime())) / 1000));
+                    const elMin = Math.floor(elapsedSec / 60);
+                    const elSec = elapsedSec % 60;
+                    const durationStr = item.endTime ? `${elMin}분 ${elSec}초 (${item.endTime} 종료)` : `${elMin}분 ${elSec}초 경과`;
+
+                    rowsHtml += `
+                        <tr class="${isMe ? 'my-row' : ''}">
+                            <td>${idx + 1}</td>
+                            <td>${latestName} ${isMe ? '(나)' : ''}</td>
+                            <td>${item.startTime || '-'}</td>
+                            <td style="color: #d6bcfa;">${durationStr}</td>
+                            <td style="color: ${item.status === '참여 중' ? '#ecc94b' : '#48bb78'}; font-weight: bold;">${item.status}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const cardTypeLabel = sched.isCustom
+                ? `<span style="background:#d69e2e; color:#0d0918; padding:4px 9px; border-radius:6px; font-size:11px; font-weight:bold; margin-right:6px;">운영진 추가 유동 일정</span>`
+                : `<span style="background:#44337a; color:#d6bcfa; padding:4px 9px; border-radius:6px; font-size:11px; font-weight:bold; margin-right:6px;">정규 고정 일정</span>`;
+
+            const bossImgSrc = getBossImageForName(sched.name);
+            const fallbackSvg = getFallbackBossSvg(sched.name);
+
+            const rightCountHtml = sched.isCustom ? `
+                <div class="boss-count-label">👥 예정 / 실제 참여</div>
+                <div class="boss-count-num"><span style="color:#fbd38d;">${preList.length}</span> <span style="font-size:18px; color:#718096;">/</span> ${pList.length}명</div>
+            ` : `
+                <div class="boss-count-label">👥 현재 참여 인원</div>
+                <div class="boss-count-num">${pList.length}명</div>
+            `;
+
+            return `
+                <div class="boss-card ${sched.isCustom ? 'custom-card' : ''}">
+                    <!-- 7. 레퍼런스 스타일 상단 배너 (좌측 보스 일러스트 + 중앙 시간/보스명 + 우측 현재 참여 인원) -->
+                    <div class="boss-banner">
+                        <div class="boss-illust-wrap">
+                            <img src="${bossImgSrc}" alt="Boss Illustration" class="boss-illust-img" onerror="this.onerror=null; this.src='${fallbackSvg}';">
+                        </div>
+                        <div class="boss-banner-center">
+                            <div>${cardTypeLabel}<span class="${badgeClass}">${badgeText}</span></div>
+                            <div class="boss-time-text">${sched.name}</div>
+                            <div style="color: #cbd5e0; font-size: 13px; margin-top: 6px;">
+                                👥 지정 시간 <b>30분 전 ~ 30분 후</b> 참여 가능 | 배점: <b style="color:#b794f4;">${assignedScore}점</b>
+                            </div>
+                        </div>
+                        <div class="boss-banner-right">
+                            ${rightCountHtml}
+                        </div>
+                    </div>
+
+                    <div class="action-box">
+                        <div>
+                            <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px; color: ${statusColor};">${statusDesc}</div>
+                            <div style="font-size: 12px; color: #a0aec0;">${sched.isCustom ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다." : "참여 인원 과반수가 [참여 종료]를 누르면 보스 토벌이 완료되어 신규 참여가 자동 마감됩니다."}</div>
+                        </div>
+                        <div class="btn-group">${buttonsHtml}</div>
+                    </div>
+                    ${sched.isCustom ? `
+                    <div style="background: rgba(214, 158, 46, 0.08); border: 1px dashed #d69e2e; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; color: #fbd38d;">
+                        <b>[✋ 참여 예정자 명단 (${preList.length}명)]</b>: ${preList.length > 0 ? preNames.join(', ') : '아직 사전 신청한 인원이 없습니다.'}
+                    </div>` : ''}
+                    <div class="card-party-box">
+                        <div style="font-weight: bold; margin-bottom: 8px; color: #d6bcfa; font-size: 13px;">실시간 참여 명단 (${sched.name})</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">No</th>
+                                    <th>캐릭터명</th>
+                                    <th>참여 시작</th>
+                                    <th>참여 시간 / 종료 시각</th>
+                                    <th>상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        let flashToggle = false;
+        function updateDashboard() {
+            const now = getSyncedCurrentTime();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const date = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) {
+                clockEl.innerText = `${year}.${month}.${date}(${days[now.getDay()]}) ${hours}:${minutes}:${seconds}`;
+            }
+
+            checkAndAutoCompletePastSlots(now);
+
+            const fixedSched = getActiveFixedSchedule(now);
+            const customScheds = getActiveCustomSchedules(now);
+
+            let isUrgent = false;
+            if (fixedSched) {
+                const diffMin = (fixedSched.time.getTime() - now.getTime()) / (1000 * 60);
+                if (diffMin >= -30 && diffMin <= 30) isUrgent = true;
+            }
+            if (isUrgent) {
+                flashToggle = !flashToggle;
+                document.title = flashToggle ? "🚨 [보스 진행/오픈임박] 퓨리 혈맹 시스템" : "퓨리 혈맹 통합 관리 시스템";
+            } else {
+                document.title = "퓨리 혈맹 통합 관리 시스템";
+            }
+
+            const container = document.getElementById('boss-cards-container');
+            if (container) {
+                let html = '';
+                customScheds.forEach(cSched => {
+                    html += buildBossCardHTML(cSched, now);
+                });
+                if (fixedSched) html += buildBossCardHTML(fixedSched, now);
+                container.innerHTML = html;
+            }
+        }
+
+        window.togglePreSignup = async function(monthKey, slotKey) {
+            if (!currentUser) return;
+            const refPath = ref(db, `pre_signups/${monthKey}/${slotKey}/signups/${currentUser.id}`);
+            const curPre = (preSignupsBySlot[monthKey] || {})[slotKey] || {};
+            const userSignups = curPre.signups || {};
+
+            if (userSignups[currentUser.id]) {
+                await remove(refPath);
+            } else {
+                const now = getSyncedCurrentTime();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                await set(refPath, { name: currentUser.name, time: timeStr, timestamp: now.getTime() });
+            }
+        };
+
+        // 1. 참여하기 클릭 시 이미 마감(isClosed 또는 과반수 완료)된 보스인지 DB 기준으로 재검증하여 뒷북 참여 차단
+        window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs) {
+            if (!currentUser) return;
+            const now = getSyncedCurrentTime();
+            const diffMin = (now.getTime() - targetTs) / (1000 * 60);
+            if (diffMin < -30 || diffMin > 30) {
+                alert("참여 가능 시간(지정 시간 30분 전 ~ 30분 후)이 아닙니다.");
+                return;
+            }
+
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            if (slotSnap.exists()) {
+                const sData = slotSnap.val();
+                const parts = sData.participants || {};
+                const validP = Object.values(parts).filter(p => p && p.name !== 'admin');
+                const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
+                if (sData.isClosed || (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
+                    alert("이미 보스 토벌이 완료되어 마감된 일정입니다. 추가 참여가 불가능합니다.");
+                    return;
+                }
+            }
+
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            
+            let score = getCustomScheduleScore(slotKey);
+            if (score === null) {
+                score = getScoreForBossName(bossName);
+            }
+
+            await update(ref(db, `attendance/${monthKey}/${slotKey}`), { name: bossName, targetTimestamp: targetTs });
+            await set(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
+                name: currentUser.name,
+                status: "참여 중",
+                startTime: timeStr,
+                endTime: "",
+                score: score,
+                timestamp: now.getTime()
+            });
+            populateBonusSlotSelect();
+            loadRankingData();
+        };
+
+        window.cancelBossSlot = async function(monthKey, slotKey, targetTs) {
+            if (!currentUser) return;
+            const now = getSyncedCurrentTime();
+            const diffMin = (now.getTime() - targetTs) / (1000 * 60);
+            if (diffMin > 30) {
+                alert("참여 취소 가능 시간이 지났습니다. [참여 종료]를 눌러주세요.");
+                return;
+            }
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`));
+            loadRankingData();
+        };
+
+        // 1. 참여 종료 클릭 시 과반수 이상이 완료되었으면 즉시 슬롯 전체를 마감(isClosed: true) 처리
+        window.endBossSlot = async function(monthKey, slotKey) {
+            if (!currentUser) return;
+            const now = getSyncedCurrentTime();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
+                status: "참여 완료",
+                endTime: timeStr,
+                endTimestamp: now.getTime()
+            });
+
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            if (slotSnap.exists()) {
+                const sData = slotSnap.val();
+                const parts = sData.participants || {};
+                const validP = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin');
+                const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
+
+                if (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
+                    await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
+                        isClosed: true,
+                        closedReason: "과반수 참여 완료 마감"
+                    });
+                    for (const [uid, pData] of validP) {
+                        if (pData.status === "참여 중") {
+                            await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
+                                status: "참여 완료 (과반수)",
+                                endTime: timeStr,
+                                endTimestamp: now.getTime()
+                            });
+                        }
+                    }
+                }
+            }
+            loadRankingData();
+        };
+
+        window.forceCloseBossSlot = async function(monthKey, slotKey) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("이 보스 타임을 즉시 전체 마감(토벌 완료) 처리하시겠습니까?\n마감 시 다른 인원은 더 이상 참여할 수 없습니다.")) return;
+
+            const now = getSyncedCurrentTime();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
+                isClosed: true,
+                closedReason: `운영진(${currentUser.name}) 수동 마감`
+            });
+
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
+            if (slotSnap.exists()) {
+                const parts = slotSnap.val();
+                for (const [uid, pData] of Object.entries(parts)) {
+                    if (pData && pData.status === "참여 중") {
+                        await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
+                            status: "참여 완료 (마감)",
+                            endTime: timeStr,
+                            endTimestamp: now.getTime()
+                        });
+                    }
+                }
+            }
+            updateDashboard();
+        };
+
+        window.reopenBossSlot = async function(monthKey, slotKey) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("마감된 보스 타임을 다시 오픈(참여 가능 상태)하시겠습니까?")) return;
+            await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
+                isClosed: false,
+                closedReason: null
+            });
+            updateDashboard();
+        };
+
+        function renderTimetable() {
+            const tbody = document.getElementById('timetable-body');
+            if (!tbody) return;
+
+            const now = getSyncedCurrentTime();
+            let candidates = [];
+            
+            for (let offset = 0; offset <= 2; offset++) {
+                const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+                const dailyFixed = buildFixedCandidatesForDate(targetDate);
+                dailyFixed.forEach(fc => {
+                    const hh = String(fc.time.getHours()).padStart(2, '0');
+                    const mm = String(fc.time.getMinutes()).padStart(2, '0');
+                    const pureTitle = fc.name.replace(/^\d{2}:\d{2}\s*/, '');
+                    candidates.push({
+                        time: fc.time,
+                        timeStr: `${hh}:${mm}`,
+                        title: pureTitle,
+                        score: getScoreForBossName(pureTitle),
+                        typeHtml: pureTitle.includes("메인타임") ? `<span class="tag-main">★ 메인타임</span>` : (pureTitle.includes("공성전") ? `<span class="tag-siege">일요일 고정</span>` : `<span class="tag-fixed">정규 고정</span>`),
+                        note: pureTitle.includes("메인타임") ? "혈맹 최우선 필수 참여 (30분 전 오픈)" : "지정 시간 30분 전 오픈 ~ 30분 후 마감",
+                        rowClass: pureTitle.includes("메인타임") ? "main-time-row" : (pureTitle.includes("공성전") ? "siege-row" : "")
+                    });
+                });
+            }
+
+            candidates = candidates.filter(item => {
+                const closeTime = new Date(item.time.getTime() + 30 * 60 * 1000);
+                return now < closeTime;
+            });
+
+            candidates.sort((a, b) => a.time - b.time);
+            const upcoming4 = candidates.slice(0, 4);
+
+            let html = '';
+            if (upcoming4.length === 0) {
+                html = `<tr><td colspan="5" style="text-align: center; color: #a0aec0; padding: 20px;">예정된 보스 일정이 없습니다.</td></tr>`;
+            } else {
+                upcoming4.forEach((r, idx) => {
+                    const isToday = r.time.getDate() === now.getDate();
+                    const datePrefix = isToday ? '' : `(${String(r.time.getMonth()+1)}/${String(r.time.getDate())}) `;
+                    
+                    let diffMin = (now.getTime() - r.time.getTime()) / (1000 * 60);
+                    let finalRowClass = r.rowClass;
+                    let finalTypeHtml = r.typeHtml;
+
+                    if (diffMin >= 0 && diffMin <= 30) {
+                        if (r.rowClass.includes('main-time-row')) {
+                            finalRowClass = "main-time-row";
+                        } else {
+                            finalRowClass = "ongoing-row";
+                        }
+                        finalTypeHtml = `<span class="tag-ongoing">진행 중</span>`;
+                    } else if (idx === 0 && diffMin < 0) {
+                        if (!r.rowClass.includes('main-time-row')) {
+                            finalRowClass = "next-upcoming-row";
+                            finalTypeHtml = `<span class="tag-next">진행 예정</span>`;
+                        }
+                    }
+
+                    html += `
+                        <tr class="${finalRowClass}">
+                            <td style="font-weight: bold;">${datePrefix}${r.timeStr}</td>
+                            <td>${finalTypeHtml}</td>
+                            <td>${r.title}</td>
+                            <td style="color: #b794f4; font-weight: bold;">${r.score}점</td>
+                            <td style="font-size: 12px; color: #cbd5e0;">${r.note}</td>
+                        </tr>
+                    `;
+                });
+            }
+            tbody.innerHTML = html;
+        }
+
+        // 5. 정규 보스 추가/삭제 함수
+        window.addFixedSchedule = async function() {
+            if (!isOperator(currentUser)) return;
+            const day = document.getElementById('fixed-sched-day').value;
+            const hour = parseInt(document.getElementById('fixed-sched-hour').value, 10);
+            const min = parseInt(document.getElementById('fixed-sched-min').value || '0', 10);
+            const title = document.getElementById('fixed-sched-title').value.trim();
+            const isMain = document.getElementById('fixed-sched-main').value;
+
+            if (!title || isNaN(hour) || isNaN(min) || min < 0 || min > 59) {
+                alert("정규 보스 명칭과 올바른 시간을 입력해 주세요.");
+                return;
+            }
+
+            const key = `fixed_${day}_${String(hour).padStart(2,'0')}_${String(min).padStart(2,'0')}_${Date.now()}`;
+            const obj = { day, hour, min, title, isMain };
+            extraFixedSchedules[key] = obj;
+            await set(ref(db, `settings/fixedSchedules/${key}`), obj);
+            document.getElementById('fixed-sched-title').value = '';
+            document.getElementById('fixed-sched-min').value = '0';
+            alert(`[${title}] 정규 보스 일정이 추가되었습니다.`);
+        };
+
+        window.deleteFixedSchedule = async function(key) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("해당 정규 보스 일정을 삭제하시겠습니까?")) return;
+            delete extraFixedSchedules[key];
+            await remove(ref(db, `settings/fixedSchedules/${key}`));
+        };
+
+        function renderFixedScheduleList() {
+            const container = document.getElementById('fixed-schedule-list');
+            if (!container) return;
+            const entries = Object.entries(extraFixedSchedules);
+            if (entries.length === 0) {
+                container.innerHTML = "기본 정규 보스(카스파/네크, 이프리트/드레이크, 메인타임, 일요일 공성전) 외에 추가된 정규 보스가 없습니다.";
+                return;
+            }
+            const dayLabels = { 'ALL': '매일', '0': '일요일', '1': '월요일', '2': '화요일', '3': '수요일', '4': '목요일', '5': '금요일', '6': '토요일' };
+            let html = "<b>[추가된 정규 고정 보스 목록]</b><div style='margin-top:8px; display:flex; flex-direction:column; gap:6px;'>";
+            entries.forEach(([key, val]) => {
+                if (!val) return;
+                const hh = String(val.hour ?? 0).padStart(2, '0');
+                const mm = String(val.min ?? 0).padStart(2, '0');
+                const badge = val.isMain === 'main' ? `<span class="tag-main" style="margin-right:6px;">★ 메인타임</span>` : `<span class="tag-fixed" style="margin-right:6px;">정규 고정</span>`;
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#120d22; padding:8px 12px; border-radius:6px; border:1px solid #2a1f4e;">
+                        <div>${badge} <b>[${dayLabels[val.day] || '매일'} ${hh}:${mm}]</b> ${val.title}</div>
+                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px;" onclick="deleteFixedSchedule('${key}')">삭제</button>
+                    </div>
+                `;
+            });
+            html += "</div>";
+            container.innerHTML = html;
+        }
+
+        // 7. 보스별 일러스트 이미지 매핑 등록/삭제
+        window.saveBossImageMapping = async function() {
+            if (!isOperator(currentUser)) return;
+            const keyword = document.getElementById('boss-img-keyword').value.trim();
+            const url = document.getElementById('boss-img-url').value.trim();
+            if (!keyword || !url) {
+                alert("보스 키워드와 이미지 파일명(또는 URL)을 모두 입력해 주세요.");
+                return;
+            }
+            bossImagesConfig[keyword] = url;
+            await set(ref(db, `settings/bossImages/${keyword}`), url);
+            document.getElementById('boss-img-keyword').value = '';
+            document.getElementById('boss-img-url').value = '';
+            alert(`[${keyword}] 보스 일러스트 이미지가 설정되었습니다.`);
+        };
+
+        window.deleteBossImageMapping = async function(keyword) {
+            if (!isOperator(currentUser)) return;
+            delete bossImagesConfig[keyword];
+            await set(ref(db, `settings/bossImages`), bossImagesConfig);
+        };
+
+        function renderBossImageMappingList() {
+            const container = document.getElementById('boss-image-mapping-list');
+            if (!container) return;
+            const entries = Object.entries(bossImagesConfig);
+            if (entries.length === 0) {
+                container.innerHTML = "등록된 보스 이미지가 없습니다.";
+                return;
+            }
+            let html = "<div style='display:flex; flex-direction:column; gap:6px;'>";
+            entries.forEach(([kw, url]) => {
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#120d22; padding:8px 12px; border-radius:6px; border:1px solid #2a1f4e;">
+                        <div><b style="color:#fbd38d;">[${kw}]</b> → <code style="color:#b794f4;">${url}</code></div>
+                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px;" onclick="deleteBossImageMapping('${kw}')">삭제</button>
+                    </div>
+                `;
+            });
+            html += "</div>";
+            container.innerHTML = html;
+        }
+
+        window.registerItem = async function() {
+            if (!currentUser) return;
+            const bossName = document.getElementById('item-boss-name').value.trim();
+            const itemName = document.getElementById('item-name').value.trim();
+            const itemCount = document.getElementById('item-count').value.trim();
+            const owner = document.getElementById('item-owner').value.trim();
+
+            if (!bossName || !itemName || !owner) {
+                alert("보스명, 아이템명, 득템자를 모두 입력해 주세요.");
+                return;
+            }
+
+            const now = getSyncedCurrentTime();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+            await push(ref(db, 'items'), {
+                date: dateStr,
+                boss: bossName,
+                item: itemName,
+                count: itemCount || "1",
+                owner: owner,
+                writer: currentUser.name
+            });
+
+            document.getElementById('item-boss-name').value = '';
+            document.getElementById('item-name').value = '';
+            document.getElementById('item-count').value = '1';
+            document.getElementById('item-owner').value = '';
+            alert("보스 전리품 내역이 등록되었습니다.");
+        };
+
+        function renderItemList(itemsObj) {
+            window.lastItemsObj = itemsObj;
+            filterLootTable();
+        }
+
+        window.filterLootTable = function() {
+            const itemsObj = window.lastItemsObj || {};
+            const period = document.getElementById('loot-period-select') ? document.getElementById('loot-period-select').value : "month";
+            const dateFilterInput = document.getElementById('loot-date-filter');
+            const query = document.getElementById('loot-search-input') ? document.getElementById('loot-search-input').value.trim().toLowerCase() : "";
+            const tbody = document.getElementById('item-table-body');
+            const actionTh = document.getElementById('loot-action-th');
+            if (!tbody) return;
+
+            if (period === 'day') {
+                if (dateFilterInput) dateFilterInput.style.display = 'inline-block';
+            } else {
+                if (dateFilterInput) dateFilterInput.style.display = 'none';
+            }
+
+            const list = Object.entries(itemsObj);
+            const canEdit = isOperator(currentUser);
+            if (actionTh) actionTh.style.display = canEdit ? "table-cell" : "none";
+
+            const now = getSyncedCurrentTime();
+            const curYear = now.getFullYear();
+            const curMonth = now.getMonth();
+
+            const filtered = list.filter(([key, item]) => {
+                const itemDateStr = item.date || ""; 
+                const itemDatePart = itemDateStr.split(' ')[0];
+
+                if (period === 'day') {
+                    const targetDay = dateFilterInput ? dateFilterInput.value : "";
+                    if (targetDay && itemDatePart !== targetDay) return false;
+                } else if (period === 'week') {
+                    const itemTs = new Date(itemDateStr.replace(/-/g, '/')).getTime();
+                    const weekAgoTs = now.getTime() - (7 * 86400000);
+                    if (isNaN(itemTs) || itemTs < weekAgoTs) return false;
+                } else if (period === 'month') {
+                    const [iY, iM] = itemDatePart.split('-').map(Number);
+                    if (iY !== curYear || iM !== (curMonth + 1)) return false;
+                }
+
+                if (query) {
+                    const itemName = (item.item || "").toLowerCase();
+                    const owner = (item.owner || "").toLowerCase();
+                    const boss = (item.boss || "").toLowerCase();
+                    if (!itemName.includes(query) && !owner.includes(query) && !boss.includes(query)) return false;
+                }
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${canEdit ? 7 : 6}" style="text-align: center; color: #a0aec0; padding: 20px;">검색 및 기간 조건에 해당하는 전리품 내역이 없습니다.</td></tr>`;
+                return;
+            }
+            let html = '';
+            filtered.reverse().forEach(([key, item]) => {
+                html += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td>${item.boss}</td>
+                        <td style="color: #b794f4; font-weight: bold;">${item.item}</td>
+                        <td>${item.count || 1}개</td>
+                        <td>${item.owner}</td>
+                        <td style="color: #ecc94b;">${item.writer || '-'}</td>
+                        ${canEdit ? `<td><button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteLootItem('${key}')">삭제</button></td>` : ''}
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        };
+
+        window.downloadLootCSV = function() {
+            const itemsObj = window.lastItemsObj || {};
+            const list = Object.entries(itemsObj);
+            if (list.length === 0) {
+                alert("다운로드할 전리품 내역이 없습니다.");
+                return;
+            }
+
+            let rows = ["등록일시,보스명,아이템명,수량,득템자,등록자"];
+            list.forEach(([key, item]) => {
+                rows.push(`"${item.date}","${item.boss}","${item.item}","${item.count || 1}","${item.owner}","${item.writer || '-'}"`);
+            });
+
+            const csvContent = "\uFEFF" + rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fury_clan_loot_${getCurrentMonthKey()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+        window.deleteLootItem = async function(key) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("이 전리품 기록을 삭제하시겠습니까?")) return;
+            await remove(ref(db, `items/${key}`));
+            alert("전리품 기록이 삭제되었습니다.");
+        };
+
+        function populateRankingMonthSelector() {
+            const select = document.getElementById('ranking-month-select');
+            if (!select) return;
+            const now = getSyncedCurrentTime();
+            let html = '';
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const val = `${y}-${m}`;
+                html += `<option value="${val}">${y}년 ${m}월 ${i === 0 ? '(이번 달)' : ''}</option>`;
+            }
+            select.innerHTML = html;
+        }
+
+        window.setExcelMode = function(mode) {
+            excelViewMode = mode;
+            if (mode === 'time') {
+                document.getElementById('excel-mode-time').className = "btn-sm";
+                document.getElementById('excel-mode-day').className = "btn-sm secondary";
+            } else {
+                document.getElementById('excel-mode-time').className = "btn-sm secondary";
+                document.getElementById('excel-mode-day').className = "btn-sm";
+            }
+            loadRankingData();
+        };
+
+        function filterSlotByWeek(slotKey, selectedMonth, weekVal) {
+            if (weekVal === 'all') return true;
+            const datePart = slotKey.split('_')[0];
+            const parts = datePart.split('-');
+            if (parts.length < 3) return true;
+            const dayNum = parseInt(parts[2], 10);
+            
+            const w = parseInt(weekVal, 10);
+            const startDay = (w - 1) * 7 + 1;
+            const endDay = w * 7;
+            return dayNum >= startDay && dayNum <= endDay;
+        }
+
+        window.loadRankingData = async function() {
+            const monthSelect = document.getElementById('ranking-month-select');
+            const weekSelect = document.getElementById('ranking-week-select');
+            const dateInput = document.getElementById('daily-score-date');
+            if (!monthSelect || !weekSelect) return;
+
+            const selectedMonth = monthSelect.value;
+            const selectedWeek = weekSelect.value;
+            const targetDateStr = dateInput ? dateInput.value : "";
+
+            if (!attendanceByMonth[selectedMonth]) {
+                const snap = await get(ref(db, `attendance/${selectedMonth}`));
+                attendanceByMonth[selectedMonth] = snap.val() || {};
+            }
+            const monthData = attendanceByMonth[selectedMonth];
+
+            const bonusSnap = await get(ref(db, `bonus_scores/${selectedMonth}`));
+            const bonusData = bonusSnap.val() || {};
+
+            let lifetimeScores = {};
+            for (const [mKey, mVal] of Object.entries(attendanceByMonth)) {
+                for (const [sKey, sVal] of Object.entries(mVal || {})) {
+                    const parts = (sVal && sVal.participants) ? sVal.participants : {};
+                    for (const [uid, pInfo] of Object.entries(parts)) {
+                        if (uid !== 'admin_account') {
+                            const m = membersData[uid];
+                            if (m && m.approved !== false && m.name !== 'admin') {
+                                lifetimeScores[uid] = (lifetimeScores[uid] || 0) + (Number(pInfo.score) || 1);
+                            }
+                        }
+                    }
+                }
+            }
+            for (const [uid, bList] of Object.entries(bonusData)) {
+                if (uid !== 'admin_account') {
+                    const m = membersData[uid];
+                    if (m && m.approved !== false && m.name !== 'admin') {
+                        let sumB = 0;
+                        if (typeof bList === 'object' && bList !== null) {
+                            Object.values(bList).forEach(item => {
+                                sumB += (Number(item.score) || 0);
+                            });
+                        } else {
+                            sumB = Number(bList) || 0;
+                        }
+                        lifetimeScores[uid] = (lifetimeScores[uid] || 0) + sumB;
+                    }
+                }
+            }
+
+            let userStats = {};
+            Object.keys(membersData).forEach(uid => {
+                const m = membersData[uid];
+                if (m && m.approved !== false && m.name !== 'admin' && uid !== 'admin_account') {
+                    userStats[uid] = {
+                        name: m.name,
+                        mainCount: 0, mainScore: 0,
+                        ifritCount: 0, ifritScore: 0,
+                        kaspaCount: 0, kaspaScore: 0,
+                        specialCount: 0, specialScore: 0,
+                        bonusList: [],
+                        bonusScoreTotal: 0,
+                        dailyTotal: 0,
+                        totalScore: 0,
+                        slotsRecord: {}
+                    };
+                }
+            });
+
+            Object.entries(bonusData).forEach(([uid, bVal]) => {
+                if (!userStats[uid]) return;
+                if (typeof bVal === 'object' && bVal !== null) {
+                    Object.entries(bVal).forEach(([bKey, bObj]) => {
+                        const bDate = bKey.split('_')[0];
+                        const isTargetDate = targetDateStr ? (bDate === targetDateStr) : true;
+                        const scoreNum = Number(bObj.score) || 0;
+                        
+                        userStats[uid].bonusList.push({
+                            logKey: bKey,
+                            uid: uid,
+                            date: bDate,
+                            score: scoreNum,
+                            reason: bObj.reason || '사유 없음',
+                            writer: bObj.writer || '운영진'
+                        });
+                        if (isTargetDate) {
+                            userStats[uid].bonusScoreTotal += scoreNum;
+                        }
+                    });
+                } else {
+                    const num = Number(bVal) || 0;
+                    userStats[uid].bonusScoreTotal += num;
+                    userStats[uid].bonusList.push({ logKey: 'legacy', uid: uid, date: selectedMonth + '-01', score: num, reason: '기타 보너스', writer: '운영진' });
+                }
+            });
+
+            let slotKeysList = [];
+            Object.entries(monthData).forEach(([slotKey, slotObj]) => {
+                if (!filterSlotByWeek(slotKey, selectedMonth, selectedWeek)) return;
+                slotKeysList.push(slotKey);
+
+                const parts = (slotObj && slotObj.participants) ? slotObj.participants : {};
+                const bossTitle = slotObj.name || slotKey;
+                const slotDatePart = slotKey.split('_')[0];
+
+                Object.entries(parts).forEach(([uid, pInfo]) => {
+                    if (uid === 'admin_account') return;
+                    const m = membersData[uid];
+                    if (!m || m.approved === false || m.name === 'admin') return;
+
+                    if (!userStats[uid]) {
+                        userStats[uid] = {
+                            name: m.name,
+                            mainCount: 0, mainScore: 0,
+                            ifritCount: 0, ifritScore: 0,
+                            kaspaCount: 0, kaspaScore: 0,
+                            specialCount: 0, specialScore: 0,
+                            bonusList: [],
+                            bonusScoreTotal: 0,
+                            dailyTotal: 0, totalScore: 0,
+                            slotsRecord: {}
+                        };
+                    }
+
+                    let sc = Number(pInfo.score);
+                    if (isNaN(sc)) {
+                        sc = getCustomScheduleScore(slotKey);
+                        if (sc === null) sc = getScoreForBossName(bossTitle);
+                    }
+                    userStats[uid].slotsRecord[slotKey] = { score: sc, time: pInfo.startTime || 'O', title: bossTitle };
+
+                    const isTargetDate = targetDateStr ? (slotDatePart === targetDateStr) : true;
+
+                    if (bossTitle.includes("메인타임")) {
+                        if (isTargetDate) {
+                            userStats[uid].mainCount += 1;
+                            userStats[uid].mainScore += sc;
+                        }
+                    } else if (bossTitle.includes("이프리트") || bossTitle.includes("드레이크")) {
+                        if (isTargetDate) {
+                            userStats[uid].ifritCount += 1;
+                            userStats[uid].ifritScore += sc;
+                        }
+                    } else if (bossTitle.includes("카스파") || bossTitle.includes("네크")) {
+                        if (isTargetDate) {
+                            userStats[uid].kaspaCount += 1;
+                            userStats[uid].kaspaScore += sc;
+                        }
+                    } else {
+                        if (isTargetDate) {
+                            userStats[uid].specialCount += 1;
+                            userStats[uid].specialScore += sc;
+                        }
+                    }
+                });
+            });
+
+            slotKeysList.sort();
+
+            const rankingArray = Object.entries(userStats)
+                .map(([uid, st]) => {
+                    const dailyTotal = st.mainScore + st.ifritScore + st.kaspaScore + st.specialScore + st.bonusScoreTotal;
+                    const lifetime = lifetimeScores[uid] || dailyTotal;
+                    return { uid, ...st, dailyTotal, lifetime };
+                })
+                .filter(row => row.dailyTotal !== 0 || row.lifetime !== 0 || Object.keys(row.slotsRecord).length > 0 || row.bonusList.length > 0);
+
+            rankingArray.sort((a, b) => b.dailyTotal - a.dailyTotal || a.name.localeCompare(b.name));
+
+            const kingBanner = document.getElementById('weekly-attendance-king-banner');
+            const kingNameEl = document.getElementById('weekly-king-name');
+            const kingStatEl = document.getElementById('weekly-king-stat');
+            if (rankingArray.length > 0 && selectedWeek !== 'all') {
+                const topUser = rankingArray[0];
+                if (topUser.dailyTotal > 0) {
+                    kingNameEl.innerText = `${topUser.name} 님`;
+                    kingStatEl.innerText = `이번 주 총 획득 점수: ${topUser.dailyTotal}점`;
+                    kingBanner.style.display = 'flex';
+                } else {
+                    kingBanner.style.display = 'none';
+                }
+            } else {
+                kingBanner.style.display = 'none';
+            }
+
+            const summaryTbody = document.getElementById('ranking-summary-tbody');
+            if (rankingArray.length === 0) {
+                summaryTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #a0aec0; padding: 20px;">조건에 해당하는 참여 기록이 없습니다.</td></tr>`;
+            } else {
+                let sHtml = '';
+                rankingArray.forEach((row, idx) => {
+                    const isMe = currentUser && row.uid === currentUser.id;
+                    
+                    let bonusDisplay = "-";
+                    let filterBonus = targetDateStr ? row.bonusList.filter(b => b.date === targetDateStr) : row.bonusList;
+                    if (filterBonus.length > 0) {
+                        let bTexts = filterBonus.map(b => {
+                            let color = b.score >= 0 ? '#48bb78' : '#e53e3e';
+                            let prefix = b.score > 0 ? '+' : '';
+                            return `<span style="color:${color}; font-weight:bold;" title="사유: ${b.reason}">${prefix}${b.score}점 (${b.reason})</span>`;
+                        });
+                        bonusDisplay = bTexts.join(', ');
+                    }
+
+                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
+                    const isKing = (idx === 0 && selectedWeek !== 'all' && row.dailyTotal > 0);
+                    const kingCrown = isKing ? ' 👑 [출석왕]' : '';
+
+                    sHtml += `
+                        <tr class="${isMe ? 'my-row' : ''}" data-name="${row.name}">
+                            <td>${idx + 1}위</td>
+                            <td><span ${profileClickAction}>${row.name}${isMe ? ' (나)' : ''}${kingCrown}</span></td>
+                            <td>${row.mainCount}회 (${row.mainScore}점)</td>
+                            <td>${row.ifritCount}회 (${row.ifritScore}점)</td>
+                            <td>${row.kaspaCount}회 (${row.kaspaScore}점)</td>
+                            <td>${row.specialCount}회 (${row.specialScore}점)</td>
+                            <td>${bonusDisplay}</td>
+                            <td style="color: #fbd38d; font-weight: bold;">${row.dailyTotal}점</td>
+                            <td style="color: #b794f4; font-weight: bold;">${row.lifetime}점</td>
+                        </tr>
+                    `;
+                });
+                summaryTbody.innerHTML = sHtml;
+            }
+
+            renderExcelTable(slotKeysList, rankingArray, monthData, bonusData);
+            renderRecentBonusLogs(bonusData, selectedMonth);
+            filterRankingAndExcel();
+        };
+
+        function renderRecentBonusLogs(bonusData, selectedMonth) {
+            const container = document.getElementById('recent-bonus-logs-container');
+            const viewDateInput = document.getElementById('bonus-log-view-date');
+            if (!container) return;
+
+            const targetDate = viewDateInput ? viewDateInput.value : "";
+            const curMonth = selectedMonth || getCurrentMonthKey();
+
+            if (!bonusData) {
+                get(ref(db, `bonus_scores/${curMonth}`)).then(snap => {
+                    processLogs(snap.val() || {});
+                });
+            } else {
+                processLogs(bonusData);
+            }
+
+            function processLogs(bData) {
+                let allLogs = [];
+                Object.entries(bData || {}).forEach(([uid, bMap]) => {
+                    const m = membersData[uid];
+                    const charName = m ? m.name : '알수없음';
+                    if (bMap && typeof bMap === 'object') {
+                        Object.entries(bMap).forEach(([logKey, logObj]) => {
+                            const logDate = logKey.split('_')[0];
+                            if (targetDate && logDate !== targetDate) return;
+                            allLogs.push({
+                                uid,
+                                charName,
+                                logKey,
+                                date: logDate,
+                                score: logObj.score,
+                                reason: logObj.reason,
+                                writer: logObj.writer || '운영진',
+                                timestamp: logObj.timestamp || 0
+                            });
+                        });
+                    }
+                });
+
+                allLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+                if (allLogs.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; color:#a0aec0; padding:10px;">선택한 날짜(${targetDate || '전체'})에 해당하는 가감점 이력이 없습니다.</div>`;
+                    return;
+                }
+
+                let html = `<table style="font-size:12px;"><thead><tr><th>날짜</th><th>캐릭터명</th><th>점수</th><th>사유</th><th>부여자</th><th>관리</th></tr></thead><tbody>`;
+                allLogs.forEach(item => {
+                    let color = item.score >= 0 ? '#48bb78' : '#e53e3e';
+                    let prefix = item.score > 0 ? '+' : '';
+                    html += `
+                        <tr>
+                            <td>${item.date}</td>
+                            <td><b>${item.charName}</b></td>
+                            <td style="color:${color}; font-weight:bold;">${prefix}${item.score}점</td>
+                            <td>${item.reason}</td>
+                            <td style="color:#a0aec0;">${item.writer}</td>
+                            <td><button class="btn-sm danger" style="padding:2px 6px; font-size:10px;" onclick="deleteBonusLog('${curMonth}', '${item.uid}', '${item.logKey}')">삭제</button></td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            }
+        }
+
+        window.deleteBonusLog = async function(monthKey, uid, logKey) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("이 가감점 내역을 삭제하시겠습니까? (대상자의 총점에서 차감됩니다)")) return;
+
+            await remove(ref(db, `bonus_scores/${monthKey}/${uid}/${logKey}`));
+            alert("가감점 내역이 삭제되었습니다.");
+            loadRankingData();
+        };
+
+        window.downloadAttendanceCSV = function() {
+            const monthSelect = document.getElementById('ranking-month-select');
+            const selectedMonth = monthSelect ? monthSelect.value : getCurrentMonthKey();
+            const monthData = attendanceByMonth[selectedMonth] || {};
+            const slotKeysList = Object.keys(monthData).sort();
+
+            if (slotKeysList.length === 0) {
+                alert("다운로드할 출석 기록이 없습니다.");
+                return;
+            }
+
+            let rows = [];
+            let header = ["캐릭터명"];
+            slotKeysList.forEach(sKey => {
+                const sObj = monthData[sKey] || {};
+                header.push(sObj.name || sKey);
+            });
+            rows.push(header.join(','));
+
+            let userMap = {};
+            Object.values(monthData).forEach(slotObj => {
+                const parts = slotObj.participants || {};
+                Object.entries(parts).forEach(([uid, p]) => {
+                    if (uid !== 'admin_account' && p.name !== 'admin') {
+                        const mName = (membersData[uid] && membersData[uid].name) ? membersData[uid].name : p.name;
+                        userMap[uid] = mName;
+                    }
+                });
+            });
+
+            Object.entries(userMap).forEach(([uid, name]) => {
+                let rowData = [`"${name}"`];
+                slotKeysList.forEach(sKey => {
+                    const parts = (monthData[sKey] || {}).participants || {};
+                    const rec = parts[uid];
+                    rowData.push(`"${rec ? 'O (+' + (rec.score || 1) + ')' : '-'}"`);
+                });
+                rows.push(rowData.join(','));
+            });
+
+            const csvContent = "\uFEFF" + rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fury_clan_attendance_${selectedMonth}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+        window.openMemberProfileModal = function(uid, name) {
+            if (!isOperator(currentUser)) return;
+            const modal = document.getElementById('profile-modal');
+            const titleEl = document.getElementById('profile-modal-title');
+            const bodyEl = document.getElementById('profile-modal-body');
+
+            titleEl.innerText = `[${name}] 성향 및 출석 프로필`;
+
+            const curMonth = getCurrentMonthKey();
+            const monthObj = attendanceByMonth[curMonth] || {};
+            let totalParticipations = 0;
+            let mainParticipations = 0;
+            let totalSlotsCount = 0;
+
+            Object.entries(monthObj).forEach(([sKey, sObj]) => {
+                totalSlotsCount++;
+                const parts = sObj.participants || {};
+                if (parts[uid]) {
+                    totalParticipations++;
+                    if ((sObj.name || sKey).includes("메인타임")) {
+                        mainParticipations++;
+                    }
+                }
+            });
+
+            const attendanceRate = totalSlotsCount > 0 ? Math.round((totalParticipations / totalSlotsCount) * 100) : 0;
+
+            bodyEl.innerHTML = `
+                <div style="background:#120d22; padding:15px; border-radius:8px; border:1px solid #2a1f4e;">
+                    <div style="margin-bottom:8px;">• <b>캐릭터명</b>: ${name} (UID: ${uid})</div>
+                    <div style="margin-bottom:8px;">• <b>이번 달 총 보스 참여 횟수</b>: ${totalParticipations}회</div>
+                    <div style="margin-bottom:8px;">• <b>★ 메인타임 참여 횟수</b>: ${mainParticipations}회</div>
+                    <div style="margin-bottom:8px;">• <b>전체 보스 타임 대비 참여율</b>: <span style="color:#48bb78; font-weight:bold;">${attendanceRate}%</span></div>
+                    <div style="margin-top:12px; font-size:12px; color:#a0aec0;">
+- 간부진 및 최고관리자 전용 열람 정보입니다. 혈원의 성실도 파악에 참고하세요.
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        };
+
+        window.closeProfileModal = function() {
+            document.getElementById('profile-modal').style.display = 'none';
+        };
+
+        window.filterRankingAndExcel = function() {
+            const query = document.getElementById('ranking-search-input') ? document.getElementById('ranking-search-input').value.trim().toLowerCase() : "";
+            
+            document.querySelectorAll('#ranking-summary-tbody tr').forEach(tr => {
+                const name = (tr.getAttribute('data-name') || "").toLowerCase();
+                if (query && name.includes(query)) {
+                    tr.classList.add('highlight-row');
+                } else {
+                    tr.classList.remove('highlight-row');
+                }
+            });
+
+            document.querySelectorAll('#excel-table-container tbody tr').forEach(tr => {
+                const name = (tr.getAttribute('data-name') || "").toLowerCase();
+                if (query && name.includes(query)) {
+                    tr.classList.add('highlight-row');
+                } else {
+                    tr.classList.remove('highlight-row');
+                }
+            });
+        };
+
+        function renderExcelTable(slotKeysList, rankingArray, monthData, bonusData) {
+            const container = document.getElementById('excel-table-container');
+            if (!container) return;
+
+            if (rankingArray.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 30px;">표시할 혈원 또는 출석 기록이 없습니다.</div>`;
+                return;
+            }
+
+            if (excelViewMode === 'time') {
+                let dateGroups = {};
+                slotKeysList.forEach(sKey => {
+                    const datePart = sKey.split('_')[0];
+                    if (!dateGroups[datePart]) dateGroups[datePart] = [];
+                    dateGroups[datePart].push(sKey);
+                });
+
+                const monthSelect = document.getElementById('ranking-month-select');
+                const selMonthKey = monthSelect ? monthSelect.value : getCurrentMonthKey();
+                const bMonthObj = bonusData || {};
+                
+                let allDatesSet = new Set(Object.keys(dateGroups));
+                Object.values(bMonthObj).forEach(userBMap => {
+                    if (userBMap && typeof userBMap === 'object') {
+                        Object.keys(userBMap).forEach(bKey => {
+                            const dPart = bKey.split('_')[0];
+                            if (dPart.startsWith(selMonthKey)) {
+                                allDatesSet.add(dPart);
+                            }
+                        });
+                    }
+                });
+
+                let sortedDates = Array.from(allDatesSet).sort();
+
+                let html = `<div class="excel-table-wrapper"><table class="excel-table"><thead>`;
+                
+                html += `<tr>`;
+                html += `<th rowspan="2" style="min-width: 95px; vertical-align: middle;">캐릭터명</th>`;
+                html += `<th rowspan="2" style="min-width: 75px; vertical-align: middle;">기간 합계</th>`;
+                
+                sortedDates.forEach(dateStr => {
+                    const keys = dateGroups[dateStr] || [];
+                    const colspanCount = Math.max(1, keys.length);
+                    const parsedDate = dateStr.slice(5);
+                    html += `<th colspan="${colspanCount}" class="date-group-header">${parsedDate}</th>`;
+                });
+                html += `</tr>`;
+
+                html += `<tr>`;
+                sortedDates.forEach(dateStr => {
+                    const keys = dateGroups[dateStr] || [];
+                    if (keys.length === 0) {
+                        html += `<th class="time-sub-header">가감점</th>`;
+                    } else {
+                        keys.forEach(sKey => {
+                            const sObj = monthData[sKey] || {};
+                            const title = sObj.name || sKey;
+                            let timeDisplay = "";
+                            const parts = sKey.split('_');
+                            if (parts.length >= 2 && parts[1].length >= 4) {
+                                timeDisplay = `${parts[1].slice(0,2)}:${parts[1].slice(2,4)}`;
+                            } else {
+                                timeDisplay = sKey.slice(11, 16);
+                            }
+                            html += `<th class="time-sub-header" title="${title}">${timeDisplay}<br><span style="font-size:11px; color:#a0aec0;">${title.slice(0, 10)}</span></th>`;
+                        });
+                    }
+                });
+                html += `</tr></thead><tbody>`;
+
+                rankingArray.forEach(row => {
+                    let pTotal = 0;
+                    slotKeysList.forEach(sKey => {
+                        if (row.slotsRecord[sKey]) pTotal += row.slotsRecord[sKey].score;
+                    });
+                    pTotal += row.bonusScoreTotal;
+
+                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
+
+                    html += `<tr data-name="${row.name}">`;
+                    html += `<td style="font-weight: bold;"><span ${profileClickAction}>${row.name}</span></td>`;
+                    html += `<td style="color: #fbd38d; font-weight: bold;">${pTotal}점</td>`;
+
+                    sortedDates.forEach(dateStr => {
+                        const keys = dateGroups[dateStr] || [];
+                        let dateBonuses = row.bonusList.filter(b => b.date === dateStr);
+
+                        if (keys.length === 0) {
+                            if (dateBonuses.length > 0) {
+                                let bSum = dateBonuses.reduce((acc, cur) => acc + cur.score, 0);
+                                let bColor = bSum >= 0 ? '#48bb78' : '#e53e3e';
+                                let bPrefix = bSum > 0 ? '+' : '';
+                                let reasons = dateBonuses.map(b => `${b.score >= 0 ? '+' : ''}${b.score}점 (${b.reason})`).join(', ');
+                                html += `<td style="background: ${bSum >= 0 ? 'rgba(72, 187, 120, 0.18)' : 'rgba(229, 62, 62, 0.18)'}; color: ${bColor}; font-weight: bold;" title="${reasons}">${bPrefix}${bSum}점</td>`;
+                            } else {
+                                html += `<td style="color: #4a5568;">-</td>`;
+                            }
+                        } else {
+                            keys.forEach(sKey => {
+                                const rec = row.slotsRecord[sKey];
+                                if (rec) {
+                                    html += `<td style="background: rgba(72, 187, 120, 0.18); color: #48bb78; font-weight: bold;" title="참여시각: ${rec.time}">O (+${rec.score})</td>`;
+                                } else {
+                                    html += `<td style="color: #4a5568;">-</td>`;
+                                }
+                            });
+                        }
+                    });
+                    html += `</tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+                container.innerHTML = html;
+
+            } else {
+                const monthSelect = document.getElementById('ranking-month-select');
+                const [y, m] = monthSelect.value.split('-').map(Number);
+                const lastDay = new Date(y, m, 0).getDate();
+
+                let daysArr = [];
+                for (let d = 1; d <= lastDay; d++) {
+                    daysArr.push(String(d).padStart(2, '0'));
+                }
+
+                let html = `<div class="excel-table-wrapper"><table class="excel-table"><thead><tr>`;
+                html += `<th style="min-width: 95px;">캐릭터명</th>`;
+                html += `<th style="min-width: 75px;">기간 합계</th>`;
+
+                daysArr.forEach(dayStr => {
+                    html += `<th style="min-width: 75px;">${m}월 ${dayStr}일</th>`;
+                });
+                html += `</tr></thead><tbody>`;
+
+                rankingArray.forEach(row => {
+                    let pTotal = 0;
+                    Object.values(row.slotsRecord).forEach(rec => pTotal += rec.score);
+                    pTotal += row.bonusScoreTotal;
+
+                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
+
+                    html += `<tr data-name="${row.name}">`;
+                    html += `<td style="font-weight: bold;"><span ${profileClickAction}>${row.name}</span></td>`;
+                    html += `<td style="color: #fbd38d; font-weight: bold;">${pTotal}점</td>`;
+
+                    daysArr.forEach(dayStr => {
+                        const targetDateStr = `${y}-${String(m).padStart(2, '0')}-${dayStr}`;
+                        let dayScore = 0;
+                        let detailList = [];
+
+                        Object.entries(row.slotsRecord).forEach(([sKey, rec]) => {
+                            if (sKey.startsWith(targetDateStr)) {
+                                dayScore += rec.score;
+                                const sObj = monthData[sKey] || {};
+                                detailList.push(`${sObj.name || sKey} (+${rec.score}점)`);
+                            }
+                        });
+
+                        let dayBonuses = row.bonusList.filter(b => b.date === targetDateStr);
+                        dayBonuses.forEach(b => {
+                            dayScore += b.score;
+                            detailList.push(`가감점: ${b.score >= 0 ? '+' : ''}${b.score}점 (${b.reason})`);
+                        });
+
+                        if (detailList.length > 0) {
+                            let cellColor = dayScore >= 0 ? '#48bb78' : '#e53e3e';
+                            let bgStyle = dayScore >= 0 ? 'background: rgba(72, 187, 120, 0.18);' : 'background: rgba(229, 62, 62, 0.18);';
+                            let prefix = dayScore > 0 ? '+' : '';
+                            html += `<td style="${bgStyle} color: ${cellColor}; font-weight: bold;" title="${detailList.join('\n')}">${prefix}${dayScore}점</td>`;
+                        } else {
+                            html += `<td style="color: #4a5568;">-</td>`;
+                        }
+                    });
+                    html += `</tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+                container.innerHTML = html;
+            }
+        }
+
+        window.saveBossScoreSetting = async function(key) {
+            if (!isOperator(currentUser)) return;
+            const inputEl = document.getElementById(`edit-score-${key}`);
+            if (!inputEl) return;
+            const newScore = parseInt(inputEl.value, 10);
+            if (isNaN(newScore) || newScore < 1) {
+                alert("올바른 점수를 입력해 주세요.");
+                return;
+            }
+            bossScoresConfig[key] = newScore;
+            renderBossScoreSettingsList();
+            renderTimetable();
+            updateDashboard();
+
+            await set(ref(db, `settings/bossScores/${key}`), newScore);
+            alert(`[${key}] 배점이 ${newScore}점으로 수정되었습니다 (차후 보스부터 적용).`);
+        };
+
+        window.addNewBossScoreSetting = async function() {
+            if (!isOperator(currentUser)) return;
+            const key = document.getElementById('boss-score-key').value.trim();
+            const val = parseInt(document.getElementById('boss-score-val').value, 10);
+
+            if (!key || isNaN(val)) {
+                alert("명칭과 올바른 점수를 입력해 주세요.");
+                return;
+            }
+            bossScoresConfig[key] = val;
+            renderBossScoreSettingsList();
+            renderTimetable();
+            updateDashboard();
+
+            await set(ref(db, `settings/bossScores/${key}`), val);
+            document.getElementById('boss-score-key').value = '';
+            document.getElementById('boss-score-val').value = '';
+            alert(`[${key}] 기준이 ${val}점으로 신규 추가되었습니다.`);
+        };
+
+        function renderBossScoreSettingsList() {
+            const container = document.getElementById('boss-score-list');
+            if (!container) return;
+            const entries = Object.entries(bossScoresConfig);
+            if (entries.length === 0) {
+                container.innerHTML = "설정된 배점이 없습니다.";
+                return;
+            }
+            let html = "<b>[보스별 차등 점수 기준표 (차후 보스부터 수정 점수 적용)]</b><br><br>";
+            entries.forEach(([key, score]) => {
+                html += `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <span style="min-width: 150px; font-weight: bold; color: #b794f4;">${key}</span>
+                        <input type="number" id="edit-score-${key}" class="admin-input" value="${score}" min="1" max="50" style="width: 80px; padding: 6px;">
+                        <span>점</span>
+                        <button class="btn-sm secondary" onclick="saveBossScoreSetting('${key}')">점수 수정</button>
+                        <button class="btn-sm danger" onclick="deleteBossScore('${key}')">삭제</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.deleteBossScore = async function(key) {
+            if (!isOperator(currentUser)) return;
+            delete bossScoresConfig[key];
+            renderBossScoreSettingsList();
+            await set(ref(db, `settings/bossScores`), bossScoresConfig);
+        };
+
+        window.approveMember = async function(uid) {
+            if (!isOperator(currentUser)) return;
+            await update(ref(db, `members/${uid}`), { approved: true });
+            alert("회원 가입이 승인되었습니다.");
+        };
+
+        window.addCustomSchedule = async function() {
+            if (!isOperator(currentUser)) {
+                alert("운영진 권한이 필요합니다.");
+                return;
+            }
+            const type = document.getElementById('schedule-type').value;
+            const day = document.getElementById('schedule-day').value;
+            const dateStr = document.getElementById('schedule-date').value;
+            const hourStr = document.getElementById('schedule-hour').value;
+            const minStr = document.getElementById('schedule-min').value.trim() || '0';
+            const title = document.getElementById('schedule-title').value.trim();
+            const scoreVal = parseInt(document.getElementById('schedule-score').value, 10) || 2;
+
+            const h = parseInt(hourStr, 10);
+            const m = parseInt(minStr, 10);
+
+            if (isNaN(h) || h < 0 || h > 23 || isNaN(m) || m < 0 || m > 59 || !title) {
+                alert("올바른 시간과 일정 명칭을 입력해 주세요.");
+                return;
+            }
+            if (type === 'once' && !dateStr) {
+                alert("1회성 일정의 날짜를 지정해 주세요.");
+                return;
+            }
+
+            const key = `${type}_${day}_${String(h).padStart(2, '0')}_${String(m).padStart(2, '0')}_${Date.now()}`;
+            const newEntry = {
+                type: type,
+                day: day,
+                date: dateStr,
+                hour: h,
+                min: m,
+                title: title,
+                score: scoreVal
+            };
+
+            customSchedules[key] = newEntry;
+            renderCustomScheduleList();
+            renderTimetable();
+            updateDashboard();
+
+            document.getElementById('schedule-title').value = '';
+            document.getElementById('schedule-min').value = '0';
+            document.getElementById('schedule-score').value = '2';
+
+            try {
+                await set(ref(db, `settings/customSchedules/${key}`), newEntry);
+                alert(`[${title}] 유동 일정이 성공적으로 등록되었습니다.`);
+            } catch (err) {
+                alert("DB 저장 중 오류: " + err.message);
+            }
+        };
+
+        window.saveCustomScheduleEdit = async function(key) {
+            if (!isOperator(currentUser)) return;
+            const typeEl = document.getElementById(`edit-sched-type-${key}`);
+            const dayEl = document.getElementById(`edit-sched-day-${key}`);
+            const dateEl = document.getElementById(`edit-sched-date-${key}`);
+            const hourEl = document.getElementById(`edit-sched-hour-${key}`);
+            const minEl = document.getElementById(`edit-sched-min-${key}`);
+            const titleEl = document.getElementById(`edit-sched-title-${key}`);
+            const scoreEl = document.getElementById(`edit-sched-score-${key}`);
+            if (!typeEl || !hourEl || !minEl || !titleEl || !scoreEl) return;
+
+            const updated = {
+                type: typeEl.value,
+                day: dayEl ? dayEl.value : 'ALL',
+                date: dateEl ? dateEl.value : '',
+                hour: parseInt(hourEl.value, 10),
+                min: parseInt(minEl.value, 10),
+                title: titleEl.value.trim(),
+                score: parseInt(scoreEl.value, 10) || 2
+            };
+            if (!updated.title) {
+                alert("일정 명칭을 입력해 주세요.");
+                return;
+            }
+
+            customSchedules[key] = updated;
+            renderCustomScheduleList();
+            renderTimetable();
+            updateDashboard();
+
+            await set(ref(db, `settings/customSchedules/${key}`), updated);
+            alert("유동 일정이 수정되었습니다.");
+        };
+
+        window.toggleEditScheduleType = function(key) {
+            const typeVal = document.getElementById(`edit-sched-type-${key}`).value;
+            const recBox = document.getElementById(`edit-rec-box-${key}`);
+            const onceBox = document.getElementById(`edit-once-box-${key}`);
+            if (typeVal === 'once') {
+                recBox.style.display = 'none';
+                onceBox.style.display = 'inline-block';
+            } else {
+                recBox.style.display = 'inline-block';
+                onceBox.style.display = 'none';
+            }
+        };
+
+        function renderCustomScheduleList() {
+            const adminContainer = document.getElementById('custom-schedule-list');
+            if (!adminContainer) return;
+            const entries = Object.entries(customSchedules);
+
+            if (entries.length === 0) {
+                adminContainer.innerHTML = "등록된 유동 일정이 없습니다.";
+                return;
+            }
+
+            let adminHtml = "<b>[등록된 추가 유동 일정 목록 (배점, 날짜/요일 수정 가능)]</b><br><br>";
+            entries.forEach(([key, val]) => {
+                const parsed = parseCustomEntry(key, val);
+                if (!parsed) return;
+
+                adminHtml += `
+                    <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; background: #120d22; padding: 10px; border-radius: 6px; border: 1px solid #2a1f4e;">
+                        <select id="edit-sched-type-${key}" class="admin-input" style="padding: 5px;" onchange="toggleEditScheduleType('${key}')">
+                            <option value="recurring" ${parsed.type==='recurring'?'selected':''}>반복</option>
+                            <option value="once" ${parsed.type==='once'?'selected':''}>1회성</option>
+                        </select>
+                        
+                        <span id="edit-rec-box-${key}" style="display:${parsed.type==='once'?'none':'inline-block'};">
+                            <select id="edit-sched-day-${key}" class="admin-input" style="padding: 5px;">
+                                <option value="ALL" ${parsed.day==='ALL'?'selected':''}>매일</option>
+                                <option value="0" ${parsed.day==='0'?'selected':''}>일요일</option>
+                                <option value="1" ${parsed.day==='1'?'selected':''}>월요일</option>
+                                <option value="2" ${parsed.day==='2'?'selected':''}>화요일</option>
+                                <option value="3" ${parsed.day==='3'?'selected':''}>수요일</option>
+                                <option value="4" ${parsed.day==='4'?'selected':''}>목요일</option>
+                                <option value="5" ${parsed.day==='5'?'selected':''}>금요일</option>
+                                <option value="6" ${parsed.day==='6'?'selected':''}>토요일</option>
+                            </select>
+                        </span>
+
+                        <span id="edit-once-box-${key}" style="display:${parsed.type==='once'?'inline-block':'none'};">
+                            <input type="date" id="edit-sched-date-${key}" class="admin-input" value="${parsed.date}" style="padding: 5px; font-size:12px;">
+                        </span>
+
+                        <input type="number" id="edit-sched-hour-${key}" class="admin-input" value="${parsed.hour}" min="0" max="23" style="width: 55px; padding: 5px;">시
+                        <input type="number" id="edit-sched-min-${key}" class="admin-input" value="${parsed.min}" min="0" max="59" style="width: 55px; padding: 5px;">분
+                        <input type="text" id="edit-sched-title-${key}" class="admin-input" value="${parsed.title}" style="flex: 1; min-width: 120px; padding: 5px;">
+                        <input type="number" id="edit-sched-score-${key}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 65px; padding: 5px;" title="배점">점
+                        <button class="btn-sm secondary" style="padding: 5px 10px;" onclick="saveCustomScheduleEdit('${key}')">수정</button>
+                        <button class="btn-sm danger" style="padding: 5px 10px;" onclick="deleteCustomSchedule('${key}')">삭제</button>
+                    </div>
+                `;
+            });
+
+            adminContainer.innerHTML = adminHtml;
+        }
+
+        window.deleteCustomSchedule = async function(key) {
+            if (!isOperator(currentUser)) return;
+            delete customSchedules[key];
+            renderCustomScheduleList();
+            renderTimetable();
+            updateDashboard();
+            await remove(ref(db, `settings/customSchedules/${key}`));
+        };
+
+        function populateBonusSlotSelect() {
+            const select = document.getElementById('bonus-slot-select');
+            const targetSelect = document.getElementById('bonus-select-slot-target');
+            const filterDateInput = document.getElementById('bonus-filter-date');
+            const attManageDateInput = document.getElementById('attendance-manage-date');
+            if (!select || !targetSelect) return;
+
+            const targetDateStr = filterDateInput ? filterDateInput.value : (attManageDateInput ? attManageDateInput.value : "");
+            const curMonth = getCurrentMonthKey();
+            const monthObj = attendanceByMonth[curMonth] || {};
+
+            const slotEntries = Object.entries(monthObj).filter(([slotKey, data]) => {
+                if (!data || !data.participants || Object.keys(data.participants).length === 0) return false;
+                if (targetDateStr) {
+                    const datePart = slotKey.split('_')[0];
+                    if (datePart !== targetDateStr) return false;
+                }
+                return true;
+            });
+
+            slotEntries.sort((a, b) => (b[1].targetTimestamp || 0) - (a[1].targetTimestamp || 0));
+
+            let html = `<option value="">-- 보스 타임 선택 (${slotEntries.length}건) --</option>`;
+            let targetHtml = `<option value="">-- 보스 타임 선택 일괄체크 --</option>`;
+
+            slotEntries.forEach(([slotKey, data]) => {
+                const pValues = Object.values(data.participants || {}).filter(p => p.name !== 'admin');
+                const datePart = slotKey.split('_')[0];
+                const title = data.name || slotKey;
+                const optText = `[${datePart}] ${title} —  참여자 ${pValues.length}명`;
+                html += `<option value="${slotKey}">${optText}</option>`;
+                targetHtml += `<option value="${slotKey}">${optText}</option>`;
+            });
+
+            select.innerHTML = html;
+            targetSelect.innerHTML = targetHtml;
+            previewBonusSlotTargets();
+        }
+
+        window.checkSlotParticipantsForBonus = function() {
+            const targetSelect = document.getElementById('bonus-select-slot-target');
+            if (!targetSelect) return;
+            const slotKey = targetSelect.value;
+            if (!slotKey) return;
+
+            const curMonth = getCurrentMonthKey();
+            const slotObj = (attendanceByMonth[curMonth] || {})[slotKey] || {};
+            const parts = slotObj.participants || {};
+            const participantUids = Object.keys(parts);
+
+            document.querySelectorAll('.bonus-user-chk').forEach(chk => {
+                if (participantUids.includes(chk.value)) {
+                    chk.checked = true;
+                }
+            });
+        };
+
+        window.previewBonusSlotTargets = function() {
+            const select = document.getElementById('bonus-slot-select');
+            const preview = document.getElementById('bonus-slot-preview');
+            const listContainer = document.getElementById('slot-participants-edit-list');
+            if (!select || !preview || !listContainer) return;
+
+            const slotKey = select.value;
+            if (!slotKey) {
+                preview.innerHTML = "보스 타임을 선택하면 참여했던 혈원 명단과 개별 관리 버튼이 여기에 표시됩니다.";
+                listContainer.innerHTML = "";
+                return;
+            }
+            const curMonth = getCurrentMonthKey();
+            const slotObj = (attendanceByMonth[curMonth] || {})[slotKey] || {};
+            const parts = slotObj.participants || {};
+            
+            let validParts = Object.entries(parts).filter(([uid, p]) => {
+                if (uid === 'admin_account' || p.name === 'admin') return false;
+                const m = membersData[uid];
+                return !m || m.approved !== false;
+            });
+
+            preview.innerHTML = `부여 대상자 (<b style="color:#48bb78;">총 ${validParts.length}명</b>)`;
+
+            if (validParts.length === 0) {
+                listContainer.innerHTML = `<div style="color:#a0aec0; font-size:12px; padding:8px;">참여한 혈원이 없습니다.</div>`;
+                return;
+            }
+
+            let pHtml = `<table style="font-size:12px; margin-top:5px;"><thead><tr><th>캐릭터명</th><th>참여시각</th><th>상태</th><th>관리</th></tr></thead><tbody>`;
+            validParts.forEach(([uid, p]) => {
+                const memberName = (membersData[uid] && membersData[uid].name) ? membersData[uid].name : p.name;
+                pHtml += `
+                    <tr>
+                        <td><b>${memberName}</b></td>
+                        <td>${p.startTime || '-'}</td>
+                        <td style="color:#48bb78;">${p.status}</td>
+                        <td>
+                            <button class="btn-sm danger" style="padding:3px 8px; font-size:11px;" onclick="deleteSingleParticipant('${curMonth}', '${slotKey}', '${uid}', '${memberName}')">제외</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            pHtml += `</tbody></table>`;
+            listContainer.innerHTML = pHtml;
+        };
+
+        window.deleteSingleParticipant = async function(monthKey, slotKey, uid, name) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm(`[${name}]님의 해당 보스 타임 출석 기록을 제외하시겠습니까?`)) return;
+
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`));
+            alert(`[${name}]님의 출석 기록이 제외되었습니다.`);
+            previewBonusSlotTargets();
+            loadRankingData();
+            updateDashboard();
+        };
+
+        window.deleteSelectedAttendanceSlot = async function() {
+            if (!isOperator(currentUser)) return;
+            const slotKey = document.getElementById('bonus-slot-select').value;
+            const curMonth = getCurrentMonthKey();
+            if (!slotKey) {
+                alert("삭제할 보스 타임 기록을 선택해 주세요.");
+                return;
+            }
+            if (!confirm("선택한 보스 타임의 전체 출석 기록을 삭제하시겠습니까?")) return;
+
+            await remove(ref(db, `attendance/${curMonth}/${slotKey}`));
+            alert("선택한 출석 기록이 삭제되었습니다.");
+            populateBonusSlotSelect();
+            document.getElementById('slot-participants-edit-list').innerHTML = "";
+            loadRankingData();
+            updateDashboard();
+        };
+
+        function populateBonusUserCheckboxes() {
+            const container = document.getElementById('bonus-checkbox-list');
+            if (!container) return;
+            let html = '';
+            Object.entries(membersData).forEach(([uid, m]) => {
+                if (m && m.approved !== false && m.name !== 'admin' && uid !== 'admin_account') {
+                    html += `
+                        <label class="chk-label">
+                            <input type="checkbox" class="bonus-user-chk" value="${uid}">
+                            <span>${m.name}</span>
+                        </label>
+                    `;
+                }
+            });
+            container.innerHTML = html || `<span style="color:#a0aec0; font-size:12px;">등록된 혈원이 없습니다.</span>`;
+        }
+
+        window.toggleAllBonusCheckboxes = function(checked) {
+            document.querySelectorAll('.bonus-user-chk').forEach(chk => { chk.checked = checked; });
+        };
+
+        window.grantBonusToCheckedUsers = async function() {
+            if (!isOperator(currentUser)) return;
+            const checkedBoxes = Array.from(document.querySelectorAll('.bonus-user-chk:checked'));
+            const scoreVal = parseInt(document.getElementById('bonus-multi-score').value, 10);
+            const reasonVal = document.getElementById('bonus-multi-reason').value.trim() || '관리자 조정';
+            const filterDateInput = document.getElementById('bonus-filter-date');
+            const curMonth = getCurrentMonthKey();
+
+            if (checkedBoxes.length === 0 || isNaN(scoreVal)) {
+                alert("점수를 부여할 혈원을 1명 이상 체크하고 점수(플러스 또는 마이너스)를 입력해 주세요.");
+                return;
+            }
+
+            const now = getSyncedCurrentTime();
+            const dateStr = filterDateInput && filterDateInput.value ? filterDateInput.value : `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const entryKey = `${dateStr}_${Date.now()}`;
+
+            for (const chk of checkedBoxes) {
+                const uid = chk.value;
+                const pushRef = ref(db, `bonus_scores/${curMonth}/${uid}/${entryKey}`);
+                await set(pushRef, {
+                    score: scoreVal,
+                    reason: reasonVal,
+                    timestamp: now.getTime(),
+                    writer: currentUser.name
+                });
+            }
+
+            document.getElementById('bonus-multi-score').value = '';
+            document.getElementById('bonus-multi-reason').value = '';
+            toggleAllBonusCheckboxes(false);
+            alert(`선택한 혈원 ${checkedBoxes.length}명에게 점수(${scoreVal > 0 ? '+' + scoreVal : scoreVal}점, 사유: ${reasonVal})가 정상 반영되었습니다!`);
+            loadRankingData();
+        };
+
+        function canManageRole(myRole, targetRole) {
+            if (myRole === 'master' || myRole === 'admin') return true;
+            const myLvl = getRoleLevel(myRole);
+            const targetLvl = getRoleLevel(targetRole);
+            return myLvl < targetLvl;
+        }
+
+        // 2. 운영진 관리 혈원 리스트 직급 순서(최고관리자 > 군주 > 부군주 > 간부진/총무 > 일반혈원) 정렬 배치
+        function renderAdminMemberList() {
+            const tbody = document.getElementById('admin-member-list');
+            if (!tbody) return;
+
+            const entries = Object.entries(membersData).filter(([uid, m]) => m && m.name && m.name !== 'admin' && uid !== 'admin_account' && m.approved !== false);
+
+            if (entries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a0aec0; padding: 15px;">등록된 혈원이 없습니다.</td></tr>`;
+                return;
+            }
+
+            // 직급 서열 오름차순 정렬 후 닉네임 가나다순 정렬
+            entries.sort((a, b) => {
+                const lvlA = getRoleLevel(a[1].role || 'member');
+                const lvlB = getRoleLevel(b[1].role || 'member');
+                if (lvlA !== lvlB) return lvlA - lvlB;
+                return (a[1].name || '').localeCompare(b[1].name || '');
+            });
+
+            const myRole = currentUser ? (currentUser.name === 'admin' ? 'master' : (currentUser.role || 'member')) : 'member';
+            const myLvl = getRoleLevel(myRole);
+
+            let html = '';
+            entries.forEach(([uid, m]) => {
+                const roleVal = m.role || 'member';
+                const targetLvl = getRoleLevel(roleVal);
+                
+                const isHigherOrEqual = (myLvl >= targetLvl && myRole !== 'master' && currentUser.name !== 'admin');
+                const isSelf = currentUser && currentUser.id === uid;
+
+                let roleOptions = `
+                    <option value="member" ${roleVal==='member'?'selected':''}>일반 혈원</option>
+                    <option value="staff" ${roleVal==='staff'?'selected':''} ${myLvl > 3 ? 'disabled' : ''}>간부진/총무</option>
+                    <option value="sub_king" ${roleVal==='sub_king'?'selected':''} ${myLvl > 2 ? 'disabled' : ''}>부군주</option>
+                    <option value="king" ${roleVal==='king'?'selected':''} ${myLvl > 1 ? 'disabled' : ''}>군주</option>
+                    <option value="master" ${roleVal==='master'?'selected':''} ${myLvl > 0 ? 'disabled' : ''}>최고관리자</option>
+                `;
+
+                html += `
+                    <tr>
+                        <td><input type="text" id="edit-name-${uid}" class="admin-input" value="${m.name}" style="width: 130px; padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}></td>
+                        <td><input type="text" id="edit-code-${uid}" class="admin-input" value="${m.code || '0000'}" style="width: 90px; padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}></td>
+                        <td>
+                            <select id="edit-role-${uid}" class="admin-input" style="padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}>
+                                ${roleOptions}
+                            </select>
+                        </td>
+                        <td>
+                            ${!isHigherOrEqual || isSelf ? `
+                                <button class="btn-sm secondary" onclick="saveMemberEdit('${uid}', '${m.name}')">수정 저장</button>
+                                ${!isSelf ? `<button class="btn-sm danger" onclick="deleteMember('${uid}', '${m.name}')">추방</button>` : ''}
+                            ` : `<span style="font-size:11px; color:#718096;">권한 없음 (상위 직급)</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderNicknameHistoryList() {
+            const container = document.getElementById('nickname-history-list');
+            if (!container) return;
+            const entries = Object.entries(nicknameHistoryData);
+            if (entries.length === 0) {
+                container.innerHTML = "등록된 닉네임 변경 이력이 없습니다.";
+                return;
+            }
+            let html = "<table style='font-size:12px;'><thead><tr><th>변경일시</th><th>UID</th><th>기존 닉네임</th><th>변경된 닉네임</th></tr></thead><tbody>";
+            entries.reverse().forEach(([key, log]) => {
+                html += `<tr><td>${log.date}</td><td style='color:#a0aec0;'>${log.uid}</td><td style='color:#e53e3e;'>${log.oldName}</td><td style='color:#48bb78; font-weight:bold;'>${log.newName}</td></tr>`;
+            });
+            html += "</tbody></table>";
+            container.innerHTML = html;
+        }
+
+        // 3. 최고관리자 전용 Raw Data Viewer: 캐릭터명 검색 필터 및 총 인원수 표시
+        window.renderRawMembersViewer = function() {
+            const tbody = document.getElementById('raw-members-tbody');
+            const totalBadge = document.getElementById('raw-member-total-badge');
+            const searchInput = document.getElementById('raw-member-search');
+            if (!tbody) return;
+
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+            const allEntries = Object.entries(membersData).filter(([uid, m]) => Boolean(m));
+
+            const filteredEntries = allEntries.filter(([uid, m]) => {
+                if (!query) return true;
+                const charName = (m.name || "").toLowerCase();
+                const uidStr = uid.toLowerCase();
+                return charName.includes(query) || uidStr.includes(query);
+            });
+
+            // 직급순 정렬
+            filteredEntries.sort((a, b) => {
+                const lvlA = getRoleLevel(a[1].role || 'member');
+                const lvlB = getRoleLevel(b[1].role || 'member');
+                if (lvlA !== lvlB) return lvlA - lvlB;
+                return (a[1].name || '').localeCompare(b[1].name || '');
+            });
+
+            if (totalBadge) {
+                totalBadge.innerText = query
+                    ? `검색 인원: ${filteredEntries.length}명 / 전체 ${allEntries.length}명`
+                    : `총 인원: ${allEntries.length}명`;
+            }
+
+            if (filteredEntries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0; padding: 15px;">조건에 일치하는 회원 데이터가 없습니다.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredEntries.forEach(([uid, m]) => {
+                const isProtectedAdmin = uid === 'admin_account' || m.name === 'admin';
+                const statusText = m.approved === false ? '<span style="color:#ecc94b;">승인 대기중</span>' : (m.approved === true ? '<span style="color:#48bb78;">승인됨</span>' : String(m.approved));
+
+                html += `
+                    <tr>
+                        <td style="font-size: 11px; color: #a0aec0; font-family: monospace;">${uid}</td>
+                        <td style="font-weight: bold; color: #d6bcfa;">${m.name || '-'}</td>
+                        <td style="color: #fbd38d; font-family: monospace; font-weight: bold;">${m.code || '-'}</td>
+                        <td>${statusText}</td>
+                        <td>${m.role || 'member'}</td>
+                        <td>
+                            ${!isProtectedAdmin ? `<button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="hardDeleteRawMember('${uid}', '${m.name || uid}')">DB 영구삭제</button>` : '<span style="font-size: 11px; color: #718096;">시스템 보호</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        };
+
+        window.hardDeleteRawMember = async function(uid, name) {
+            if (!isMasterAdmin(currentUser)) {
+                alert("최고관리자 권한이 필요합니다.");
+                return;
+            }
+            if (!confirm(`[${name}] (UID: ${uid}) 데이터를 데이터베이스에서 완전히 영구 삭제하시겠습니까?\n이 작업을 수행하면 해당 계정의 잔존 찌꺼기 데이터가 싹 정리됩니다.`)) return;
+
+            try {
+                await remove(ref(db, `members/${uid}`));
+                alert(`[${name}] 회원의 데이터가 DB에서 영구 삭제되었습니다.`);
+                forceRefreshAdminData();
+            } catch (err) {
+                alert("삭제 중 오류 발생: " + err.message);
+            }
+        };
+
+        window.saveMemberEdit = async function(uid, oldName) {
+            if (!isOperator(currentUser)) return;
+            const newName = document.getElementById(`edit-name-${uid}`).value.trim();
+            const newCode = document.getElementById(`edit-code-${uid}`).value.trim();
+            const newRole = document.getElementById(`edit-role-${uid}`).value;
+
+            if (!newName || !newCode) {
+                alert("닉네임과 고유번호는 비워둘 수 없습니다.");
+                return;
+            }
+
+            const myRole = currentUser.name === 'admin' ? 'master' : (currentUser.role || 'member');
+            const targetOldRecord = membersData[uid] || {};
+            const targetOldRole = targetOldRecord.role || 'member';
+
+            if (!canManageRole(myRole, targetOldRole) && currentUser.id !== uid) {
+                alert("자신과 같거나 높은 직급의 혈원 정보는 수정할 수 없습니다.");
+                return;
+            }
+            if (!canManageRole(myRole, newRole) && currentUser.id !== uid) {
+                alert("자신보다 높거나 같은 직급으로 권한을 부여할 수 없습니다.");
+                return;
+            }
+
+            if (oldName !== newName) {
+                const now = getSyncedCurrentTime();
+                const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                const logPushRef = push(ref(db, 'nickname_history'));
+                await set(logPushRef, {
+                    uid: uid,
+                    oldName: oldName,
+                    newName: newName,
+                    date: dateStr
+                });
+            }
+
+            const updatedObj = { name: newName, code: newCode, role: newRole, approved: true };
+            membersData[uid] = updatedObj;
+            renderAdminMemberList();
+            renderRawMembersViewer();
+            await update(ref(db, `members/${uid}`), updatedObj);
+            alert(`[${newName}]님의 정보 및 직급이 저장되었습니다.`);
+        };
+
+        window.deleteMember = async function(uid, name) {
+            if (!isOperator(currentUser)) return;
+            
+            const myRole = currentUser.name === 'admin' ? 'master' : (currentUser.role || 'member');
+            const targetRecord = membersData[uid] || {};
+            const targetRole = targetRecord.role || 'member';
+
+            if (!canManageRole(myRole, targetRole)) {
+                alert("자신과 같거나 높은 직급의 혈원은 추방할 수 없습니다.");
+                return;
+            }
+
+            if (!confirm(`[${name}] 회원을 추방하시겠습니까?\n추방 시 랭킹 및 출석부 이력에서도 즉시 제외됩니다.`)) return;
+            delete membersData[uid];
+            renderAdminMemberList();
+            renderRawMembersViewer();
+            renderPendingSidebarList();
+            await remove(ref(db, `members/${uid}`));
+            loadRankingData();
+        };
+
+        initSystem();
+    </script>
+</body>
+</html>
