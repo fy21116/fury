@@ -107,8 +107,8 @@
         .action-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 16px; }
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .participate-btn { background-color: #805ad5; color: white; border: none; padding: 12px 22px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; min-height: 44px; }
-        .participate-btn.cancel { background-color: #e53e3e; }
-        .participate-btn.end-btn { background-color: #319795; }
+        .participate-btn.cancel { background-color: #6b46c1; } /* 연보라 톤으로 변경 */
+        .participate-btn.end-btn { background-color: #e53e3e; } /* 기존 취소 컬러(빨간색 계열)로 변경 */
         .participate-btn.pre-btn { background-color: #d69e2e; color: #0d0918; }
         .participate-btn:disabled { background-color: #2d224d; color: #718096; cursor: not-allowed; }
         .card-party-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 15px; overflow-x: auto; margin-bottom: 10px; }
@@ -357,27 +357,32 @@
                     <p style="font-size: 13px; color: #a0aec0; margin-top: 0;">
 - 혈원 누구나 득템한 아이템과 수량을 등록할 수 있으며, 운영진은 잘못된 내역을 수정 및 관리할 수 있습니다.
                     </p>
-                    <div class="admin-form" style="background: #120d22; padding: 15px; border-radius: 8px; border: 1px solid #2a1f4e; margin-bottom: 20px;">
+                    <div class="admin-form" style="background: #120d22; padding: 15px; border-radius: 8px; border: 1px solid #2a1f4e; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                         <input type="text" id="item-boss-name" class="admin-input" placeholder="보스 이름 (예: 드레이크)" style="flex: 1; min-width: 130px;">
                         <input type="text" id="item-name" class="admin-input" placeholder="아이템 명" style="flex: 1; min-width: 150px;">
-                        <input type="number" id="item-count" class="admin-input" placeholder="수량" value="1" min="1" style="width: 80px;">
-                        <input type="text" id="item-owner" class="admin-input" placeholder="득템자 캐릭터명" style="flex: 1; min-width: 120px;">
+                        <input type="number" id="item-count" class="admin-input" placeholder="수량" value="1" min="1" style="width: 70px;">
+                        <input type="text" id="item-owner" class="admin-input" placeholder="득템자 캐릭터명" style="flex: 1; min-width: 110px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span style="font-size: 12px; color: #b794f4; white-space: nowrap;">획득일시:</span>
+                            <input type="datetime-local" id="item-acquired-date" class="admin-input" style="padding: 6px; font-size: 12px;">
+                        </div>
                         <button class="btn-sm" onclick="registerItem()">아이템 등록</button>
                     </div>
                     <table>
                         <thead>
                             <tr>
-                                <th>등록일시</th>
                                 <th>보스명</th>
                                 <th>아이템 명</th>
                                 <th>수량</th>
                                 <th>득템자</th>
                                 <th>등록자</th>
+                                <th style="color: #68d391;">획득일시</th>
+                                <th style="color: #a0aec0;">등록일시</th>
                                 <th id="loot-action-th" style="display:none;">관리</th>
                             </tr>
                         </thead>
                         <tbody id="item-table-body">
-                            <tr><td colspan="7" style="text-align: center; color: #a0aec0; padding: 20px;">등록된 전리품 내역이 없습니다.</td></tr>
+                            <tr><td colspan="8" style="text-align: center; color: #a0aec0; padding: 20px;">등록된 전리품 내역이 없습니다.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -538,9 +543,9 @@
                                 <option value="16">16시</option><option value="17">17시</option><option value="18">18시</option><option value="19">19시</option>
                                 <option value="20">20시</option><option value="21" selected>21시</option><option value="22">22시</option><option value="23">23시</option>
                             </select>
-                            <input type="number" id="schedule-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;">
+                            <input type="number" id="schedule-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">분</span>
                             <input type="text" id="schedule-title" class="admin-input" placeholder="일정 명칭 (예: 오만 보스)" style="flex: 1; min-width: 150px;">
-                            <input type="number" id="schedule-score" class="admin-input" placeholder="배점" value="2" min="1" max="50" style="width: 75px;">
+                            <input type="number" id="schedule-score" class="admin-input" placeholder="배점" value="2" min="1" max="50" style="width: 75px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">점수</span>
                             <button class="btn-sm" onclick="addCustomSchedule()">유동 일정 등록</button>
                         </div>
                         <div id="custom-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">등록된 유동 일정이 없습니다.</div>
@@ -566,7 +571,7 @@
                         <div style="font-size: 12px; color: #fbd38d; margin-bottom: 12px;">* 차후 보스부터 수정 점수 적용</div>
                         <div class="admin-form">
                             <input type="text" id="boss-score-key" class="admin-input" placeholder="보스/일정 명칭" style="flex: 1; min-width: 180px;">
-                            <input type="number" id="boss-score-val" class="admin-input" placeholder="점수" min="1" max="50" style="width: 90px;">
+                            <input type="number" id="boss-score-val" class="admin-input" placeholder="점수" min="1" max="50" style="width: 90px;"> 점수
                             <button class="btn-sm" onclick="addNewBossScoreSetting()">기준 신규 추가</button>
                         </div>
                         <div id="boss-score-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">로딩 중...</div>
@@ -589,7 +594,7 @@
                             <div id="bonus-checkbox-list" class="chk-grid"></div>
                             <div class="admin-form" style="margin-bottom: 0; margin-top: 8px; flex-direction: column; align-items: stretch;">
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <input type="number" id="bonus-multi-score" class="admin-input" placeholder="점수 (예: 2 또는 -10)" style="width: 180px;">
+                                    <input type="number" id="bonus-multi-score" class="admin-input" placeholder="점수 (예: 2 또는 -10)" style="width: 180px;"> 점수
                                     <input type="text" id="bonus-multi-reason" class="admin-input" placeholder="사유 입력 (예: 지각, 무단 불참 등)" style="flex: 1; min-width: 220px;">
                                 </div>
                                 <button class="btn-sm" onclick="grantBonusToCheckedUsers()" style="margin-top: 8px;">선택 인원 점수 일괄 부여</button>
@@ -963,7 +968,10 @@
             ensureMonthSubscribed(getCurrentMonthKey());
             populateRankingMonthSelector();
             
-            const todayStr = getKSTDateString(getSyncedCurrentTime());
+            const now = getSyncedCurrentTime();
+            const todayStr = getKSTDateString(now);
+            const nowDateTimeStr = `${todayStr}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
             const dateInput = document.getElementById('daily-score-date');
             if (dateInput) dateInput.value = todayStr;
             const schedDateInput = document.getElementById('schedule-date');
@@ -974,6 +982,11 @@
             if (attManageDate) attManageDate.value = todayStr;
             const bonusLogViewDate = document.getElementById('bonus-log-view-date');
             if (bonusLogViewDate) bonusLogViewDate.value = todayStr;
+
+            const itemAcquiredDateInput = document.getElementById('item-acquired-date');
+            if (itemAcquiredDateInput && !itemAcquiredDateInput.value) {
+                itemAcquiredDateInput.value = nowDateTimeStr;
+            }
 
             renderBossScoreSettingsList();
             renderCustomScheduleList();
@@ -1549,7 +1562,7 @@
                             time: targetTime,
                             monthKey: `${y}-${m}`,
                             slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
-                            name: `[1회성] ${m}/${d} ${hh}:${mm} ${parsed.title}`,
+                            name: `${hh}:${mm} ${parsed.title}`,
                             customScore: parsed.score
                         });
                     }
@@ -2189,7 +2202,11 @@
             entries.forEach(([kw, url]) => {
                 html += `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:#120d22; padding:8px 12px; border-radius:6px; border:1px solid #2a1f4e;">
-                        <div><b style="color:#fbd38d;">[${kw}]</b> → <code style="color:#b794f4;">${url}</code></div>
+                        <div>
+                            <b style="color:#fbd38d;">[${kw}]</b> 
+                            <span style="color:#48bb78; font-size:12px; margin-left:8px;">[이미지 등록됨]</span>
+                            <span style="color:#a0aec0; font-size:11px; margin-left:6px;" title="${url}">(${url.length > 30 ? url.slice(0, 30) + '...' : url})</span>
+                        </div>
                         <button class="btn-sm danger" style="padding:4px 10px; font-size:12px;" onclick="deleteBossImageMapping('${kw}')">삭제</button>
                     </div>
                 `;
@@ -2204,6 +2221,7 @@
             const itemName = document.getElementById('item-name').value.trim();
             const itemCount = document.getElementById('item-count').value.trim();
             const owner = document.getElementById('item-owner').value.trim();
+            const acquiredInput = document.getElementById('item-acquired-date').value;
 
             if (!bossName || !itemName || !owner) {
                 alert("보스명, 아이템명, 득템자를 모두 입력해 주세요.");
@@ -2211,10 +2229,16 @@
             }
 
             const now = getSyncedCurrentTime();
-            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const regDateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            let acquiredStr = regDateStr;
+            if (acquiredInput) {
+                acquiredStr = acquiredInput.replace('T', ' ');
+            }
 
             await push(ref(db, 'items'), {
-                date: dateStr,
+                date: regDateStr,
+                acquiredDate: acquiredStr,
                 boss: bossName,
                 item: itemName,
                 count: itemCount || "1",
@@ -2226,6 +2250,7 @@
             document.getElementById('item-name').value = '';
             document.getElementById('item-count').value = '1';
             document.getElementById('item-owner').value = '';
+            document.getElementById('item-acquired-date').value = `${getKSTDateString(now)}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             alert("보스 전리품 내역이 등록되었습니다.");
         };
 
@@ -2258,14 +2283,14 @@
             const curMonth = now.getMonth();
 
             const filtered = list.filter(([key, item]) => {
-                const itemDateStr = item.date || ""; 
-                const itemDatePart = itemDateStr.split(' ')[0];
+                const targetDateToCheck = item.acquiredDate || item.date || "";
+                const itemDatePart = targetDateToCheck.split(' ')[0];
 
                 if (period === 'day') {
                     const targetDay = dateFilterInput ? dateFilterInput.value : "";
                     if (targetDay && itemDatePart !== targetDay) return false;
                 } else if (period === 'week') {
-                    const itemTs = new Date(itemDateStr.replace(/-/g, '/')).getTime();
+                    const itemTs = new Date(targetDateToCheck.replace(/-/g, '/')).getTime();
                     const weekAgoTs = now.getTime() - (7 * 86400000);
                     if (isNaN(itemTs) || itemTs < weekAgoTs) return false;
                 } else if (period === 'month') {
@@ -2283,20 +2308,28 @@
                 return true;
             });
 
+            filtered.sort((a, b) => {
+                const timeA = new Date((b[1].acquiredDate || b[1].date || "").replace(/-/g, '/')).getTime();
+                const timeB = new Date((a[1].acquiredDate || a[1].date || "").replace(/-/g, '/')).getTime();
+                return timeA - timeB;
+            });
+
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${canEdit ? 7 : 6}" style="text-align: center; color: #a0aec0; padding: 20px;">검색 및 기간 조건에 해당하는 전리품 내역이 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${canEdit ? 8 : 7}" style="text-align: center; color: #a0aec0; padding: 20px;">검색 및 기간 조건에 해당하는 전리품 내역이 없습니다.</td></tr>`;
                 return;
             }
             let html = '';
-            filtered.reverse().forEach(([key, item]) => {
+            filtered.forEach(([key, item]) => {
+                const acquiredDisplay = item.acquiredDate || item.date || '-';
                 html += `
                     <tr>
-                        <td>${item.date}</td>
                         <td>${item.boss}</td>
                         <td style="color: #b794f4; font-weight: bold;">${item.item}</td>
                         <td>${item.count || 1}개</td>
                         <td>${item.owner}</td>
                         <td style="color: #ecc94b;">${item.writer || '-'}</td>
+                        <td style="color: #68d391; font-weight: bold;">${acquiredDisplay}</td>
+                        <td style="color: #a0aec0; font-size: 12px;">${item.date}</td>
                         ${canEdit ? `<td><button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteLootItem('${key}')">삭제</button></td>` : ''}
                     </tr>
                 `;
@@ -2312,9 +2345,9 @@
                 return;
             }
 
-            let rows = ["등록일시,보스명,아이템명,수량,득템자,등록자"];
+            let rows = ["보스명,아이템명,수량,득템자,등록자,획득일시,등록일시"];
             list.forEach(([key, item]) => {
-                rows.push(`"${item.date}","${item.boss}","${item.item}","${item.count || 1}","${item.owner}","${item.writer || '-'}"`);
+                rows.push(`"${item.boss}","${item.item}","${item.count || 1}","${item.owner}","${item.writer || '-'}","${item.acquiredDate || item.date || ''}","${item.date}"`);
             });
 
             const csvContent = "\uFEFF" + rows.join('\n');
@@ -2598,7 +2631,6 @@
             filterRankingAndExcel();
         };
 
-        // 선택한 1일 기준 (00시~23시) 전체 보스 타임 슬롯 생성 및 엑셀 출석부 렌더링
         function getDaySlotsList(targetDateStr) {
             const dateParts = targetDateStr.split('-').map(Number);
             if (dateParts.length < 3) return [];
@@ -2607,7 +2639,6 @@
 
             let daySlotsMap = {};
 
-            // 1. 기본 정규 보스 슬롯 (00시~23시)
             for (let h = 0; h < 24; h++) {
                 let titles = [];
                 if (kaspaHours.includes(h)) titles.push("카스파 / 네크");
@@ -2615,7 +2646,6 @@
                 if (mainHours.includes(h)) titles.push("메인타임");
                 if (dow === 0 && h === 20) titles.push("공성전 (20:00~21:00)");
 
-                // 2. 추가 정규 보스 슬롯 병합
                 Object.values(extraFixedSchedules).forEach(ef => {
                     if (!ef) return;
                     const efHour = parseInt(ef.hour ?? 0, 10);
@@ -2634,7 +2664,6 @@
                 }
             }
 
-            // 추가 정규 분 단위 보스
             Object.entries(extraFixedSchedules).forEach(([efKey, ef]) => {
                 if (!ef) return;
                 const efHour = parseInt(ef.hour ?? 0, 10);
@@ -2649,7 +2678,6 @@
                 }
             });
 
-            // 3. 추가 유동 보스
             Object.entries(customSchedules).forEach(([key, val]) => {
                 const parsed = parseCustomEntry(key, val);
                 if (!parsed) return;
@@ -2665,7 +2693,6 @@
                 }
             });
 
-            // 4. DB에 이미 기록된 슬롯이 있는데 위 목록에 없다면 누락 방지 차원 추가
             const monthKey = targetDateStr.slice(0, 7);
             const mData = attendanceByMonth[monthKey] || {};
             Object.keys(mData).forEach(sKey => {
@@ -2756,7 +2783,6 @@
             container.innerHTML = html;
         }
 
-        // 4. SheetJS (.xlsx)를 이용한 날짜별 탭(시트) 분리 실제 엑셀 다운로드
         window.downloadMultiSheetExcel = async function() {
             if (typeof XLSX === 'undefined') {
                 alert("엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도해 주세요.");
@@ -2779,11 +2805,9 @@
 
             let wb = XLSX.utils.book_new();
 
-            // 1번째 시트: [월간종합]
             let summaryRows = [["FURY CLAN 월간 종합 요약", "", "", "", "", ""]];
             summaryRows.push(["순위", "캐릭터명", "★메인타임 총점", "이프/드레 총점", "카스파 총점", "특수/기타", "가감점 총점", "통산 총점"]);
             
-            // 회원 목록 수집
             let activeMembers = [];
             Object.entries(membersData).forEach(([uid, mem]) => {
                 if (mem && mem.approved !== false && mem.name !== 'admin' && uid !== 'admin_account') {
@@ -2813,7 +2837,6 @@
             let wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
             XLSX.utils.book_append_sheet(wb, wsSummary, "월간종합요약");
 
-            // 날짜별 시트 생성 (1일부터 오늘 또는 마지막 날까지)
             const todayStr = getKSTDateString(getSyncedCurrentTime());
 
             for (let d = 1; d <= lastDay; d++) {
@@ -3064,8 +3087,7 @@
                 html += `
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                         <span style="min-width: 150px; font-weight: bold; color: #b794f4;">${key}</span>
-                        <input type="number" id="edit-score-${key}" class="admin-input" value="${score}" min="1" max="50" style="width: 80px; padding: 6px;">
-                        <span>점</span>
+                        <input type="number" id="edit-score-${key}" class="admin-input" value="${score}" min="1" max="50" style="width: 80px; padding: 6px;"> 점수
                         <button class="btn-sm secondary" onclick="saveBossScoreSetting('${key}')">점수 수정</button>
                         <button class="btn-sm danger" onclick="deleteBossScore('${key}')">삭제</button>
                     </div>
@@ -3217,7 +3239,7 @@
                         <input type="number" id="edit-sched-hour-${key}" class="admin-input" value="${parsed.hour}" min="0" max="23" style="width: 55px; padding: 5px;">시
                         <input type="number" id="edit-sched-min-${key}" class="admin-input" value="${parsed.min}" min="0" max="59" style="width: 55px; padding: 5px;">분
                         <input type="text" id="edit-sched-title-${key}" class="admin-input" value="${parsed.title}" style="flex: 1; min-width: 120px; padding: 5px;">
-                        <input type="number" id="edit-sched-score-${key}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 65px; padding: 5px;" title="배점">점
+                        <input type="number" id="edit-sched-score-${key}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 65px; padding: 5px;" title="배점">점수
                         <button class="btn-sm secondary" style="padding: 5px 10px;" onclick="saveCustomScheduleEdit('${key}')">수정</button>
                         <button class="btn-sm danger" style="padding: 5px 10px;" onclick="deleteCustomSchedule('${key}')">삭제</button>
                     </div>
