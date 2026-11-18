@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>퓨리 혈맹 통합 관리 시스템</title>
+    <!-- SheetJS 라이브러리 (날짜별 탭이 분리된 .xlsx 엑셀 다운로드용) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0d0918; color: white; font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; margin: 0; padding: 0; min-height: 100vh; padding-bottom: 70px; }
@@ -22,7 +24,6 @@
         .app-wrapper { display: none; min-height: 100vh; flex-direction: row; }
         .sidebar { width: 240px; background-color: #120d22; border-right: 1px solid #2a1f4e; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; flex-shrink: 0; }
         
-        /* 6. 좌측 상단 로고 이미지 크기 확대 (보스 참여 버튼 가로 폭과 동일하게 맞춤) */
         .logo-area { margin-bottom: 20px; width: 100%; display: flex; justify-content: center; align-items: center; }
         .logo-img { width: 100%; height: auto; max-height: 170px; object-fit: contain; display: block; }
         
@@ -49,7 +50,6 @@
         .boss-card { background-color: #18122d; border: 1px solid #44337a; border-radius: 14px; padding: 22px; margin-bottom: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .boss-card.custom-card { border: 2px solid #d69e2e; }
 
-        /* 7. 보스 카드 상단 배너 (좌측 대형 일러스트 + 중앙 보스 정보 + 우측 참여 인원) */
         .boss-banner {
             display: flex;
             align-items: stretch;
@@ -141,14 +141,32 @@
         .sub-box { background: #120d22; border: 1px solid #2a1f4e; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
         .chk-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; max-height: 160px; overflow-y: auto; padding: 6px; background: #0d0918; border-radius: 6px; border: 1px solid #2a1f4e; }
         .chk-label { display: flex; align-items: center; gap: 5px; font-size: 13px; background: #18122d; padding: 8px 12px; border-radius: 6px; border: 1px solid #44337a; cursor: pointer; min-height: 40px; }
+        
+        /* 출석부 고정란 및 엑셀 테이블 스타일 */
         .excel-table-wrapper { position: relative; max-height: 500px; overflow: auto; border: 1px solid #2a1f4e; border-radius: 8px; }
         .excel-table { width: max-content; border-collapse: collapse; text-align: center; font-size: 13px; }
         .excel-table th, .excel-table td { padding: 10px 12px; border: 1px solid #2a1f4e; white-space: nowrap; }
         .excel-table th { background: #18122d; color: #d6bcfa; position: sticky; top: 0; z-index: 3; }
-        .excel-table th.date-group-header { background: #120d22; color: #fbd38d; top: 0; z-index: 5; font-size: 12px; border-bottom: 2px solid #44337a; }
-        .excel-table th.time-sub-header { top: 37px; }
-        .excel-table th:first-child, .excel-table td:first-child { position: sticky; left: 0; background: #120d22; z-index: 4; }
-        .excel-table th:nth-child(2), .excel-table td:nth-child(2) { position: sticky; left: 95px; background: #120d22; z-index: 4; }
+        
+        .excel-table th.sticky-col-1, .excel-table td.sticky-col-1 {
+            position: sticky;
+            left: 0;
+            background: #120d22;
+            z-index: 5;
+            width: 110px;
+            min-width: 110px;
+            max-width: 110px;
+        }
+        .excel-table th.sticky-col-2, .excel-table td.sticky-col-2 {
+            position: sticky;
+            left: 110px;
+            background: #120d22;
+            z-index: 5;
+            width: 85px;
+            min-width: 85px;
+            max-width: 85px;
+            border-right: 2px solid #805ad5;
+        }
 
         .mobile-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #120d22; border-top: 1px solid #2a1f4e; z-index: 1500; justify-content: space-around; padding: 8px 0; }
         .mobile-nav-item { background: none; border: none; color: #a0aec0; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1; }
@@ -168,12 +186,14 @@
                 -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
             }
             .boss-banner-right { border-left: none; border-top: 1px solid rgba(183, 148, 244, 0.2); padding: 12px; }
+            
+            .excel-table th.sticky-col-1, .excel-table td.sticky-col-1 { width: 85px; min-width: 85px; max-width: 85px; left: 0; }
+            .excel-table th.sticky-col-2, .excel-table td.sticky-col-2 { width: 65px; min-width: 65px; max-width: 65px; left: 85px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 긴급 공지 팝업 모달 -->
     <div id="notice-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:3000; justify-content:center; align-items:center; padding:20px;">
         <div style="background:#18122d; border:2px solid #d69e2e; border-radius:12px; padding:25px; max-width:450px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
             <div style="font-size:18px; font-weight:bold; color:#fbd38d; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
@@ -189,7 +209,6 @@
         </div>
     </div>
 
-    <!-- 혈원 성향 프로필 모달 -->
     <div id="profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:3000; justify-content:center; align-items:center; padding:20px;">
         <div style="background:#18122d; border:2px solid #805ad5; border-radius:12px; padding:25px; max-width:480px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
             <div style="font-size:18px; font-weight:bold; color:#d6bcfa; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
@@ -201,7 +220,6 @@
         </div>
     </div>
 
-    <!-- 닉네임 변경 모달 -->
     <div id="nickname-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:3000; justify-content:center; align-items:center; padding:20px;">
         <div style="background:#18122d; border:2px solid #805ad5; border-radius:12px; padding:25px; max-width:380px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.9);">
             <div style="font-size:18px; font-weight:bold; color:#d6bcfa; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
@@ -219,7 +237,6 @@
         </div>
     </div>
 
-    <!-- 모바일 하단 퀵 네비게이션 바 -->
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" onclick="switchTabMobile('boss', this)">
             <span>⚔️</span><span>보스참여</span>
@@ -395,10 +412,12 @@
 
                 <div class="panel-box">
                     <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <!-- 4. 일일 참여 점수 세부 요약 -> *참여 점수 세부요약* 변경 -->
                         <span>*참여 점수 세부요약*</span>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <span style="font-size: 12px; color: #a0aec0;">날짜 선택:</span>
+                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                            <button class="btn-sm secondary" style="padding: 4px 8px; font-size: 11px;" onclick="shiftDate(-1)">◀ 어제</button>
+                            <button class="btn-sm secondary" style="padding: 4px 8px; font-size: 11px;" onclick="shiftDate(0)">오늘</button>
+                            <button class="btn-sm secondary" style="padding: 4px 8px; font-size: 11px;" onclick="shiftDate(1)">내일 ▶</button>
+                            <span style="font-size: 12px; color: #a0aec0; margin-left: 4px;">날짜:</span>
                             <input type="date" id="daily-score-date" class="admin-input" onchange="loadRankingData()" style="padding: 5px; font-size: 13px;">
                         </div>
                     </div>
@@ -424,15 +443,15 @@
 
                 <div class="panel-box">
                     <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span>엑셀형 시간대별 출석부 (전원 열람 가능)</span>
+                        <span>엑셀형 시간대별 출석부 (1일 기준 00시~23시 전 타임)</span>
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <button class="btn-sm secondary" onclick="downloadAttendanceCSV()" style="padding: 6px 12px; font-size: 12px;">📥 출석부 엑셀 다운로드</button>
-                            <button class="btn-sm" id="excel-mode-time" onclick="setExcelMode('time')">시간대별 상세 보기</button>
-                            <button class="btn-sm secondary" id="excel-mode-day" onclick="setExcelMode('day')">일자별 합산 보기</button>
+                            <button class="btn-sm success" onclick="downloadMultiSheetExcel()" style="padding: 6px 12px; font-size: 12px;">📥 엑셀 다운로드 (날짜별 탭 분리)</button>
+                            <button class="btn-sm" id="excel-mode-day" onclick="setExcelMode('day')">일자별 합산 보기</button>
+                            <button class="btn-sm secondary" id="excel-mode-time" onclick="setExcelMode('time')" style="display:none;">시간대별 보기</button>
                         </div>
                     </div>
                     <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
-- 좌측 캐릭터명 고정 상태로 우측 스크롤을 통해 각 보스 타임 참여 여부 및 가감점 내용을 확인할 수 있습니다.
+- 위쪽 `*참여 점수 세부요약*`에서 선택한 날짜의 00시부터 23시까지의 **모든 보스 타임(기본 정규 + 추가 정규 + 유동 보스)**이 참여 인원 유무와 관계없이 빠짐없이 표시됩니다.
                     </p>
                     <div class="excel-table-wrapper" id="excel-table-container">
                         <div style="text-align: center; color: #a0aec0; padding: 30px;">출석 데이터를 불러오는 중입니다...</div>
@@ -454,7 +473,6 @@
                 </div>
 
                 <div id="admin-sub-schedule" class="admin-sub-content active">
-                    <!-- 5. 정규보스(고정 일정) 추가 및 관리 란 신설 -->
                     <div class="panel-box">
                         <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 6px;">📌 정규 고정 보스 일정 추가 및 관리</div>
                         <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
@@ -480,7 +498,7 @@
                                 <option value="20">20시</option><option value="21">21시</option><option value="22">22시</option><option value="23">23시</option>
                             </select>
                             <input type="number" id="fixed-sched-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;">
-                            <input type="text" id="fixed-sched-title" class="admin-input" placeholder="정규 보스 명칭 (예: 데스나이트 / 거대모래전갈)" style="flex: 1; min-width: 180px;">
+                            <input type="text" id="fixed-sched-title" class="admin-input" placeholder="정규 보스 명칭 (예: 데스나이트)" style="flex: 1; min-width: 180px;">
                             <select id="fixed-sched-main" class="admin-input">
                                 <option value="normal">일반 고정</option>
                                 <option value="main">★ 메인타임 지정</option>
@@ -528,15 +546,14 @@
                         <div id="custom-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">등록된 유동 일정이 없습니다.</div>
                     </div>
 
-                    <!-- 7. 보스별 카드 일러스트 이미지 매칭 관리 란 -->
                     <div class="panel-box">
                         <div style="font-weight: bold; color: #fbd38d; margin-bottom: 6px;">🖼️ 보스별 카드 좌측 대형 일러스트 이미지 설정</div>
                         <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
-- 보스 이름에 특정 키워드(예: <b>메인타임</b>, <b>드레이크</b>, <b>카스파</b>, <b>오만</b>, <b>공성전</b> 등)가 포함될 때 카드 왼쪽에 띄울 이미지 파일명(예: <code>boss_main.png</code>) 또는 이미지 URL을 지정합니다.
+- 보스 이름에 특정 키워드가 포함될 때 카드 왼쪽에 띄울 이미지 파일명(예: <code>boss_main.png</code>) 또는 이미지 URL을 지정합니다.
                         </p>
                         <div class="admin-form">
                             <input type="text" id="boss-img-keyword" class="admin-input" placeholder="보스 키워드 (예: 오만)" style="width: 180px;">
-                            <input type="text" id="boss-img-url" class="admin-input" placeholder="이미지 파일명 또는 URL (예: boss_oman.png)" style="flex: 1; min-width: 220px;">
+                            <input type="text" id="boss-img-url" class="admin-input" placeholder="이미지 파일명 또는 URL" style="flex: 1; min-width: 220px;">
                             <button class="btn-sm" onclick="saveBossImageMapping()">이미지 매칭 등록</button>
                         </div>
                         <div id="boss-image-mapping-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">로딩 중...</div>
@@ -548,7 +565,7 @@
                         <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 4px;">보스별 차등 점수 관리</div>
                         <div style="font-size: 12px; color: #fbd38d; margin-bottom: 12px;">* 차후 보스부터 수정 점수 적용</div>
                         <div class="admin-form">
-                            <input type="text" id="boss-score-key" class="admin-input" placeholder="보스/일정 명칭 (예: 카스파 / 네크)" style="flex: 1; min-width: 180px;">
+                            <input type="text" id="boss-score-key" class="admin-input" placeholder="보스/일정 명칭" style="flex: 1; min-width: 180px;">
                             <input type="number" id="boss-score-val" class="admin-input" placeholder="점수" min="1" max="50" style="width: 90px;">
                             <button class="btn-sm" onclick="addNewBossScoreSetting()">기준 신규 추가</button>
                         </div>
@@ -556,10 +573,10 @@
                     </div>
 
                     <div class="panel-box">
-                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 12px;">가감점(추가/차감 점수 및 사유) 부여 및 일자별 관리/삭제</div>
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 12px;">가감점 부여 및 일자별 관리/삭제</div>
                         <div class="sub-box" style="margin-bottom: 0;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-                                <span style="font-size: 13px; font-weight: bold; color: #d6bcfa;">혈원 직접 선택 일괄 부여 (다중 체크 가능) 및 일자별 보스 타임 전체선택</span>
+                                <span style="font-size: 13px; font-weight: bold; color: #d6bcfa;">혈원 직접 선택 일괄 부여 및 일자별 보스 타임 전체선택</span>
                                 <div style="display: flex; gap: 6px; align-items: center;">
                                     <input type="date" id="bonus-filter-date" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="populateBonusSlotSelect()">
                                     <select id="bonus-select-slot-target" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="checkSlotParticipantsForBonus()">
@@ -573,9 +590,9 @@
                             <div class="admin-form" style="margin-bottom: 0; margin-top: 8px; flex-direction: column; align-items: stretch;">
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                     <input type="number" id="bonus-multi-score" class="admin-input" placeholder="점수 (예: 2 또는 -10)" style="width: 180px;">
-                                    <input type="text" id="bonus-multi-reason" class="admin-input" placeholder="사유 입력 (예: 지각, 무단 불참, 이벤트 보너스 등)" style="flex: 1; min-width: 220px;">
+                                    <input type="text" id="bonus-multi-reason" class="admin-input" placeholder="사유 입력 (예: 지각, 무단 불참 등)" style="flex: 1; min-width: 220px;">
                                 </div>
-                                <button class="btn-sm" onclick="grantBonusToCheckedUsers()" style="margin-top: 8px;">선택 인원 점수(가감점/사유) 일괄 부여</button>
+                                <button class="btn-sm" onclick="grantBonusToCheckedUsers()" style="margin-top: 8px;">선택 인원 점수 일괄 부여</button>
                             </div>
                         </div>
 
@@ -651,7 +668,6 @@
                 </div>
             </div>
 
-            <!-- 3. 최고관리자 전용 DB 원본 전체 관리: 캐릭터명 검색 및 총 인원 표시 추가 -->
             <div id="tab-master_db" class="tab-content">
                 <div class="section-title" style="color: #feb2b2;">
                     <span>🚨 최고관리자 전용: 데이터베이스 회원 원본 전체 관리 (Raw Data Viewer)</span>
@@ -664,7 +680,7 @@
 
                 <div class="panel-box" style="border: 2px solid #e53e3e;">
                     <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 14px;">
-- Firebase DB `members` 노드에 저장된 모든 회원 데이터를 비밀번호(고유번호)까지 포함하여 투명하게 보여줍니다. 추방했는데도 잔존하는 유령 데이터를 여기서 검색·확인하고 즉시 **DB 영구삭제**할 수 있습니다. (최고관리자 전용)
+- Firebase DB `members` 노드에 저장된 모든 회원 데이터를 비밀번호까지 포함하여 투명하게 보여줍니다.
                     </p>
                     <table>
                         <thead>
@@ -707,11 +723,27 @@
             return new Date(Date.now() + serverTimeOffset);
         }
 
+        function getKSTDateString(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        window.shiftDate = function(days) {
+            const dateInput = document.getElementById('daily-score-date');
+            if (!dateInput) return;
+            let baseDate = dateInput.value ? new Date(dateInput.value) : getSyncedCurrentTime();
+            if (isNaN(baseDate.getTime())) baseDate = getSyncedCurrentTime();
+            baseDate.setDate(baseDate.getDate() + days);
+            dateInput.value = getKSTDateString(baseDate);
+            loadRankingData();
+        };
+
         const kaspaHours = [1, 5, 7, 11, 13, 17, 19, 23];
         const ifritHours = [0, 6, 12, 18];
         const mainHours = [3, 9, 15, 21];
 
-        // 직급 서열 레벨 (낮을수록 높은 권한)
         const ROLE_LEVELS = {
             'master': 0,
             'king': 1,
@@ -737,7 +769,6 @@
         };
         let bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
 
-        // 7. 보스별 일러스트 이미지 기본 매핑
         const DEFAULT_BOSS_IMAGES = {
             "메인타임": "boss_main.png",
             "드레이크": "boss_drake.png",
@@ -755,7 +786,7 @@
         let preSignupsBySlot = {};
         let subscribedMonths = {};
         let isSignupMode = false;
-        let excelViewMode = 'time';
+        let excelViewMode = 'day';
         let currentNotice = { text: "", deadline: 0, id: "" };
         let nicknameHistoryData = {};
 
@@ -932,7 +963,7 @@
             ensureMonthSubscribed(getCurrentMonthKey());
             populateRankingMonthSelector();
             
-            const todayStr = getSyncedCurrentTime().toISOString().split('T')[0];
+            const todayStr = getKSTDateString(getSyncedCurrentTime());
             const dateInput = document.getElementById('daily-score-date');
             if (dateInput) dateInput.value = todayStr;
             const schedDateInput = document.getElementById('schedule-date');
@@ -1331,7 +1362,6 @@
             return maxScore;
         }
 
-        // 7. 보스 명칭에 따른 일러스트 이미지 URL/파일명 반환 및 기본 SVG 폴백 생성
         function getBossImageForName(bossName) {
             for (const [keyword, imgUrl] of Object.entries(bossImagesConfig)) {
                 if (bossName.includes(keyword) && imgUrl) {
@@ -1404,7 +1434,6 @@
             }
         };
 
-        // 5. 기본 정규 보스 + 운영진이 추가한 정규 보스(extraFixedSchedules) 통합 후보 생성
         function buildFixedCandidatesForDate(baseDate) {
             const y = baseDate.getFullYear();
             const m = baseDate.getMonth();
@@ -1421,7 +1450,6 @@
                 if (mainHours.includes(h)) titles.push("메인타임");
                 if (dow === 0 && h === 20) titles.push("공성전 (20:00~21:00)");
 
-                // 운영진이 추가한 정각(00분) 정규 보스 병합
                 Object.values(extraFixedSchedules).forEach(ef => {
                     if (!ef) return;
                     const efHour = parseInt(ef.hour ?? 0, 10);
@@ -1446,7 +1474,6 @@
                 }
             }
 
-            // 운영진이 추가한 분 단위(min > 0) 정규 보스 별도 슬롯 생성
             Object.entries(extraFixedSchedules).forEach(([efKey, ef]) => {
                 if (!ef) return;
                 const efHour = parseInt(ef.hour ?? 0, 10);
@@ -1486,7 +1513,6 @@
                 const c = candidates[i];
                 const closeTime = new Date(c.time.getTime() + 30 * 60 * 1000);
                 const slotObj = getSlotDataObj(c);
-                // 만약 해당 보스가 이미 토벌 완료(isClosed) 되었고 정각 시간도 지났다면 다음 예정 보스로 넘김
                 if (slotObj.isClosed && now >= c.time) {
                     continue;
                 }
@@ -1589,7 +1615,6 @@
             return slotObj.signups || {};
         }
 
-        // 1. 과반수 참여 완료 또는 30분 경과 시 슬롯 자체에 isClosed: true 플래그를 기록해 다른 인원의 추가 참여를 완전 차단
         function checkAndAutoCompletePastSlots(now) {
             const curMonth = getCurrentMonthKey();
             const monthObj = attendanceByMonth[curMonth] || {};
@@ -1641,7 +1666,6 @@
                 .map(([uid, data]) => ({ uid, ...data }));
             pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-            // 1. 슬롯이 이미 종료(isClosed)되었는지 확인
             const completedCount = pList.filter(p => p.status && p.status.includes("참여 완료")).length;
             const isSlotClosed = Boolean(slotObj.isClosed) || (pList.length > 0 && completedCount >= Math.ceil(pList.length / 2));
 
@@ -1679,7 +1703,7 @@
                 statusColor = "#a0aec0";
                 buttonsHtml = `<button class="participate-btn" disabled>참여 마감됨</button>`;
                 if (isOperator(currentUser)) {
-                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="운영진 권한으로 마감 해제">🔄 마감 해제</button>`;
+                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감 해제">🔄 마감 해제</button>`;
                 }
             } else if (diffMinutes < -30) {
                 const remainMin = Math.ceil(Math.abs(diffMinutes) - 30);
@@ -1732,7 +1756,7 @@
 
             let rowsHtml = '';
             if (pList.length === 0) {
-                rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #a0aec0; padding: 16px;">현재 참여한 혈맹원이 없습니다.</td></tr>`;
+                rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #a0aec0; padding: 16px;">아직 참여한 혈맹원이 없습니다.</td></tr>`;
             } else {
                 pList.forEach((item, idx) => {
                     const latestName = (membersData[item.uid] && membersData[item.uid].name) ? membersData[item.uid].name : item.name;
@@ -1763,16 +1787,15 @@
             const fallbackSvg = getFallbackBossSvg(sched.name);
 
             const rightCountHtml = sched.isCustom ? `
-                <div class="boss-count-label">👥 예정 / 실제 참여</div>
+                <div class="boss-count-label">👥 예정 / 참여</div>
                 <div class="boss-count-num"><span style="color:#fbd38d;">${preList.length}</span> <span style="font-size:18px; color:#718096;">/</span> ${pList.length}명</div>
             ` : `
-                <div class="boss-count-label">👥 현재 참여 인원</div>
+                <div class="boss-count-label">👥 참여 인원</div>
                 <div class="boss-count-num">${pList.length}명</div>
             `;
 
             return `
                 <div class="boss-card ${sched.isCustom ? 'custom-card' : ''}">
-                    <!-- 7. 레퍼런스 스타일 상단 배너 (좌측 보스 일러스트 + 중앙 시간/보스명 + 우측 현재 참여 인원) -->
                     <div class="boss-banner">
                         <div class="boss-illust-wrap">
                             <img src="${bossImgSrc}" alt="Boss Illustration" class="boss-illust-img" onerror="this.onerror=null; this.src='${fallbackSvg}';">
@@ -1878,7 +1901,6 @@
             }
         };
 
-        // 1. 참여하기 클릭 시 이미 마감(isClosed 또는 과반수 완료)된 보스인지 DB 기준으로 재검증하여 뒷북 참여 차단
         window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs) {
             if (!currentUser) return;
             const now = getSyncedCurrentTime();
@@ -1932,7 +1954,6 @@
             loadRankingData();
         };
 
-        // 1. 참여 종료 클릭 시 과반수 이상이 완료되었으면 즉시 슬롯 전체를 마감(isClosed: true) 처리
         window.endBossSlot = async function(monthKey, slotKey) {
             if (!currentUser) return;
             const now = getSyncedCurrentTime();
@@ -1971,7 +1992,7 @@
 
         window.forceCloseBossSlot = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("이 보스 타임을 즉시 전체 마감(토벌 완료) 처리하시겠습니까?\n마감 시 다른 인원은 더 이상 참여할 수 없습니다.")) return;
+            if (!confirm("이 보스 타임을 즉시 전체 마감(토벌 완료) 처리하시겠습니까?")) return;
 
             const now = getSyncedCurrentTime();
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -1998,7 +2019,7 @@
 
         window.reopenBossSlot = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("마감된 보스 타임을 다시 오픈(참여 가능 상태)하시겠습니까?")) return;
+            if (!confirm("마감된 보스 타임을 다시 오픈하시겠습니까?")) return;
             await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                 isClosed: false,
                 closedReason: null
@@ -2080,7 +2101,6 @@
             tbody.innerHTML = html;
         }
 
-        // 5. 정규 보스 추가/삭제 함수
         window.addFixedSchedule = async function() {
             if (!isOperator(currentUser)) return;
             const day = document.getElementById('fixed-sched-day').value;
@@ -2115,7 +2135,7 @@
             if (!container) return;
             const entries = Object.entries(extraFixedSchedules);
             if (entries.length === 0) {
-                container.innerHTML = "기본 정규 보스(카스파/네크, 이프리트/드레이크, 메인타임, 일요일 공성전) 외에 추가된 정규 보스가 없습니다.";
+                container.innerHTML = "추가된 정규 보스가 없습니다.";
                 return;
             }
             const dayLabels = { 'ALL': '매일', '0': '일요일', '1': '월요일', '2': '화요일', '3': '수요일', '4': '목요일', '5': '금요일', '6': '토요일' };
@@ -2136,13 +2156,12 @@
             container.innerHTML = html;
         }
 
-        // 7. 보스별 일러스트 이미지 매핑 등록/삭제
         window.saveBossImageMapping = async function() {
             if (!isOperator(currentUser)) return;
             const keyword = document.getElementById('boss-img-keyword').value.trim();
             const url = document.getElementById('boss-img-url').value.trim();
             if (!keyword || !url) {
-                alert("보스 키워드와 이미지 파일명(또는 URL)을 모두 입력해 주세요.");
+                alert("보스 키워드와 이미지 URL을 모두 입력해 주세요.");
                 return;
             }
             bossImagesConfig[keyword] = url;
@@ -2333,13 +2352,6 @@
 
         window.setExcelMode = function(mode) {
             excelViewMode = mode;
-            if (mode === 'time') {
-                document.getElementById('excel-mode-time').className = "btn-sm";
-                document.getElementById('excel-mode-day').className = "btn-sm secondary";
-            } else {
-                document.getElementById('excel-mode-time').className = "btn-sm secondary";
-                document.getElementById('excel-mode-day').className = "btn-sm";
-            }
             loadRankingData();
         };
 
@@ -2364,7 +2376,7 @@
 
             const selectedMonth = monthSelect.value;
             const selectedWeek = weekSelect.value;
-            const targetDateStr = dateInput ? dateInput.value : "";
+            const targetDateStr = dateInput ? dateInput.value : getKSTDateString(getSyncedCurrentTime());
 
             if (!attendanceByMonth[selectedMonth]) {
                 const snap = await get(ref(db, `attendance/${selectedMonth}`));
@@ -2581,12 +2593,281 @@
                 summaryTbody.innerHTML = sHtml;
             }
 
-            renderExcelTable(slotKeysList, rankingArray, monthData, bonusData);
+            renderExcelTableForDay(targetDateStr, rankingArray, monthData, bonusData);
             renderRecentBonusLogs(bonusData, selectedMonth);
             filterRankingAndExcel();
         };
 
-        function renderRecentBonusLogs(bonusData, selectedMonth) {
+        // 선택한 1일 기준 (00시~23시) 전체 보스 타임 슬롯 생성 및 엑셀 출석부 렌더링
+        function getDaySlotsList(targetDateStr) {
+            const dateParts = targetDateStr.split('-').map(Number);
+            if (dateParts.length < 3) return [];
+            const targetDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            const dow = targetDate.getDay();
+
+            let daySlotsMap = {};
+
+            // 1. 기본 정규 보스 슬롯 (00시~23시)
+            for (let h = 0; h < 24; h++) {
+                let titles = [];
+                if (kaspaHours.includes(h)) titles.push("카스파 / 네크");
+                if (ifritHours.includes(h)) titles.push("이프리트 / 드레이크");
+                if (mainHours.includes(h)) titles.push("메인타임");
+                if (dow === 0 && h === 20) titles.push("공성전 (20:00~21:00)");
+
+                // 2. 추가 정규 보스 슬롯 병합
+                Object.values(extraFixedSchedules).forEach(ef => {
+                    if (!ef) return;
+                    const efHour = parseInt(ef.hour ?? 0, 10);
+                    const efMin = parseInt(ef.min ?? 0, 10);
+                    const efDay = String(ef.day ?? 'ALL');
+                    if (efMin === 0 && efHour === h && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
+                        const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                        titles.push(prefix + ef.title);
+                    }
+                });
+
+                if (titles.length > 0) {
+                    const hh = String(h).padStart(2, '0');
+                    const sKey = `${targetDateStr}_${hh}00_fixed`;
+                    daySlotsMap[sKey] = `${hh}:00 ${titles.join(' / ')}`;
+                }
+            }
+
+            // 추가 정규 분 단위 보스
+            Object.entries(extraFixedSchedules).forEach(([efKey, ef]) => {
+                if (!ef) return;
+                const efHour = parseInt(ef.hour ?? 0, 10);
+                const efMin = parseInt(ef.min ?? 0, 10);
+                const efDay = String(ef.day ?? 'ALL');
+                if (efMin > 0 && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
+                    const hh = String(efHour).padStart(2, '0');
+                    const mm = String(efMin).padStart(2, '0');
+                    const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                    const sKey = `${targetDateStr}_${hh}${mm}_fixed_${efKey}`;
+                    daySlotsMap[sKey] = `${hh}:${mm} ${prefix}${ef.title}`;
+                }
+            });
+
+            // 3. 추가 유동 보스
+            Object.entries(customSchedules).forEach(([key, val]) => {
+                const parsed = parseCustomEntry(key, val);
+                if (!parsed) return;
+                let isMatch = false;
+                if (parsed.type === 'once' && parsed.date === targetDateStr) isMatch = true;
+                if (parsed.type === 'recurring' && (parsed.day === 'ALL' || parseInt(parsed.day, 10) === dow)) isMatch = true;
+
+                if (isMatch) {
+                    const hh = String(parsed.hour).padStart(2, '0');
+                    const mm = String(parsed.min).padStart(2, '0');
+                    const sKey = `${targetDateStr}_${hh}${mm}_custom_${key}`;
+                    daySlotsMap[sKey] = `${hh}:${mm} ${parsed.title}`;
+                }
+            });
+
+            // 4. DB에 이미 기록된 슬롯이 있는데 위 목록에 없다면 누락 방지 차원 추가
+            const monthKey = targetDateStr.slice(0, 7);
+            const mData = attendanceByMonth[monthKey] || {};
+            Object.keys(mData).forEach(sKey => {
+                if (sKey.startsWith(targetDateStr)) {
+                    if (!daySlotsMap[sKey]) {
+                        daySlotsMap[sKey] = mData[sKey].name || sKey;
+                    }
+                }
+            });
+
+            let sortedKeys = Object.keys(daySlotsMap).sort();
+            return sortedKeys.map(sKey => ({ slotKey: sKey, title: daySlotsMap[sKey] }));
+        }
+
+        function renderExcelTableForDay(targetDateStr, rankingArray, monthData, bonusData) {
+            const container = document.getElementById('excel-table-container');
+            if (!container) return;
+
+            if (rankingArray.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 30px;">표시할 혈원 또는 출석 기록이 없습니다.</div>`;
+                return;
+            }
+
+            const daySlots = getDaySlotsList(targetDateStr);
+            const monthKey = targetDateStr.slice(0, 7);
+            const bMonthObj = (bonusData || {})[monthKey] || bonusData || {};
+
+            let html = `<div class="excel-table-wrapper"><table class="excel-table"><thead><tr>`;
+            html += `<th class="sticky-col-1" style="z-index: 6;">캐릭터명</th>`;
+            html += `<th class="sticky-col-2" style="z-index: 6;">일일 합계</th>`;
+
+            daySlots.forEach(ds => {
+                let timeDisplay = "";
+                const parts = ds.slotKey.split('_');
+                if (parts.length >= 2 && parts[1].length >= 4) {
+                    timeDisplay = `${parts[1].slice(0,2)}:${parts[1].slice(2,4)}`;
+                } else {
+                    timeDisplay = ds.slotKey.slice(11, 16);
+                }
+                html += `<th title="${ds.title}">${timeDisplay}<br><span style="font-size:11px; color:#a0aec0;">${ds.title.slice(0, 12)}</span></th>`;
+            });
+            html += `<th>일일 가감점</th></tr></thead><tbody>`;
+
+            rankingArray.forEach(row => {
+                let dayScore = 0;
+                let dayBonuses = row.bonusList.filter(b => b.date === targetDateStr);
+                let bonusSum = dayBonuses.reduce((acc, cur) => acc + cur.score, 0);
+                dayScore += bonusSum;
+
+                daySlots.forEach(ds => {
+                    const slotObj = monthData[ds.slotKey] || {};
+                    const parts = slotObj.participants || {};
+                    if (parts[row.uid]) {
+                        dayScore += (Number(parts[row.uid].score) || 1);
+                    }
+                });
+
+                const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
+
+                html += `<tr data-name="${row.name}">`;
+                html += `<td class="sticky-col-1" style="font-weight: bold;"><span ${profileClickAction}>${row.name}</span></td>`;
+                html += `<td class="sticky-col-2" style="color: #fbd38d; font-weight: bold;">${dayScore}점</td>`;
+
+                daySlots.forEach(ds => {
+                    const slotObj = monthData[ds.slotKey] || {};
+                    const parts = slotObj.participants || {};
+                    const rec = parts[row.uid];
+                    if (rec) {
+                        html += `<td style="background: rgba(72, 187, 120, 0.18); color: #48bb78; font-weight: bold;" title="참여시각: ${rec.startTime || 'O'}">O (+${rec.score || 1})</td>`;
+                    } else {
+                        html += `<td style="color: #4a5568;">-</td>`;
+                    }
+                });
+
+                if (dayBonuses.length > 0) {
+                    let bColor = bonusSum >= 0 ? '#48bb78' : '#e53e3e';
+                    let bPrefix = bonusSum > 0 ? '+' : '';
+                    let reasons = dayBonuses.map(b => `${b.score >= 0 ? '+' : ''}${b.score}점 (${b.reason})`).join(', ');
+                    html += `<td style="color: ${bColor}; font-weight: bold;" title="${reasons}">${bPrefix}${bonusSum}점</td>`;
+                } else {
+                    html += `<td style="color: #4a5568;">-</td>`;
+                }
+
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        // 4. SheetJS (.xlsx)를 이용한 날짜별 탭(시트) 분리 실제 엑셀 다운로드
+        window.downloadMultiSheetExcel = async function() {
+            if (typeof XLSX === 'undefined') {
+                alert("엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도해 주세요.");
+                return;
+            }
+
+            const monthSelect = document.getElementById('ranking-month-select');
+            const selectedMonth = monthSelect ? monthSelect.value : getCurrentMonthKey();
+            const [y, m] = selectedMonth.split('-').map(Number);
+            const lastDay = new Date(y, m, 0).getDate();
+
+            if (!attendanceByMonth[selectedMonth]) {
+                const snap = await get(ref(db, `attendance/${selectedMonth}`));
+                attendanceByMonth[selectedMonth] = snap.val() || {};
+            }
+            const monthData = attendanceByMonth[selectedMonth];
+
+            const bonusSnap = await get(ref(db, `bonus_scores/${selectedMonth}`));
+            const bonusData = bonusSnap.val() || {};
+
+            let wb = XLSX.utils.book_new();
+
+            // 1번째 시트: [월간종합]
+            let summaryRows = [["FURY CLAN 월간 종합 요약", "", "", "", "", ""]];
+            summaryRows.push(["순위", "캐릭터명", "★메인타임 총점", "이프/드레 총점", "카스파 총점", "특수/기타", "가감점 총점", "통산 총점"]);
+            
+            // 회원 목록 수집
+            let activeMembers = [];
+            Object.entries(membersData).forEach(([uid, mem]) => {
+                if (mem && mem.approved !== false && mem.name !== 'admin' && uid !== 'admin_account') {
+                    activeMembers.push({ uid, name: mem.name });
+                }
+            });
+
+            let memberTotalScores = activeMembers.map(mem => {
+                let total = 0;
+                Object.values(monthData).forEach(slotObj => {
+                    const parts = slotObj.participants || {};
+                    if (parts[mem.uid]) total += (Number(parts[mem.uid].score) || 1);
+                });
+                const userBonus = bonusData[mem.uid] || {};
+                if (typeof userBonus === 'object') {
+                    Object.values(userBonus).forEach(bObj => { total += (Number(bObj.score) || 0); });
+                } else {
+                    total += (Number(userBonus) || 0);
+                }
+                return { name: mem.name, total };
+            });
+            memberTotalScores.sort((a, b) => b.total - a.total);
+
+            memberTotalScores.forEach((item, idx) => {
+                summaryRows.push([idx + 1, item.total, item.name]);
+            });
+            let wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+            XLSX.utils.book_append_sheet(wb, wsSummary, "월간종합요약");
+
+            // 날짜별 시트 생성 (1일부터 오늘 또는 마지막 날까지)
+            const todayStr = getKSTDateString(getSyncedCurrentTime());
+
+            for (let d = 1; d <= lastDay; d++) {
+                const dayStr = String(d).padStart(2, '0');
+                const targetDateStr = `${y}-${String(m).padStart(2, '0')}-${dayStr}`;
+                if (targetDateStr > todayStr && d > new Date().getDate()) break;
+
+                const daySlots = getDaySlotsList(targetDateStr);
+                if (daySlots.length === 0) continue;
+
+                let headerRow = ["캐릭터명", "일일 합계"];
+                daySlots.forEach(ds => headerRow.push(ds.title));
+                headerRow.push("가감점 사유");
+
+                let sheetRows = [headerRow];
+
+                activeMembers.forEach(mem => {
+                    let rowData = [mem.name];
+                    let daySum = 0;
+                    let dayBonuses = (bonusData[mem.uid] && typeof bonusData[mem.uid] === 'object') 
+                        ? Object.values(bonusData[mem.uid]).filter(b => Object.keys(bonusData[mem.uid]).find(k => k.startsWith(targetDateStr)))
+                        : [];
+                    
+                    let bSum = dayBonuses.reduce((acc, cur) => acc + (Number(cur.score) || 0), 0);
+                    daySum += bSum;
+
+                    let slotResults = daySlots.map(ds => {
+                        const slotObj = monthData[ds.slotKey] || {};
+                        const parts = slotObj.participants || {};
+                        const rec = parts[mem.uid];
+                        if (rec) {
+                            const sc = Number(rec.score) || 1;
+                            daySum += sc;
+                            return `O (+${sc})`;
+                        }
+                        return "-";
+                    });
+
+                    rowData.push(daySum);
+                    slotResults.forEach(res => rowData.push(res));
+                    rowData.push(dayBonuses.map(b => `${b.score >= 0 ? '+' : ''}${b.score}점(${b.reason})`).join(', '));
+
+                    sheetRows.push(rowData);
+                });
+
+                let wsDay = XLSX.utils.aoa_to_sheet(sheetRows);
+                XLSX.utils.book_append_sheet(wb, wsDay, `${m}월${d}일`);
+            }
+
+            XLSX.writeFile(wb, `fury_clan_attendance_${selectedMonth}.xlsx`);
+            alert("날짜별 탭이 분리된 엑셀 파일(.xlsx)이 성공적으로 다운로드되었습니다.");
+        };
+
+        window.renderRecentBonusLogs = function(bonusData, selectedMonth) {
             const container = document.getElementById('recent-bonus-logs-container');
             const viewDateInput = document.getElementById('bonus-log-view-date');
             if (!container) return;
@@ -2654,7 +2935,7 @@
 
         window.deleteBonusLog = async function(monthKey, uid, logKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("이 가감점 내역을 삭제하시겠습니까? (대상자의 총점에서 차감됩니다)")) return;
+            if (!confirm("이 가감점 내역을 삭제하시겠습니까?")) return;
 
             await remove(ref(db, `bonus_scores/${monthKey}/${uid}/${logKey}`));
             alert("가감점 내역이 삭제되었습니다.");
@@ -2662,54 +2943,7 @@
         };
 
         window.downloadAttendanceCSV = function() {
-            const monthSelect = document.getElementById('ranking-month-select');
-            const selectedMonth = monthSelect ? monthSelect.value : getCurrentMonthKey();
-            const monthData = attendanceByMonth[selectedMonth] || {};
-            const slotKeysList = Object.keys(monthData).sort();
-
-            if (slotKeysList.length === 0) {
-                alert("다운로드할 출석 기록이 없습니다.");
-                return;
-            }
-
-            let rows = [];
-            let header = ["캐릭터명"];
-            slotKeysList.forEach(sKey => {
-                const sObj = monthData[sKey] || {};
-                header.push(sObj.name || sKey);
-            });
-            rows.push(header.join(','));
-
-            let userMap = {};
-            Object.values(monthData).forEach(slotObj => {
-                const parts = slotObj.participants || {};
-                Object.entries(parts).forEach(([uid, p]) => {
-                    if (uid !== 'admin_account' && p.name !== 'admin') {
-                        const mName = (membersData[uid] && membersData[uid].name) ? membersData[uid].name : p.name;
-                        userMap[uid] = mName;
-                    }
-                });
-            });
-
-            Object.entries(userMap).forEach(([uid, name]) => {
-                let rowData = [`"${name}"`];
-                slotKeysList.forEach(sKey => {
-                    const parts = (monthData[sKey] || {}).participants || {};
-                    const rec = parts[uid];
-                    rowData.push(`"${rec ? 'O (+' + (rec.score || 1) + ')' : '-'}"`);
-                });
-                rows.push(rowData.join(','));
-            });
-
-            const csvContent = "\uFEFF" + rows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `fury_clan_attendance_${selectedMonth}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            window.downloadMultiSheetExcel();
         };
 
         window.openMemberProfileModal = function(uid, name) {
@@ -2779,187 +3013,6 @@
             });
         };
 
-        function renderExcelTable(slotKeysList, rankingArray, monthData, bonusData) {
-            const container = document.getElementById('excel-table-container');
-            if (!container) return;
-
-            if (rankingArray.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 30px;">표시할 혈원 또는 출석 기록이 없습니다.</div>`;
-                return;
-            }
-
-            if (excelViewMode === 'time') {
-                let dateGroups = {};
-                slotKeysList.forEach(sKey => {
-                    const datePart = sKey.split('_')[0];
-                    if (!dateGroups[datePart]) dateGroups[datePart] = [];
-                    dateGroups[datePart].push(sKey);
-                });
-
-                const monthSelect = document.getElementById('ranking-month-select');
-                const selMonthKey = monthSelect ? monthSelect.value : getCurrentMonthKey();
-                const bMonthObj = bonusData || {};
-                
-                let allDatesSet = new Set(Object.keys(dateGroups));
-                Object.values(bMonthObj).forEach(userBMap => {
-                    if (userBMap && typeof userBMap === 'object') {
-                        Object.keys(userBMap).forEach(bKey => {
-                            const dPart = bKey.split('_')[0];
-                            if (dPart.startsWith(selMonthKey)) {
-                                allDatesSet.add(dPart);
-                            }
-                        });
-                    }
-                });
-
-                let sortedDates = Array.from(allDatesSet).sort();
-
-                let html = `<div class="excel-table-wrapper"><table class="excel-table"><thead>`;
-                
-                html += `<tr>`;
-                html += `<th rowspan="2" style="min-width: 95px; vertical-align: middle;">캐릭터명</th>`;
-                html += `<th rowspan="2" style="min-width: 75px; vertical-align: middle;">기간 합계</th>`;
-                
-                sortedDates.forEach(dateStr => {
-                    const keys = dateGroups[dateStr] || [];
-                    const colspanCount = Math.max(1, keys.length);
-                    const parsedDate = dateStr.slice(5);
-                    html += `<th colspan="${colspanCount}" class="date-group-header">${parsedDate}</th>`;
-                });
-                html += `</tr>`;
-
-                html += `<tr>`;
-                sortedDates.forEach(dateStr => {
-                    const keys = dateGroups[dateStr] || [];
-                    if (keys.length === 0) {
-                        html += `<th class="time-sub-header">가감점</th>`;
-                    } else {
-                        keys.forEach(sKey => {
-                            const sObj = monthData[sKey] || {};
-                            const title = sObj.name || sKey;
-                            let timeDisplay = "";
-                            const parts = sKey.split('_');
-                            if (parts.length >= 2 && parts[1].length >= 4) {
-                                timeDisplay = `${parts[1].slice(0,2)}:${parts[1].slice(2,4)}`;
-                            } else {
-                                timeDisplay = sKey.slice(11, 16);
-                            }
-                            html += `<th class="time-sub-header" title="${title}">${timeDisplay}<br><span style="font-size:11px; color:#a0aec0;">${title.slice(0, 10)}</span></th>`;
-                        });
-                    }
-                });
-                html += `</tr></thead><tbody>`;
-
-                rankingArray.forEach(row => {
-                    let pTotal = 0;
-                    slotKeysList.forEach(sKey => {
-                        if (row.slotsRecord[sKey]) pTotal += row.slotsRecord[sKey].score;
-                    });
-                    pTotal += row.bonusScoreTotal;
-
-                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
-
-                    html += `<tr data-name="${row.name}">`;
-                    html += `<td style="font-weight: bold;"><span ${profileClickAction}>${row.name}</span></td>`;
-                    html += `<td style="color: #fbd38d; font-weight: bold;">${pTotal}점</td>`;
-
-                    sortedDates.forEach(dateStr => {
-                        const keys = dateGroups[dateStr] || [];
-                        let dateBonuses = row.bonusList.filter(b => b.date === dateStr);
-
-                        if (keys.length === 0) {
-                            if (dateBonuses.length > 0) {
-                                let bSum = dateBonuses.reduce((acc, cur) => acc + cur.score, 0);
-                                let bColor = bSum >= 0 ? '#48bb78' : '#e53e3e';
-                                let bPrefix = bSum > 0 ? '+' : '';
-                                let reasons = dateBonuses.map(b => `${b.score >= 0 ? '+' : ''}${b.score}점 (${b.reason})`).join(', ');
-                                html += `<td style="background: ${bSum >= 0 ? 'rgba(72, 187, 120, 0.18)' : 'rgba(229, 62, 62, 0.18)'}; color: ${bColor}; font-weight: bold;" title="${reasons}">${bPrefix}${bSum}점</td>`;
-                            } else {
-                                html += `<td style="color: #4a5568;">-</td>`;
-                            }
-                        } else {
-                            keys.forEach(sKey => {
-                                const rec = row.slotsRecord[sKey];
-                                if (rec) {
-                                    html += `<td style="background: rgba(72, 187, 120, 0.18); color: #48bb78; font-weight: bold;" title="참여시각: ${rec.time}">O (+${rec.score})</td>`;
-                                } else {
-                                    html += `<td style="color: #4a5568;">-</td>`;
-                                }
-                            });
-                        }
-                    });
-                    html += `</tr>`;
-                });
-
-                html += `</tbody></table></div>`;
-                container.innerHTML = html;
-
-            } else {
-                const monthSelect = document.getElementById('ranking-month-select');
-                const [y, m] = monthSelect.value.split('-').map(Number);
-                const lastDay = new Date(y, m, 0).getDate();
-
-                let daysArr = [];
-                for (let d = 1; d <= lastDay; d++) {
-                    daysArr.push(String(d).padStart(2, '0'));
-                }
-
-                let html = `<div class="excel-table-wrapper"><table class="excel-table"><thead><tr>`;
-                html += `<th style="min-width: 95px;">캐릭터명</th>`;
-                html += `<th style="min-width: 75px;">기간 합계</th>`;
-
-                daysArr.forEach(dayStr => {
-                    html += `<th style="min-width: 75px;">${m}월 ${dayStr}일</th>`;
-                });
-                html += `</tr></thead><tbody>`;
-
-                rankingArray.forEach(row => {
-                    let pTotal = 0;
-                    Object.values(row.slotsRecord).forEach(rec => pTotal += rec.score);
-                    pTotal += row.bonusScoreTotal;
-
-                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
-
-                    html += `<tr data-name="${row.name}">`;
-                    html += `<td style="font-weight: bold;"><span ${profileClickAction}>${row.name}</span></td>`;
-                    html += `<td style="color: #fbd38d; font-weight: bold;">${pTotal}점</td>`;
-
-                    daysArr.forEach(dayStr => {
-                        const targetDateStr = `${y}-${String(m).padStart(2, '0')}-${dayStr}`;
-                        let dayScore = 0;
-                        let detailList = [];
-
-                        Object.entries(row.slotsRecord).forEach(([sKey, rec]) => {
-                            if (sKey.startsWith(targetDateStr)) {
-                                dayScore += rec.score;
-                                const sObj = monthData[sKey] || {};
-                                detailList.push(`${sObj.name || sKey} (+${rec.score}점)`);
-                            }
-                        });
-
-                        let dayBonuses = row.bonusList.filter(b => b.date === targetDateStr);
-                        dayBonuses.forEach(b => {
-                            dayScore += b.score;
-                            detailList.push(`가감점: ${b.score >= 0 ? '+' : ''}${b.score}점 (${b.reason})`);
-                        });
-
-                        if (detailList.length > 0) {
-                            let cellColor = dayScore >= 0 ? '#48bb78' : '#e53e3e';
-                            let bgStyle = dayScore >= 0 ? 'background: rgba(72, 187, 120, 0.18);' : 'background: rgba(229, 62, 62, 0.18);';
-                            let prefix = dayScore > 0 ? '+' : '';
-                            html += `<td style="${bgStyle} color: ${cellColor}; font-weight: bold;" title="${detailList.join('\n')}">${prefix}${dayScore}점</td>`;
-                        } else {
-                            html += `<td style="color: #4a5568;">-</td>`;
-                        }
-                    });
-                    html += `</tr>`;
-                });
-
-                html += `</tbody></table></div>`;
-                container.innerHTML = html;
-            }
-        }
-
         window.saveBossScoreSetting = async function(key) {
             if (!isOperator(currentUser)) return;
             const inputEl = document.getElementById(`edit-score-${key}`);
@@ -2975,7 +3028,7 @@
             updateDashboard();
 
             await set(ref(db, `settings/bossScores/${key}`), newScore);
-            alert(`[${key}] 배점이 ${newScore}점으로 수정되었습니다 (차후 보스부터 적용).`);
+            alert(`[${key}] 배점이 ${newScore}점으로 수정되었습니다.`);
         };
 
         window.addNewBossScoreSetting = async function() {
@@ -3006,7 +3059,7 @@
                 container.innerHTML = "설정된 배점이 없습니다.";
                 return;
             }
-            let html = "<b>[보스별 차등 점수 기준표 (차후 보스부터 수정 점수 적용)]</b><br><br>";
+            let html = "<b>[보스별 차등 점수 기준표]</b><br><br>";
             entries.forEach(([key, score]) => {
                 html += `
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -3060,15 +3113,7 @@
             }
 
             const key = `${type}_${day}_${String(h).padStart(2, '0')}_${String(m).padStart(2, '0')}_${Date.now()}`;
-            const newEntry = {
-                type: type,
-                day: day,
-                date: dateStr,
-                hour: h,
-                min: m,
-                title: title,
-                score: scoreVal
-            };
+            const newEntry = { type, day, date: dateStr, hour: h, min: m, title, score: scoreVal };
 
             customSchedules[key] = newEntry;
             renderCustomScheduleList();
@@ -3079,12 +3124,8 @@
             document.getElementById('schedule-min').value = '0';
             document.getElementById('schedule-score').value = '2';
 
-            try {
-                await set(ref(db, `settings/customSchedules/${key}`), newEntry);
-                alert(`[${title}] 유동 일정이 성공적으로 등록되었습니다.`);
-            } catch (err) {
-                alert("DB 저장 중 오류: " + err.message);
-            }
+            await set(ref(db, `settings/customSchedules/${key}`), newEntry);
+            alert(`[${title}] 유동 일정이 성공적으로 등록되었습니다.`);
         };
 
         window.saveCustomScheduleEdit = async function(key) {
@@ -3144,7 +3185,7 @@
                 return;
             }
 
-            let adminHtml = "<b>[등록된 추가 유동 일정 목록 (배점, 날짜/요일 수정 가능)]</b><br><br>";
+            let adminHtml = "<b>[등록된 추가 유동 일정 목록]</b><br><br>";
             entries.forEach(([key, val]) => {
                 const parsed = parseCustomEntry(key, val);
                 if (!parsed) return;
@@ -3224,7 +3265,7 @@
                 const pValues = Object.values(data.participants || {}).filter(p => p.name !== 'admin');
                 const datePart = slotKey.split('_')[0];
                 const title = data.name || slotKey;
-                const optText = `[${datePart}] ${title} —  참여자 ${pValues.length}명`;
+                const optText = `[${datePart}] ${title} — 참여자 ${pValues.length}명`;
                 html += `<option value="${slotKey}">${optText}</option>`;
                 targetHtml += `<option value="${slotKey}">${optText}</option>`;
             });
@@ -3358,12 +3399,12 @@
             const curMonth = getCurrentMonthKey();
 
             if (checkedBoxes.length === 0 || isNaN(scoreVal)) {
-                alert("점수를 부여할 혈원을 1명 이상 체크하고 점수(플러스 또는 마이너스)를 입력해 주세요.");
+                alert("점수를 부여할 혈원을 1명 이상 체크하고 점수를 입력해 주세요.");
                 return;
             }
 
             const now = getSyncedCurrentTime();
-            const dateStr = filterDateInput && filterDateInput.value ? filterDateInput.value : `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const dateStr = filterDateInput && filterDateInput.value ? filterDateInput.value : getKSTDateString(now);
             const entryKey = `${dateStr}_${Date.now()}`;
 
             for (const chk of checkedBoxes) {
@@ -3380,7 +3421,7 @@
             document.getElementById('bonus-multi-score').value = '';
             document.getElementById('bonus-multi-reason').value = '';
             toggleAllBonusCheckboxes(false);
-            alert(`선택한 혈원 ${checkedBoxes.length}명에게 점수(${scoreVal > 0 ? '+' + scoreVal : scoreVal}점, 사유: ${reasonVal})가 정상 반영되었습니다!`);
+            alert(`선택한 혈원 ${checkedBoxes.length}명에게 점수(${scoreVal > 0 ? '+' + scoreVal : scoreVal}점)가 정상 반영되었습니다!`);
             loadRankingData();
         };
 
@@ -3391,7 +3432,6 @@
             return myLvl < targetLvl;
         }
 
-        // 2. 운영진 관리 혈원 리스트 직급 순서(최고관리자 > 군주 > 부군주 > 간부진/총무 > 일반혈원) 정렬 배치
         function renderAdminMemberList() {
             const tbody = document.getElementById('admin-member-list');
             if (!tbody) return;
@@ -3403,7 +3443,6 @@
                 return;
             }
 
-            // 직급 서열 오름차순 정렬 후 닉네임 가나다순 정렬
             entries.sort((a, b) => {
                 const lvlA = getRoleLevel(a[1].role || 'member');
                 const lvlB = getRoleLevel(b[1].role || 'member');
@@ -3443,7 +3482,7 @@
                             ${!isHigherOrEqual || isSelf ? `
                                 <button class="btn-sm secondary" onclick="saveMemberEdit('${uid}', '${m.name}')">수정 저장</button>
                                 ${!isSelf ? `<button class="btn-sm danger" onclick="deleteMember('${uid}', '${m.name}')">추방</button>` : ''}
-                            ` : `<span style="font-size:11px; color:#718096;">권한 없음 (상위 직급)</span>`}
+                            ` : `<span style="font-size:11px; color:#718096;">권한 없음</span>`}
                         </td>
                     </tr>
                 `;
@@ -3467,7 +3506,6 @@
             container.innerHTML = html;
         }
 
-        // 3. 최고관리자 전용 Raw Data Viewer: 캐릭터명 검색 필터 및 총 인원수 표시
         window.renderRawMembersViewer = function() {
             const tbody = document.getElementById('raw-members-tbody');
             const totalBadge = document.getElementById('raw-member-total-badge');
@@ -3484,7 +3522,6 @@
                 return charName.includes(query) || uidStr.includes(query);
             });
 
-            // 직급순 정렬
             filteredEntries.sort((a, b) => {
                 const lvlA = getRoleLevel(a[1].role || 'member');
                 const lvlB = getRoleLevel(b[1].role || 'member');
@@ -3529,7 +3566,7 @@
                 alert("최고관리자 권한이 필요합니다.");
                 return;
             }
-            if (!confirm(`[${name}] (UID: ${uid}) 데이터를 데이터베이스에서 완전히 영구 삭제하시겠습니까?\n이 작업을 수행하면 해당 계정의 잔존 찌꺼기 데이터가 싹 정리됩니다.`)) return;
+            if (!confirm(`[${name}] (UID: ${uid}) 데이터를 데이터베이스에서 완전히 영구 삭제하시겠습니까?`)) return;
 
             try {
                 await remove(ref(db, `members/${uid}`));
@@ -3596,7 +3633,7 @@
                 return;
             }
 
-            if (!confirm(`[${name}] 회원을 추방하시겠습니까?\n추방 시 랭킹 및 출석부 이력에서도 즉시 제외됩니다.`)) return;
+            if (!confirm(`[${name}] 회원을 추방하시겠습니까?`)) return;
             delete membersData[uid];
             renderAdminMemberList();
             renderRawMembersViewer();
