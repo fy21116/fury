@@ -7,15 +7,7 @@
     <!-- SheetJS 라이브러리 (날짜별 탭이 분리된 .xlsx 엑셀 다운로드용) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #0d0918; color: white; font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; margin: 0; padding: 0; min-height: 100vh; padding-bottom: 70px; }
-        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0918; display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .login-box { background: #18122d; border: 2px solid #805ad5; border-radius: 14px; padding: 35px 25px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .login-box h1 { color: #d6bcfa; margin: 0 0 8px 0; font-size: 22px; }
-        .login-box p { color: #a0aec0; font-size: 13px; margin-bottom: 22px; line-height: 1.5; }
-        .input-group { margin-bottom: 12px; text-align: left; }
-        .input-group label { display: block; font-size: 12px; color: #b794f4; margin-bottom: 5px; font-weight: bold; }
-        .login-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #44337a; background: #0d0918; color: white; font-size: 15px; }
+        *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0d0918; color: white; font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; margin: 0; padding: 0; min-height: 100vh; padding-bottom: 70px; }
         .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0918; display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
         .login-box { background: #18122d; border: 2px solid #805ad5; border-radius: 14px; padding: 35px 25px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -237,7 +229,8 @@
         .board-featured-date { font-size: 12px; color: #a0aec0; font-weight: bold; }
         .board-featured-body { font-size: 14px; color: #e2e8f0; line-height: 1.65; white-space: pre-line; word-break: break-word; }
         .board-archive-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: #120d22; border: 1px solid #2a1f4e; border-radius: 8px; margin-bottom: 8px; cursor: pointer; flex-wrap: wrap; }
-        .board-archive-item:hover, .board-archive-item.active-item { border-color: #805ad5; background: rgba(128, 90, 213, 0.14); }
+        .board-archive-item:hover { border-color: #805ad5; background: rgba(128, 90, 213, 0.14); }
+        .board-archive-item.active-item { border-color: #d69e2e; background: rgba(214, 158, 46, 0.16); }
 
         .mobile-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #120d22; border-top: 1px solid #2a1f4e; z-index: 1500; justify-content: space-around; padding: 8px 0; }
         .mobile-nav-item { background: none; border: none; color: #a0aec0; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1; }
@@ -582,21 +575,25 @@
             <div id="tab-board" class="tab-content">
                 <div class="section-title">
                     <span>공지사항</span>
-                    <button id="board-return-latest-btn" class="btn-sm secondary" style="display:none;" onclick="returnToLatestBoardPost()">최신 공지 보기</button>
                 </div>
 
                 <div id="board-admin-write-box" class="panel-box" style="display:none;">
-                    <div style="font-weight: bold; color: #fbd38d; margin-bottom: 10px;">공지 작성 및 수정 (운영진 전용)</div>
-                    <input type="hidden" id="board-edit-id" value="">
-                    <div style="margin-bottom: 10px;">
-                        <input type="text" id="board-post-title" class="login-input" placeholder="공지 제목을 입력하세요" style="font-size: 14px; padding: 10px 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <span style="font-weight: bold; color: #fbd38d;">공지 작성 및 수정 (운영진 전용)</span>
+                        <button class="btn-sm secondary" id="board-write-toggle-btn" onclick="toggleBoardWriteForm()">작성 폼 열기</button>
                     </div>
-                    <div style="margin-bottom: 12px;">
-                        <textarea id="board-post-content" class="admin-input" placeholder="공지 내용을 입력하세요." style="width: 100%; height: 130px; resize: vertical;"></textarea>
-                    </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn-sm success" id="board-submit-btn" onclick="submitBoardPost()">공지 등록</button>
-                        <button class="btn-sm secondary" id="board-cancel-edit-btn" style="display:none;" onclick="cancelBoardEdit()">수정 취소</button>
+                    <div id="board-write-form-body" style="display:none; margin-top: 12px;">
+                        <input type="hidden" id="board-edit-id" value="">
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="board-post-title" class="login-input" placeholder="공지 제목을 입력하세요" style="font-size: 14px; padding: 10px 12px;">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <textarea id="board-post-content" class="admin-input" placeholder="공지 내용을 입력하세요. 엔터(줄바꿈)가 그대로 반영됩니다." style="width: 100%; height: 130px; resize: vertical;"></textarea>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-sm success" id="board-submit-btn" onclick="submitBoardPost()">공지 등록</button>
+                            <button class="btn-sm secondary" id="board-cancel-edit-btn" style="display:none;" onclick="cancelBoardEdit()">수정 취소</button>
+                        </div>
                     </div>
                 </div>
 
@@ -609,7 +606,7 @@
 
                 <div class="panel-box">
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                        <span style="font-weight: bold; color: #d6bcfa;">이전 공지 목록</span>
+                        <span style="font-weight: bold; color: #d6bcfa;">목록</span>
                         <button class="btn-sm secondary" id="board-archive-toggle-btn" onclick="toggleBoardArchiveList()">접기 / 펼치기</button>
                     </div>
                     <div id="board-archive-list-container"></div>
@@ -1006,6 +1003,7 @@
         let boardPostsData = {};
         let selectedBoardPostId = null;
         let isBoardArchiveCollapsed = false;
+        let isBoardWriteFormExpanded = false;
 
         function isOperator(user) {
             if (!user) return false;
@@ -1526,6 +1524,14 @@
             updateBoardNewBadge();
         }
 
+        window.toggleBoardWriteForm = function() {
+            isBoardWriteFormExpanded = !isBoardWriteFormExpanded;
+            const bodyEl = document.getElementById('board-write-form-body');
+            const btnEl = document.getElementById('board-write-toggle-btn');
+            if (bodyEl) bodyEl.style.display = isBoardWriteFormExpanded ? 'block' : 'none';
+            if (btnEl) btnEl.innerText = isBoardWriteFormExpanded ? '작성 폼 접기' : '작성 폼 열기';
+        };
+
         window.submitBoardPost = async function() {
             if (!isOperator(currentUser)) {
                 alert("운영진 권한이 필요합니다.");
@@ -1548,20 +1554,24 @@
                     title: title,
                     content: content
                 });
+                selectedBoardPostId = editId;
                 alert("공지사항이 수정되었습니다.");
                 cancelBoardEdit();
+                renderBoardTab();
             } else {
                 const newRef = push(ref(db, 'board_posts'));
+                const newKey = newRef.key;
                 await set(newRef, {
                     title: title,
                     content: content,
                     createdDate: createdDate,
                     timestamp: now.getTime()
                 });
-                selectedBoardPostId = null;
+                selectedBoardPostId = newKey;
                 document.getElementById('board-post-title').value = '';
                 document.getElementById('board-post-content').value = '';
                 alert("새 공지사항이 등록되었습니다.");
+                renderBoardTab();
             }
         };
 
@@ -1569,6 +1579,12 @@
             if (!isOperator(currentUser)) return;
             const post = boardPostsData[postId];
             if (!post) return;
+            isBoardWriteFormExpanded = true;
+            const bodyEl = document.getElementById('board-write-form-body');
+            const btnEl = document.getElementById('board-write-toggle-btn');
+            if (bodyEl) bodyEl.style.display = 'block';
+            if (btnEl) btnEl.innerText = '작성 폼 접기';
+
             document.getElementById('board-edit-id').value = postId;
             document.getElementById('board-post-title').value = post.title || '';
             document.getElementById('board-post-content').value = post.content || '';
@@ -1610,11 +1626,6 @@
             renderBoardTab();
         };
 
-        window.returnToLatestBoardPost = function() {
-            selectedBoardPostId = null;
-            renderBoardTab();
-        };
-
         window.toggleBoardArchiveList = function() {
             isBoardArchiveCollapsed = !isBoardArchiveCollapsed;
             renderBoardTab();
@@ -1625,7 +1636,6 @@
             const featuredContainer = document.getElementById('board-featured-container');
             const archiveContainer = document.getElementById('board-archive-list-container');
             const topLabel = document.getElementById('board-top-section-label');
-            const returnBtn = document.getElementById('board-return-latest-btn');
             const toggleBtn = document.getElementById('board-archive-toggle-btn');
 
             if (!featuredContainer || !archiveContainer) return;
@@ -1637,9 +1647,8 @@
             const sorted = getSortedBoardPosts();
             if (sorted.length === 0) {
                 if (topLabel) topLabel.innerText = "최신 공지";
-                if (returnBtn) returnBtn.style.display = 'none';
                 featuredContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 20px;">등록된 공지사항이 없습니다.</div>`;
-                archiveContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 14px; font-size: 13px;">이전 공지가 없습니다.</div>`;
+                archiveContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 14px; font-size: 13px;">등록된 공지가 없습니다.</div>`;
                 return;
             }
 
@@ -1659,9 +1668,6 @@
 
             if (topLabel) {
                 topLabel.innerText = isViewingOlder ? "선택한 공지 보기" : "최신 공지";
-            }
-            if (returnBtn) {
-                returnBtn.style.display = isViewingOlder ? 'inline-block' : 'none';
             }
 
             const canManage = isOperator(currentUser);
@@ -1683,29 +1689,24 @@
                 </div>
             `;
 
-            const olderPosts = sorted.slice(1);
             if (toggleBtn) {
-                toggleBtn.innerText = isBoardArchiveCollapsed ? `목록 펼치기 (${olderPosts.length}건)` : `목록 접기 (${olderPosts.length}건)`;
-            }
-
-            if (olderPosts.length === 0) {
-                archiveContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 14px; font-size: 13px;">이전 공지가 없습니다.</div>`;
-                return;
+                toggleBtn.innerText = isBoardArchiveCollapsed ? `목록 펼치기 (${sorted.length}건)` : `목록 접기 (${sorted.length}건)`;
             }
 
             if (isBoardArchiveCollapsed) {
-                archiveContainer.innerHTML = `<div style="color: #a0aec0; font-size: 13px; padding: 8px 4px;">이전 공지 목록이 접혀 있습니다. (${olderPosts.length}건)</div>`;
+                archiveContainer.innerHTML = `<div style="color: #a0aec0; font-size: 13px; padding: 8px 4px;">목록이 접혀 있습니다. (${sorted.length}건)</div>`;
                 return;
             }
 
             let listHtml = '';
-            olderPosts.forEach(p => {
+            sorted.forEach(p => {
                 const isSelected = activePost.id === p.id;
                 listHtml += `
                     <div class="board-archive-item ${isSelected ? 'active-item' : ''}" onclick="selectBoardPostForView('${p.id}')">
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                             <span style="font-size:12px; color:#a0aec0; font-weight:bold;">${p.createdDate || '-'}</span>
                             <span style="font-size:14px; color:#e2e8f0; font-weight:bold;">${p.title}</span>
+                            ${isSelected ? `<span style="font-size:11px; color:#fbd38d; font-weight:bold;">[열람 중]</span>` : ''}
                         </div>
                         <div style="display:flex; gap:6px;" onclick="event.stopPropagation();">
                             ${canManage ? `
@@ -1824,6 +1825,7 @@
             if (tabName === 'ranking') document.querySelector('.mobile-nav-item:nth-child(3)').classList.add('active');
             if (tabName === 'board') {
                 document.querySelector('.mobile-nav-item:nth-child(4)').classList.add('active');
+                selectedBoardPostId = null;
                 markLatestBoardPostAsRead();
                 renderBoardTab();
             }
@@ -1848,6 +1850,7 @@
             btnEl.classList.add('active');
 
             if (tabName === 'board') {
+                selectedBoardPostId = null;
                 markLatestBoardPostAsRead();
                 renderBoardTab();
             }
@@ -2280,6 +2283,7 @@
             const encSlot = sched.slotKey;
             const encName = sched.name.replace(/'/g, "\\'");
             const targetTs = sched.time.getTime();
+            const isBeforeExactTime = now.getTime() < targetTs;
 
             if (isSlotClosed) {
                 badgeText = "완료 (마감)";
@@ -2322,12 +2326,21 @@
                     statusColor = "#ffffff";
                     buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
                 } else if (myRecord.status === "참여 중") {
-                    statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작)`;
-                    statusColor = "#48bb78";
-                    buttonsHtml = `
-                        <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}')">참여 종료 (완료)</button>
-                        <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
-                    `;
+                    if (isBeforeExactTime) {
+                        statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작) — 보스 정각 이후부터 참여 종료(완료)가 가능합니다.`;
+                        statusColor = "#ecc94b";
+                        buttonsHtml = `
+                            <button class="participate-btn end-btn" disabled>참여 종료 (완료)</button>
+                            <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
+                        `;
+                    } else {
+                        statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작) — 보스 처치 후 [참여 종료 (완료)]를 눌러주세요.`;
+                        statusColor = "#48bb78";
+                        buttonsHtml = `
+                            <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}',${targetTs})">참여 종료 (완료)</button>
+                            <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
+                        `;
+                    }
                 } else if (isOptOutLocked) {
                     statusDesc = `[${currentUser.name}]님 참여 취소 처리됨 — 해당 타임은 재참여가 불가합니다.`;
                     statusColor = "#feb2b2";
@@ -2626,9 +2639,19 @@
             updateDashboard();
         };
 
-        window.endBossSlot = async function(monthKey, slotKey) {
+        window.endBossSlot = async function(monthKey, slotKey, targetTsParam) {
             if (!currentUser) return;
             const now = getSyncedCurrentTime();
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            const sData = slotSnap.exists() ? slotSnap.val() : {};
+            const effectiveTargetTs = Number(sData.targetTimestamp || targetTsParam || 0);
+
+            if (effectiveTargetTs > 0 && now.getTime() < effectiveTargetTs) {
+                alert("보스 정각 이후부터 참여 종료(완료)가 가능합니다.");
+                updateDashboard();
+                return;
+            }
+
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
             await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
                 status: "참여 완료",
@@ -2636,10 +2659,10 @@
                 endTimestamp: now.getTime()
             });
 
-            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
-            if (slotSnap.exists()) {
-                const sData = slotSnap.val();
-                const parts = sData.participants || {};
+            const refreshedSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            if (refreshedSnap.exists()) {
+                const refreshedData = refreshedSnap.val();
+                const parts = refreshedData.participants || {};
                 const validP = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
 
