@@ -21,7 +21,7 @@
         .login-btn:hover { background: #6b46c1; }
         .toggle-auth { margin-top: 15px; font-size: 13px; color: #a0aec0; cursor: pointer; }
         .toggle-auth span { color: #b794f4; font-weight: bold; text-decoration: underline; }
-        .app-wrapper { display: none; min-height: 100vh; flex-direction: row; }
+        .app-wrapper { display: none; min-height: 100vh; flex-direction: row; width: 100%; }
         .sidebar { width: 240px; background-color: #120d22; border-right: 1px solid #2a1f4e; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; flex-shrink: 0; }
         
         .logo-area { margin-bottom: 20px; width: 100%; display: flex; justify-content: center; align-items: center; }
@@ -34,7 +34,7 @@
         .role-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #44337a; color: #d6bcfa; }
         .role-badge.admin { background: #9b2c2c; color: #feb2b2; }
         .logout-btn { background: #2d224d; color: #a0aec0; border: 1px solid #44337a; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; min-height: 38px; }
-        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; min-width: 0; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 18px 25px; border-bottom: 1px solid #2a1f4e; background-color: #0d0918; flex-wrap: wrap; gap: 10px; }
         .live-clock { background: #1b1433; padding: 8px 14px; border-radius: 8px; border: 1px solid #44337a; font-size: 14px; font-weight: bold; color: #b794f4; }
         .tab-content { padding: 25px; max-width: 1250px; display: none; }
@@ -47,7 +47,10 @@
         .admin-sub-content { display: none; }
         .admin-sub-content.active { display: block; }
 
-        .boss-card { background-color: #18122d; border: 1px solid #44337a; border-radius: 14px; padding: 22px; margin-bottom: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .boss-card { background: linear-gradient(180deg, #1b1433 0%, #161029 100%); border: 1px solid #44337a; border-radius: 14px; padding: 22px; margin-bottom: 14px; box-shadow: 0 6px 24px rgba(0,0,0,0.55); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .boss-card.ongoing-card { border-color: #805ad5; box-shadow: 0 6px 26px rgba(128, 90, 213, 0.22); }
+        .boss-card.main-card { border-color: #e53e3e; box-shadow: 0 6px 26px rgba(229, 62, 62, 0.22); }
+        .boss-card.completed-card { border-color: #4a3b73; background: linear-gradient(180deg, #151026 0%, #110c1f 100%); opacity: 0.96; }
         .boss-card.custom-card { border: 2px solid #d69e2e; }
 
         .boss-banner {
@@ -101,7 +104,7 @@
         .boss-count-num { font-size: 28px; font-weight: 900; color: #e9d8fd; text-shadow: 0 0 14px rgba(183, 148, 244, 0.85); letter-spacing: -0.5px; }
 
         .badge-status { background-color: #2f855a; color: #9cdfdf; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; }
-        .badge-status.closed { background-color: #9b2c2c; color: #feb2b2; }
+        .badge-status.closed { background-color: #742a2a; color: #feb2b2; border: 1px solid #c53030; }
         .badge-status.waiting { background-color: #744210; color: #fbd38d; }
         .badge-status.ongoing { background-color: #22543d; color: #68d391; border: 1px solid #48bb78; }
         .boss-time-text { font-size: 24px; font-weight: 900; margin-top: 6px; color: #fff; letter-spacing: 0.5px; }
@@ -111,14 +114,65 @@
         .participate-btn.cancel { background-color: #6b46c1; }
         .participate-btn.end-btn { background-color: #e53e3e; }
         .participate-btn.pre-btn { background-color: #d69e2e; color: #0d0918; }
-        .participate-btn:disabled { background-color: #2d224d; color: #718096; cursor: not-allowed; }
-        .card-party-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 15px; overflow-x: auto; margin-bottom: 10px; }
+        .participate-btn:disabled { background-color: #2d224d; color: #a0aec0; cursor: not-allowed; }
+        .card-party-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 15px; overflow-x: auto; margin-bottom: 6px; }
         .panel-box { background-color: #18122d; border: 1px solid #44337a; border-radius: 12px; padding: 20px; margin-bottom: 20px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 500px; }
         th { color: #a0aec0; padding: 10px 8px; border-bottom: 1px solid #2a1f4e; background: #120d22; }
-        td { padding: 11px 8px; border-bottom: 1px solid #1f1738; }
-        .my-row { background-color: rgba(128, 90, 213, 0.22); font-weight: bold; color: #d6bcfa; }
+        td { padding: 11px 8px; border-bottom: 1px solid #241b40; }
+        tbody tr:hover { background-color: rgba(128, 90, 213, 0.08); }
+        .my-row { background-color: rgba(128, 90, 213, 0.24) !important; font-weight: bold; color: #e9d8fd; }
         .highlight-row { background-color: rgba(214, 158, 46, 0.35) !important; color: #fbd38d !important; font-weight: bold; }
+
+        .status-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+        .status-chip.active { background: rgba(236, 201, 75, 0.16); color: #fbd38d; border: 1px solid rgba(236, 201, 75, 0.45); }
+        .status-chip.done { background: rgba(72, 187, 120, 0.16); color: #68d391; border: 1px solid rgba(72, 187, 120, 0.45); }
+
+        .next-boss-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: linear-gradient(90deg, #18122d 0%, #1f163b 100%);
+            border: 1px solid #44337a;
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            color: #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+        .next-boss-strip-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .next-boss-pill { background: #2d224d; color: #d6bcfa; border: 1px solid #6b46c1; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .next-boss-countdown { color: #fbd38d; font-weight: bold; font-size: 12px; }
+
+        .img-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .img-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #120d22;
+            border: 1px solid #44337a;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #e2e8f0;
+        }
+        .img-chip-key { color: #fbd38d; font-weight: bold; }
+        .img-chip-url { color: #a0aec0; font-size: 11px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .img-chip-del {
+            background: rgba(197, 48, 48, 0.25);
+            color: #feb2b2;
+            border: 1px solid rgba(197, 48, 48, 0.5);
+            border-radius: 999px;
+            padding: 1px 7px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        .img-chip-del:hover { background: #c53030; color: #fff; }
         
         .sched-table tr.main-time-row { background: linear-gradient(90deg, rgba(155, 44, 44, 0.38) 0%, rgba(214, 158, 46, 0.22) 100%); font-weight: bold; }
         .sched-table tr.main-time-row td { color: #fbd38d; border-bottom: 1px solid #744210; }
@@ -516,9 +570,9 @@
 
                 <div id="admin-sub-schedule" class="admin-sub-content active">
                     <div class="panel-box">
-                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 6px;">📌 정규 고정 보스 일정 추가 및 관리</div>
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 6px;">📌 정규 고정 보스 일정 추가 및 관리 (전체 목록 항시 수정 / 오픈 시간 설정)</div>
                         <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
-- 기본 정규 시간표 외에 매일 또는 특정 요일마다 정각/지정 분에 열리는 정규 고정 보스를 직접 추가하고 관리할 수 있습니다.
+- 기본 정규 보스와 추가 정규 보스를 모두 관리할 수 있습니다. (기본값: 카스파·네크·드레이크·이프 15분 전 오픈 / 그 외 30분 전 오픈, 수정 시 이후 일정부터 적용)
                         </p>
                         <div class="admin-form">
                             <select id="fixed-sched-day" class="admin-input">
@@ -539,15 +593,16 @@
                                 <option value="16">16시</option><option value="17">17시</option><option value="18">18시</option><option value="19">19시</option>
                                 <option value="20">20시</option><option value="21">21시</option><option value="22">22시</option><option value="23">23시</option>
                             </select>
-                            <input type="number" id="fixed-sched-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;">
-                            <input type="text" id="fixed-sched-title" class="admin-input" placeholder="정규 보스 명칭 (예: 데스나이트)" style="flex: 1; min-width: 180px;">
+                            <input type="number" id="fixed-sched-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">분</span>
+                            <input type="text" id="fixed-sched-title" class="admin-input" placeholder="정규 보스 명칭 (예: 데스나이트)" style="flex: 1; min-width: 160px;">
                             <select id="fixed-sched-main" class="admin-input">
                                 <option value="normal">일반 고정</option>
                                 <option value="main">★ 메인타임 지정</option>
                             </select>
+                            <input type="number" id="fixed-sched-open" class="admin-input" placeholder="오픈(분 전)" min="1" max="120" value="30" style="width: 75px;" title="보스타임 몇 분 전 오픈"> <span style="font-size:12px; color:#68d391; font-weight:bold;">분 전 오픈</span>
                             <button class="btn-sm success" onclick="addFixedSchedule()">정규 보스 추가</button>
                         </div>
-                        <div id="fixed-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">등록된 추가 정규 보스가 없습니다.</div>
+                        <div id="fixed-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">정규 보스 목록을 불러오는 중입니다...</div>
                     </div>
 
                     <div class="panel-box">
@@ -583,6 +638,7 @@
                             <input type="number" id="schedule-min" class="admin-input" placeholder="분 (0~59)" min="0" max="59" value="0" style="width: 80px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">분</span>
                             <input type="text" id="schedule-title" class="admin-input" placeholder="일정 명칭 (예: 오만 보스)" style="flex: 1; min-width: 150px;">
                             <input type="number" id="schedule-score" class="admin-input" placeholder="배점" value="2" min="1" max="50" style="width: 75px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">점수</span>
+                            <input type="number" id="schedule-open" class="admin-input" placeholder="오픈(분 전)" value="30" min="1" max="120" style="width: 75px;" title="보스타임 몇 분 전 오픈"> <span style="font-size:12px; color:#68d391; font-weight:bold;">분 전 오픈</span>
                             <button class="btn-sm" onclick="addCustomSchedule()">유동 일정 등록</button>
                         </div>
                         <div id="custom-schedule-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">등록된 유동 일정이 없습니다.</div>
@@ -590,15 +646,15 @@
 
                     <div class="panel-box">
                         <div style="font-weight: bold; color: #fbd38d; margin-bottom: 6px;">🖼️ 보스별 카드 좌측 대형 일러스트 이미지 설정</div>
-                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
-- 보스 이름에 특정 키워드가 포함될 때 카드 왼쪽에 띄울 이미지 파일명(예: <code>boss_main.png</code>) 또는 이미지 URL을 지정합니다.
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 10px;">
+- 보스 이름에 키워드가 포함될 때 카드 왼쪽에 표시할 이미지 파일명 또는 URL을 지정합니다.
                         </p>
-                        <div class="admin-form">
-                            <input type="text" id="boss-img-keyword" class="admin-input" placeholder="보스 키워드 (예: 오만)" style="width: 180px;">
-                            <input type="text" id="boss-img-url" class="admin-input" placeholder="이미지 파일명 또는 URL" style="flex: 1; min-width: 220px;">
+                        <div class="admin-form" style="margin-bottom: 8px;">
+                            <input type="text" id="boss-img-keyword" class="admin-input" placeholder="보스 키워드 (예: 오만)" style="width: 170px;">
+                            <input type="text" id="boss-img-url" class="admin-input" placeholder="이미지 파일명 또는 URL" style="flex: 1; min-width: 200px;">
                             <button class="btn-sm" onclick="saveBossImageMapping()">이미지 매칭 등록</button>
                         </div>
-                        <div id="boss-image-mapping-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">로딩 중...</div>
+                        <div id="boss-image-mapping-list" style="font-size: 12px; color: #cbd5e0;">로딩 중...</div>
                     </div>
                 </div>
 
@@ -620,9 +676,9 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
                                 <span style="font-size: 13px; font-weight: bold; color: #d6bcfa;">혈원 직접 선택 일괄 부여 및 일자별 보스 타임 전체선택</span>
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <input type="date" id="bonus-filter-date" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="populateBonusSlotSelect()">
+                                    <input type="date" id="bonus-filter-date" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="populateBonusCheckSlotSelect()">
                                     <select id="bonus-select-slot-target" class="admin-input" style="padding: 4px; font-size: 12px;" onchange="checkSlotParticipantsForBonus()">
-                                        <option value="">-- 보스 타임 선택 일괄체크 --</option>
+                                        <option value="">-- 보스 타임 선택 일괄체크 (0건) --</option>
                                     </select>
                                     <button class="btn-sm secondary" style="padding: 6px 10px; font-size: 11px;" onclick="toggleAllBonusCheckboxes(true)">전체 선택</button>
                                     <button class="btn-sm secondary" style="padding: 6px 10px; font-size: 11px;" onclick="toggleAllBonusCheckboxes(false)">선택 해제</button>
@@ -656,9 +712,9 @@
                         <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px;">보스 타임 인원 및 출석 관리 (날짜별 조회)</div>
                         <div class="sub-box" style="margin-bottom: 0;">
                             <div class="admin-form" style="margin-bottom: 8px;">
-                                <input type="date" id="attendance-manage-date" class="admin-input" style="padding: 6px; font-size: 13px;" onchange="populateBonusSlotSelect()">
+                                <input type="date" id="attendance-manage-date" class="admin-input" style="padding: 6px; font-size: 13px;" onchange="populateAttendanceManageSlotSelect()">
                                 <select id="bonus-slot-select" class="admin-input" style="flex: 1; min-width: 220px;" onchange="previewBonusSlotTargets()">
-                                    <option value="">-- 보스 타임 기록 선택 --</option>
+                                    <option value="">-- 보스 타임 선택 (0건) --</option>
                                 </select>
                                 <button class="btn-sm danger" onclick="deleteSelectedAttendanceSlot()">전체 출석 삭제</button>
                             </div>
@@ -788,6 +844,60 @@
         const ifritHours = [0, 6, 12, 18];
         const mainHours = [3, 9, 15, 21];
 
+        function getDefaultOpenBeforeMin(title) {
+            if (!title) return 30;
+            if (title.includes("카스파") || title.includes("네크") || title.includes("드레이크") || title.includes("이프리트") || title.includes("이프")) {
+                return 15;
+            }
+            return 30;
+        }
+
+        function createInitialFixedSchedules() {
+            const map = {};
+            for (let h = 0; h < 24; h++) {
+                const hh = String(h).padStart(2, '0');
+                if (kaspaHours.includes(h)) {
+                    map[`base_kaspa_${hh}`] = {
+                        day: 'ALL',
+                        hour: h,
+                        min: 0,
+                        title: '카스파 / 네크',
+                        isMain: 'normal',
+                        openBeforeMin: 15
+                    };
+                }
+                if (ifritHours.includes(h)) {
+                    map[`base_ifrit_${hh}`] = {
+                        day: 'ALL',
+                        hour: h,
+                        min: 0,
+                        title: '이프리트 / 드레이크',
+                        isMain: 'normal',
+                        openBeforeMin: 15
+                    };
+                }
+                if (mainHours.includes(h)) {
+                    map[`base_main_${hh}`] = {
+                        day: 'ALL',
+                        hour: h,
+                        min: 0,
+                        title: '메인타임',
+                        isMain: 'main',
+                        openBeforeMin: 30
+                    };
+                }
+            }
+            map['base_siege_sun_20'] = {
+                day: '0',
+                hour: 20,
+                min: 0,
+                title: '공성전 (20:00~21:00)',
+                isMain: 'normal',
+                openBeforeMin: 30
+            };
+            return map;
+        }
+
         const ROLE_LEVELS = {
             'master': 0,
             'king': 1,
@@ -846,11 +956,13 @@
         }
 
         function ensureMonthSubscribed(monthKey) {
+            if (!monthKey) return;
             if (subscribedMonths[monthKey]) return;
             subscribedMonths[monthKey] = true;
             onValue(ref(db, `attendance/${monthKey}`), (snap) => {
                 attendanceByMonth[monthKey] = snap.val() || {};
-                populateBonusSlotSelect();
+                populateBonusCheckSlotSelect();
+                populateAttendanceManageSlotSelect();
                 updateDashboard();
                 loadRankingData();
             });
@@ -897,8 +1009,15 @@
                 updateDashboard();
             });
 
-            onValue(ref(db, 'settings/fixedSchedules'), (snap) => {
-                extraFixedSchedules = snap.val() || {};
+            onValue(ref(db, 'settings/fixedSchedules'), async (snap) => {
+                let rawVal = snap.val() || {};
+                const hasBase = Object.keys(rawVal).some(k => k.startsWith('base_'));
+                if (!hasBase) {
+                    const baseDefaults = createInitialFixedSchedules();
+                    rawVal = { ...baseDefaults, ...rawVal };
+                    await set(ref(db, 'settings/fixedSchedules'), rawVal);
+                }
+                extraFixedSchedules = rawVal;
                 renderFixedScheduleList();
                 renderTimetable();
                 updateDashboard();
@@ -983,7 +1102,8 @@
                 renderFixedScheduleList();
                 renderBossImageMappingList();
                 renderBossScoreSettingsList();
-                populateBonusSlotSelect();
+                populateBonusCheckSlotSelect();
+                populateAttendanceManageSlotSelect();
                 populateBonusUserCheckboxes();
                 renderRecentBonusLogs();
                 renderTimetable();
@@ -1022,10 +1142,16 @@
                 itemAcquiredDateInput.value = nowDateTimeStr;
             }
 
+            if (Object.keys(extraFixedSchedules).length === 0) {
+                extraFixedSchedules = createInitialFixedSchedules();
+            }
+
             renderBossScoreSettingsList();
             renderCustomScheduleList();
             renderFixedScheduleList();
             renderBossImageMappingList();
+            populateBonusCheckSlotSelect();
+            populateAttendanceManageSlotSelect();
             renderTimetable();
             attachRealtimeListeners();
             updateDashboard();
@@ -1153,7 +1279,8 @@
             renderAdminMemberList();
             renderRawMembersViewer();
             renderPendingSidebarList();
-            populateBonusSlotSelect();
+            populateBonusCheckSlotSelect();
+            populateAttendanceManageSlotSelect();
             populateBonusUserCheckboxes();
             renderRecentBonusLogs();
             updateDashboard();
@@ -1467,10 +1594,12 @@
                     hour: parseInt(val.hour ?? 0, 10),
                     min: parseInt(val.min ?? 0, 10),
                     title: val.title || '추가 보스',
-                    score: Number(val.score ?? 2)
+                    score: Number(val.score ?? 2),
+                    openBeforeMin: Number(val.openBeforeMin ?? getDefaultOpenBeforeMin(val.title || ''))
                 };
             }
             const parts = key.split('_');
+            const titleStr = String(val);
             return {
                 id: key,
                 type: 'recurring',
@@ -1478,8 +1607,9 @@
                 date: '',
                 hour: parseInt(parts[1] || 0, 10),
                 min: parts[2] ? parseInt(parts[2], 10) : 0,
-                title: String(val),
-                score: 2
+                title: titleStr,
+                score: 2,
+                openBeforeMin: getDefaultOpenBeforeMin(titleStr)
             };
         }
 
@@ -1505,86 +1635,67 @@
             const monthKey = `${y}-${String(m + 1).padStart(2, '0')}`;
             let list = [];
 
-            for (let h = 0; h < 24; h++) {
-                let titles = [];
-                if (kaspaHours.includes(h)) titles.push("카스파 / 네크");
-                if (ifritHours.includes(h)) titles.push("이프리트 / 드레이크");
-                if (mainHours.includes(h)) titles.push("메인타임");
-                if (dow === 0 && h === 20) titles.push("공성전 (20:00~21:00)");
+            const activeFixedMap = Object.keys(extraFixedSchedules).length > 0 ? extraFixedSchedules : createInitialFixedSchedules();
 
-                Object.values(extraFixedSchedules).forEach(ef => {
-                    if (!ef) return;
-                    const efHour = parseInt(ef.hour ?? 0, 10);
-                    const efMin = parseInt(ef.min ?? 0, 10);
-                    const efDay = String(ef.day ?? 'ALL');
-                    if (efMin === 0 && efHour === h && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
-                        const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
-                        titles.push(prefix + ef.title);
-                    }
-                });
-
-                if (titles.length > 0) {
-                    const hh = String(h).padStart(2, '0');
-                    list.push({
-                        isCustom: false,
-                        time: new Date(y, m, d, h, 0, 0),
-                        monthKey: monthKey,
-                        slotKey: `${dateStr}_${hh}00_fixed`,
-                        legacySlotKey: `${dateStr}_${hh}`,
-                        name: `${hh}:00 ${titles.join(' / ')}`
-                    });
-                }
-            }
-
-            Object.entries(extraFixedSchedules).forEach(([efKey, ef]) => {
+            let groupedByTime = {};
+            Object.entries(activeFixedMap).forEach(([efKey, ef]) => {
                 if (!ef) return;
                 const efHour = parseInt(ef.hour ?? 0, 10);
                 const efMin = parseInt(ef.min ?? 0, 10);
                 const efDay = String(ef.day ?? 'ALL');
-                if (efMin > 0 && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
-                    const hh = String(efHour).padStart(2, '0');
-                    const mm = String(efMin).padStart(2, '0');
-                    const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
-                    list.push({
-                        isCustom: false,
-                        time: new Date(y, m, d, efHour, efMin, 0),
-                        monthKey: monthKey,
-                        slotKey: `${dateStr}_${hh}${mm}_fixed_${efKey}`,
-                        name: `${hh}:${mm} ${prefix}${ef.title}`
+                if (efDay !== 'ALL' && parseInt(efDay, 10) !== dow) return;
+
+                const hh = String(efHour).padStart(2, '0');
+                const mm = String(efMin).padStart(2, '0');
+                const timeKey = `${hh}_${mm}`;
+
+                if (!groupedByTime[timeKey]) {
+                    groupedByTime[timeKey] = {
+                        hour: efHour,
+                        min: efMin,
+                        hh,
+                        mm,
+                        items: []
+                    };
+                }
+                const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                const fullTitle = (prefix + (ef.title || '')).trim();
+                const openMin = Number(ef.openBeforeMin ?? getDefaultOpenBeforeMin(ef.title));
+                const alreadyExists = groupedByTime[timeKey].items.some(it => it.fullTitle === fullTitle);
+                if (!alreadyExists && fullTitle) {
+                    groupedByTime[timeKey].items.push({
+                        key: efKey,
+                        fullTitle: fullTitle,
+                        openBeforeMin: openMin
                     });
                 }
+            });
+
+            Object.values(groupedByTime).forEach(group => {
+                if (group.items.length === 0) return;
+                const titles = group.items.map(it => it.fullTitle);
+                const maxOpenBeforeMin = Math.max(...group.items.map(it => it.openBeforeMin));
+                const slotKey = group.min === 0
+                    ? `${dateStr}_${group.hh}00_fixed`
+                    : `${dateStr}_${group.hh}${group.mm}_fixed_${group.items[0].key}`;
+
+                list.push({
+                    isCustom: false,
+                    time: new Date(y, m, d, group.hour, group.min, 0),
+                    monthKey: monthKey,
+                    slotKey: slotKey,
+                    legacySlotKey: group.min === 0 ? `${dateStr}_${group.hh}` : null,
+                    name: `${group.hh}:${group.mm} ${titles.join(' / ')}`,
+                    openBeforeMin: maxOpenBeforeMin
+                });
             });
 
             list.sort((a, b) => a.time - b.time);
             return list;
         }
 
-        function getActiveFixedSchedule(now) {
-            const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-
-            const candidates = [
-                ...buildFixedCandidatesForDate(yesterday),
-                ...buildFixedCandidatesForDate(today),
-                ...buildFixedCandidatesForDate(tomorrow)
-            ];
-            candidates.sort((a, b) => a.time - b.time);
-
-            for (let i = 0; i < candidates.length; i++) {
-                const c = candidates[i];
-                const closeTime = new Date(c.time.getTime() + 30 * 60 * 1000);
-                const slotObj = getSlotDataObj(c);
-                if (slotObj.isClosed && now >= c.time) {
-                    continue;
-                }
-                if (now < closeTime) return c;
-            }
-            return candidates[candidates.length - 1];
-        }
-
-        function getActiveCustomSchedules(now) {
-            let activeList = [];
+        function buildCustomCandidatesForRange(now) {
+            let list = [];
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
             Object.entries(customSchedules).forEach(([key, val]) => {
@@ -1596,60 +1707,140 @@
                     const dateParts = parsed.date.split('-').map(Number);
                     if (dateParts.length < 3) return;
                     const targetTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], parsed.hour, parsed.min, 0);
-                    const closeTime = new Date(targetTime.getTime() + 30 * 60 * 1000);
+                    const y = targetTime.getFullYear();
+                    const m = String(targetTime.getMonth() + 1).padStart(2, '0');
+                    const d = String(targetTime.getDate()).padStart(2, '0');
+                    const hh = String(parsed.hour).padStart(2, '0');
+                    const mm = String(parsed.min).padStart(2, '0');
 
-                    if (now < closeTime) {
-                        const y = targetTime.getFullYear();
-                        const m = String(targetTime.getMonth() + 1).padStart(2, '0');
-                        const d = String(targetTime.getDate()).padStart(2, '0');
-                        const hh = String(parsed.hour).padStart(2, '0');
-                        const mm = String(parsed.min).padStart(2, '0');
-
-                        activeList.push({
-                            isCustom: true,
-                            customId: key,
-                            time: targetTime,
-                            monthKey: `${y}-${m}`,
-                            slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
-                            name: `${hh}:${mm} ${parsed.title}`,
-                            customScore: parsed.score
-                        });
-                    }
+                    list.push({
+                        isCustom: true,
+                        customId: key,
+                        time: targetTime,
+                        monthKey: `${y}-${m}`,
+                        slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
+                        name: `${hh}:${mm} ${parsed.title}`,
+                        customScore: parsed.score,
+                        openBeforeMin: parsed.openBeforeMin
+                    });
                 } else {
-                    for (let offset = 0; offset <= 7; offset++) {
+                    for (let offset = -1; offset <= 7; offset++) {
                         const dObj = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
                         const dow = dObj.getDay();
                         if (parsed.day === 'ALL' || parseInt(parsed.day, 10) === dow) {
                             const targetTime = new Date(dObj.getFullYear(), dObj.getMonth(), dObj.getDate(), parsed.hour, parsed.min, 0);
-                            const closeTime = new Date(targetTime.getTime() + 30 * 60 * 1000);
-                            
-                            if (offset === 0 && now >= closeTime) continue;
-
-                            if (now < closeTime) {
-                                const y = targetTime.getFullYear();
-                                const m = String(targetTime.getMonth() + 1).padStart(2, '0');
-                                const d = String(targetTime.getDate()).padStart(2, '0');
-                                const hh = String(parsed.hour).padStart(2, '0');
-                                const mm = String(parsed.min).padStart(2, '0');
-                                const dayPrefix = offset === 0 ? '' : `(${m}/${d} ${dayNames[dow]}) `;
-                                activeList.push({
-                                    isCustom: true,
-                                    customId: key,
-                                    time: targetTime,
-                                    monthKey: `${y}-${m}`,
-                                    slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
-                                    name: `${dayPrefix}${hh}:${mm} ${parsed.title}`,
-                                    customScore: parsed.score
-                                });
-                                break;
-                            }
+                            const y = targetTime.getFullYear();
+                            const m = String(targetTime.getMonth() + 1).padStart(2, '0');
+                            const d = String(targetTime.getDate()).padStart(2, '0');
+                            const hh = String(parsed.hour).padStart(2, '0');
+                            const mm = String(parsed.min).padStart(2, '0');
+                            const dayPrefix = (dObj.getDate() === now.getDate() && dObj.getMonth() === now.getMonth()) ? '' : `(${m}/${d} ${dayNames[dow]}) `;
+                            list.push({
+                                isCustom: true,
+                                customId: key,
+                                time: targetTime,
+                                monthKey: `${y}-${m}`,
+                                slotKey: `${y}-${m}-${d}_${hh}${mm}_custom_${key}`,
+                                name: `${dayPrefix}${hh}:${mm} ${parsed.title}`,
+                                customScore: parsed.score,
+                                openBeforeMin: parsed.openBeforeMin
+                            });
                         }
                     }
                 }
             });
 
-            activeList.sort((a, b) => a.time - b.time);
-            return activeList;
+            list.sort((a, b) => a.time - b.time);
+            return list;
+        }
+
+        function getValidParticipantsList(sched) {
+            const slotObj = getSlotDataObj(sched);
+            const participants = slotObj.participants || {};
+            return Object.entries(participants)
+                .filter(([uid, p]) => {
+                    if (uid === 'admin_account' || !p || p.name === 'admin') return false;
+                    const m = membersData[uid];
+                    return !m || m.approved !== false;
+                })
+                .map(([uid, data]) => ({ uid, ...data }));
+        }
+
+        function isSlotCompletedState(sched, nowArg) {
+            const now = nowArg || getSyncedCurrentTime();
+            const slotObj = getSlotDataObj(sched);
+            if (slotObj.isClosed) return true;
+
+            const validP = getValidParticipantsList(sched);
+            if (validP.length === 0) {
+                if (now.getTime() >= sched.time.getTime() + 30 * 60 * 1000) {
+                    return true;
+                }
+                return false;
+            }
+
+            const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
+            return compP.length >= Math.ceil(validP.length / 2);
+        }
+
+        function getPrimaryAndNextSchedules(now) {
+            const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+            const allCandidates = [
+                ...buildFixedCandidatesForDate(yesterday),
+                ...buildFixedCandidatesForDate(today),
+                ...buildFixedCandidatesForDate(tomorrow),
+                ...buildCustomCandidatesForRange(now)
+            ];
+
+            allCandidates.sort((a, b) => a.time - b.time);
+
+            let openOngoingList = [];
+            let completedPastList = [];
+            let upcomingWaitingList = [];
+
+            for (const c of allCandidates) {
+                const openBeforeMin = Number(c.openBeforeMin ?? 30);
+                const openTs = c.time.getTime() - openBeforeMin * 60 * 1000;
+                const completed = isSlotCompletedState(c, now);
+
+                if (now.getTime() < openTs) {
+                    upcomingWaitingList.push(c);
+                } else {
+                    if (completed) {
+                        completedPastList.push(c);
+                    } else {
+                        openOngoingList.push(c);
+                    }
+                }
+            }
+
+            openOngoingList.sort((a, b) => Math.abs(now.getTime() - a.time.getTime()) - Math.abs(now.getTime() - b.time.getTime()));
+
+            let primaryCards = [];
+            let nextScheduled = null;
+
+            if (openOngoingList.length > 0) {
+                primaryCards = [openOngoingList[0]];
+                nextScheduled = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
+            } else {
+                const lastCompleted = completedPastList.length > 0 ? completedPastList[completedPastList.length - 1] : null;
+                const nextUp = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
+
+                if (lastCompleted && nextUp) {
+                    primaryCards = [lastCompleted];
+                    nextScheduled = nextUp;
+                } else if (nextUp) {
+                    primaryCards = [nextUp];
+                    nextScheduled = upcomingWaitingList.length > 1 ? upcomingWaitingList[1] : null;
+                } else if (lastCompleted) {
+                    primaryCards = [lastCompleted];
+                }
+            }
+
+            return { primaryCards, nextScheduled };
         }
 
         function getCustomScheduleScore(slotKey) {
@@ -1666,11 +1857,6 @@
             return monthObj[sched.slotKey] || (sched.legacySlotKey ? monthObj[sched.legacySlotKey] : null) || {};
         }
 
-        function getSlotParticipants(sched) {
-            const slotObj = getSlotDataObj(sched);
-            return slotObj.participants || {};
-        }
-
         function getPreSignups(sched) {
             const monthObj = preSignupsBySlot[sched.monthKey] || {};
             const slotObj = monthObj[sched.slotKey] || {};
@@ -1683,21 +1869,17 @@
 
             Object.entries(monthObj).forEach(([slotKey, slotData]) => {
                 if (!slotData || !slotData.participants) return;
-                const targetTs = slotData.targetTimestamp;
-                if (!targetTs) return;
-
-                let shouldCloseByTime = (now.getTime() >= targetTs + 30 * 60 * 1000);
 
                 let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin');
                 let totalCount = validParticipants.length;
                 let completedCount = validParticipants.filter(p => p.status && p.status.includes("참여 완료")).length;
                 let shouldCloseByMajority = (totalCount > 0 && completedCount >= Math.ceil(totalCount / 2));
 
-                if (shouldCloseByTime || shouldCloseByMajority || slotData.isClosed) {
+                if (shouldCloseByMajority || slotData.isClosed) {
                     if (!slotData.isClosed) {
                         update(ref(db, `attendance/${curMonth}/${slotKey}`), {
                             isClosed: true,
-                            closedReason: shouldCloseByMajority ? "과반수 참여 완료 마감" : "시간 경과 자동 마감"
+                            closedReason: "과반수 참여 완료 마감"
                         });
                     }
                     Object.entries(slotData.participants).forEach(([uid, pData]) => {
@@ -1705,7 +1887,7 @@
                             const endDate = getSyncedCurrentTime();
                             const endStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}:${String(endDate.getSeconds()).padStart(2, '0')}`;
                             update(ref(db, `attendance/${curMonth}/${slotKey}/participants/${uid}`), {
-                                status: shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (자동)",
+                                status: shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (마감)",
                                 endTime: endStr,
                                 endTimestamp: endDate.getTime()
                             });
@@ -1719,17 +1901,10 @@
             ensureMonthSubscribed(sched.monthKey);
             const slotObj = getSlotDataObj(sched);
             const participants = slotObj.participants || {};
-            const pList = Object.entries(participants)
-                .filter(([uid]) => {
-                    if (uid === 'admin_account') return false;
-                    const m = membersData[uid];
-                    return m && m.approved !== false && m.name !== 'admin';
-                })
-                .map(([uid, data]) => ({ uid, ...data }));
+            const pList = getValidParticipantsList(sched);
             pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-            const completedCount = pList.filter(p => p.status && p.status.includes("참여 완료")).length;
-            const isSlotClosed = Boolean(slotObj.isClosed) || (pList.length > 0 && completedCount >= Math.ceil(pList.length / 2));
+            const isSlotClosed = isSlotCompletedState(sched, now);
 
             const preSignups = getPreSignups(sched);
             const preList = Object.entries(preSignups)
@@ -1740,6 +1915,7 @@
                 })
                 .map(([uid, data]) => ({ uid, ...data }));
 
+            const openBeforeMin = Number(sched.openBeforeMin ?? 30);
             const diffMinutes = (now.getTime() - sched.time.getTime()) / (1000 * 60);
             const assignedScore = sched.customScore !== undefined ? sched.customScore : getScoreForBossName(sched.name);
             const myRecord = currentUser ? participants[currentUser.id] : null;
@@ -1750,6 +1926,7 @@
             let statusDesc = "";
             let statusColor = "#ecc94b";
             let buttonsHtml = "";
+            let cardStateClass = sched.name.includes("메인타임") ? "main-card" : "ongoing-card";
 
             const encMonth = sched.monthKey;
             const encSlot = sched.slotKey;
@@ -1757,21 +1934,20 @@
             const targetTs = sched.time.getTime();
 
             if (isSlotClosed) {
-                badgeText = "토벌 완료 (마감)";
+                badgeText = "완료 (마감)";
                 badgeClass = "badge-status closed";
-                statusDesc = myRecord
-                    ? `[${currentUser.name}]님 보스 참여 완료 (해당 보스 타임이 최종 마감되었습니다)`
-                    : "해당 보스 타임은 토벌 완료로 마감되어 더 이상 참여할 수 없습니다.";
-                statusColor = "#a0aec0";
-                buttonsHtml = `<button class="participate-btn" disabled>참여 마감됨</button>`;
+                cardStateClass = "completed-card";
+                statusDesc = "해당 일정은 완료되어 더 이상 참여할 수 없습니다.";
+                statusColor = "#feb2b2";
+                buttonsHtml = `<button class="participate-btn" disabled>완료됨 (참여 마감)</button>`;
                 if (isOperator(currentUser)) {
                     buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감 해제">🔄 마감 해제</button>`;
                 }
-            } else if (diffMinutes < -30) {
-                const remainMin = Math.ceil(Math.abs(diffMinutes) - 30);
+            } else if (diffMinutes < -openBeforeMin) {
+                const remainMin = Math.max(1, Math.ceil(Math.abs(diffMinutes) - openBeforeMin));
                 badgeText = sched.isCustom ? "오픈 대기 (사전 신청 가능)" : "오픈 대기";
                 badgeClass = "badge-status waiting";
-                statusDesc = sched.isCustom ? `지정 시간 30분 전까지 참여 예정 체크가 가능합니다 (약 ${remainMin}분 후 오픈)` : `정각 30분 전 오픈됩니다 (약 ${remainMin}분 후)`;
+                statusDesc = `보스타임 ${openBeforeMin}분 전 [참여버튼]이 활성화 됩니다 (약 ${remainMin}분 후 오픈)`;
                 statusColor = "#ecc94b";
                 
                 if (sched.isCustom) {
@@ -1779,24 +1955,26 @@
                     const preBtnClass = myPre ? "participate-btn cancel" : "participate-btn pre-btn";
                     buttonsHtml = `
                         <button class="${preBtnClass}" onclick="togglePreSignup('${encMonth}','${encSlot}')">${preBtnText}</button>
-                        <button class="participate-btn" disabled>정각 30분 전 오픈</button>
+                        <button class="participate-btn" disabled>${openBeforeMin}분 전 오픈</button>
                     `;
                 } else {
-                    buttonsHtml = `<button class="participate-btn" disabled>정각 30분 전 오픈</button>`;
+                    buttonsHtml = `<button class="participate-btn" disabled>${openBeforeMin}분 전 오픈</button>`;
                 }
-            } else if (diffMinutes >= -30 && diffMinutes <= 30) {
+            } else {
                 badgeText = "진행 중";
                 badgeClass = "badge-status ongoing";
                 if (!myRecord) {
-                    statusDesc = "보스가 진행 중입니다! [▶ 참여하기]를 눌러 참여하세요.";
+                    statusDesc = diffMinutes > 0
+                        ? "보스가 진행 중입니다! 완료(과반수/마감) 전까지 늦참 참여가 가능합니다."
+                        : "보스가 진행 중입니다! [▶ 참여하기]를 눌러 참여하세요.";
                     statusColor = "#ffffff";
-                    buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs})">▶ 참여하기</button>`;
+                    buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
                 } else if (myRecord.status === "참여 중") {
                     statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작)`;
                     statusColor = "#48bb78";
                     buttonsHtml = `
                         <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}')">참여 종료 (완료)</button>
-                        <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}',${targetTs})">참여 취소하기</button>
+                        <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
                     `;
                 } else {
                     statusDesc = `[${currentUser.name}]님 보스 참여 완료 (${myRecord.endTime || ''} 종료 확정)`;
@@ -1804,14 +1982,8 @@
                     buttonsHtml = `<button class="participate-btn" disabled>참여 완료됨</button>`;
                 }
                 if (isOperator(currentUser) && pList.length > 0) {
-                    buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 전체 마감</button>`;
+                    buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 강제 마감</button>`;
                 }
-            } else {
-                badgeText = "종료됨";
-                badgeClass = "badge-status closed";
-                statusDesc = "보스 타임이 종료되었습니다.";
-                statusColor = "#a0aec0";
-                buttonsHtml = `<button class="participate-btn" disabled>종료됨</button>`;
             }
 
             const preNames = preList.map(item => {
@@ -1821,7 +1993,7 @@
 
             let rowsHtml = '';
             if (pList.length === 0) {
-                rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #a0aec0; padding: 16px;">아직 참여한 혈맹원이 없습니다.</td></tr>`;
+                rowsHtml = `<tr><td colspan="5" style="text-align: center; color: #a0aec0; padding: 18px;">아직 참여한 혈맹원이 없습니다.</td></tr>`;
             } else {
                 pList.forEach((item, idx) => {
                     const mem = membersData[item.uid];
@@ -1834,13 +2006,17 @@
                     const elSec = elapsedSec % 60;
                     const durationStr = item.endTime ? `${elMin}분 ${elSec}초 (${item.endTime} 종료)` : `${elMin}분 ${elSec}초 경과`;
 
+                    const statusChipHtml = item.status === '참여 중'
+                        ? `<span class="status-chip active">● ${item.status}</span>`
+                        : `<span class="status-chip done">✓ ${item.status}</span>`;
+
                     rowsHtml += `
                         <tr class="${isMe ? 'my-row' : ''}">
                             <td>${idx + 1}</td>
                             <td><b>${latestName}</b> <span style="font-size:11px; color:#b794f4;">[${latestClass}]</span> ${isMe ? '(나)' : ''}</td>
                             <td>${item.startTime || '-'}</td>
                             <td style="color: #d6bcfa;">${durationStr}</td>
-                            <td style="color: ${item.status === '참여 중' ? '#ecc94b' : '#48bb78'}; font-weight: bold;">${item.status}</td>
+                            <td>${statusChipHtml}</td>
                         </tr>
                     `;
                 });
@@ -1862,7 +2038,7 @@
             `;
 
             return `
-                <div class="boss-card ${sched.isCustom ? 'custom-card' : ''}">
+                <div class="boss-card ${cardStateClass} ${sched.isCustom ? 'custom-card' : ''}">
                     <div class="boss-banner">
                         <div class="boss-illust-wrap">
                             <img src="${bossImgSrc}" alt="Boss Illustration" class="boss-illust-img" onerror="this.onerror=null; this.src='${fallbackSvg}';">
@@ -1871,7 +2047,7 @@
                             <div>${cardTypeLabel}<span class="${badgeClass}">${badgeText}</span></div>
                             <div class="boss-time-text">${sched.name}</div>
                             <div style="color: #cbd5e0; font-size: 13px; margin-top: 6px;">
-                                👥 지정 시간 <b>30분 전 ~ 30분 후</b> 참여 가능 | 배점: <b style="color:#b794f4;">${assignedScore}점</b>
+                                👥 보스타임 <b>${openBeforeMin}분 전</b> 오픈 ~ 완료(과반수/마감) 전까지 참여 가능 | 배점: <b style="color:#b794f4;">${assignedScore}점</b>
                             </div>
                         </div>
                         <div class="boss-banner-right">
@@ -1882,7 +2058,7 @@
                     <div class="action-box">
                         <div>
                             <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px; color: ${statusColor};">${statusDesc}</div>
-                            <div style="font-size: 12px; color: #a0aec0;">${sched.isCustom ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다." : "참여 인원 과반수가 [참여 종료]를 누르면 보스 토벌이 완료되어 신규 참여가 자동 마감됩니다."}</div>
+                            <div style="font-size: 12px; color: #a0aec0;">${sched.isCustom ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다." : "참여자 0명 시 정각 +30분 자동 마감되며, 참여자가 있으면 과반수 완료 또는 운영진 강제 마감 시 완료 처리됩니다."}</div>
                         </div>
                         <div class="btn-group">${buttonsHtml}</div>
                     </div>
@@ -1909,6 +2085,24 @@
             `;
         }
 
+        function buildNextBossStripHTML(nextSched, now) {
+            if (!nextSched) return '';
+            const openBeforeMin = Number(nextSched.openBeforeMin ?? 30);
+            const openTs = nextSched.time.getTime() - openBeforeMin * 60 * 1000;
+            const remainMin = Math.max(1, Math.ceil((openTs - now.getTime()) / (1000 * 60)));
+            const assignedScore = nextSched.customScore !== undefined ? nextSched.customScore : getScoreForBossName(nextSched.name);
+
+            return `
+                <div class="next-boss-strip">
+                    <div class="next-boss-strip-left">
+                        <span class="next-boss-pill">예정</span>
+                        <span>다음 보스: <b style="color:#ffffff;">${nextSched.name}</b> <span style="color:#b794f4; font-weight:bold;">(배점 ${assignedScore}점)</span> · 오픈까지 <b>${remainMin}분</b></span>
+                    </div>
+                    <div class="next-boss-countdown">${openBeforeMin}분 전 [참여버튼] 활성화</div>
+                </div>
+            `;
+        }
+
         let flashToggle = false;
         function updateDashboard() {
             const now = getSyncedCurrentTime();
@@ -1927,17 +2121,17 @@
 
             checkAndAutoCompletePastSlots(now);
 
-            const fixedSched = getActiveFixedSchedule(now);
-            const customScheds = getActiveCustomSchedules(now);
+            const { primaryCards, nextScheduled } = getPrimaryAndNextSchedules(now);
 
-            let isUrgent = false;
-            if (fixedSched) {
-                const diffMin = (fixedSched.time.getTime() - now.getTime()) / (1000 * 60);
-                if (diffMin >= -30 && diffMin <= 30) isUrgent = true;
-            }
+            let isUrgent = primaryCards.some(c => {
+                const openBeforeMin = Number(c.openBeforeMin ?? 30);
+                const diffMin = (now.getTime() - c.time.getTime()) / (1000 * 60);
+                return diffMin >= -openBeforeMin && !isSlotCompletedState(c, now);
+            });
+
             if (isUrgent) {
                 flashToggle = !flashToggle;
-                document.title = flashToggle ? "🚨 [보스 진행/오픈임박] 퓨리 혈맹 시스템" : "퓨리 혈맹 통합 관리 시스템";
+                document.title = flashToggle ? "🚨 [보스 진행 중] 퓨리 혈맹 시스템" : "퓨리 혈맹 통합 관리 시스템";
             } else {
                 document.title = "퓨리 혈맹 통합 관리 시스템";
             }
@@ -1945,10 +2139,12 @@
             const container = document.getElementById('boss-cards-container');
             if (container) {
                 let html = '';
-                customScheds.forEach(cSched => {
-                    html += buildBossCardHTML(cSched, now);
+                primaryCards.forEach(cardSched => {
+                    html += buildBossCardHTML(cardSched, now);
                 });
-                if (fixedSched) html += buildBossCardHTML(fixedSched, now);
+                if (nextScheduled) {
+                    html += buildNextBossStripHTML(nextScheduled, now);
+                }
                 container.innerHTML = html;
             }
         }
@@ -1968,12 +2164,13 @@
             }
         };
 
-        window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs) {
+        window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs, openBeforeMin) {
             if (!currentUser) return;
             const now = getSyncedCurrentTime();
+            const openMin = Number(openBeforeMin ?? 30);
             const diffMin = (now.getTime() - targetTs) / (1000 * 60);
-            if (diffMin < -30 || diffMin > 30) {
-                alert("참여 가능 시간(지정 시간 30분 전 ~ 30분 후)이 아닙니다.");
+            if (diffMin < -openMin) {
+                alert(`보스타임 ${openMin}분 전 [참여버튼]이 활성화 됩니다`);
                 return;
             }
 
@@ -1984,7 +2181,7 @@
                 const validP = Object.values(parts).filter(p => p && p.name !== 'admin');
                 const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
                 if (sData.isClosed || (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
-                    alert("이미 보스 토벌이 완료되어 마감된 일정입니다. 추가 참여가 불가능합니다.");
+                    alert("해당 일정은 완료되어 더 이상 참여할 수 없습니다.");
                     return;
                 }
             }
@@ -2005,16 +2202,16 @@
                 score: score,
                 timestamp: now.getTime()
             });
-            populateBonusSlotSelect();
+            populateBonusCheckSlotSelect();
+            populateAttendanceManageSlotSelect();
             loadRankingData();
         };
 
-        window.cancelBossSlot = async function(monthKey, slotKey, targetTs) {
+        window.cancelBossSlot = async function(monthKey, slotKey) {
             if (!currentUser) return;
-            const now = getSyncedCurrentTime();
-            const diffMin = (now.getTime() - targetTs) / (1000 * 60);
-            if (diffMin > 30) {
-                alert("참여 취소 가능 시간이 지났습니다. [참여 종료]를 눌러주세요.");
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            if (slotSnap.exists() && slotSnap.val().isClosed) {
+                alert("해당 일정은 완료되어 더 이상 참여할 수 없습니다.");
                 return;
             }
             await remove(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`));
@@ -2059,13 +2256,13 @@
 
         window.forceCloseBossSlot = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("이 보스 타임을 즉시 전체 마감(토벌 완료) 처리하시겠습니까?")) return;
+            if (!confirm("이 보스 타임을 즉시 완료(강제 마감) 처리하시겠습니까?")) return;
 
             const now = getSyncedCurrentTime();
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
             await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                 isClosed: true,
-                closedReason: `운영진(${currentUser.name}) 수동 마감`
+                closedReason: `운영진(${currentUser.name}) 강제 마감`
             });
 
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
@@ -2086,7 +2283,7 @@
 
         window.reopenBossSlot = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("마감된 보스 타임을 다시 오픈하시겠습니까?")) return;
+            if (!confirm("완료 마감된 보스 타임을 다시 오픈하시겠습니까?")) return;
             await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                 isClosed: false,
                 closedReason: null
@@ -2108,21 +2305,25 @@
                     const hh = String(fc.time.getHours()).padStart(2, '0');
                     const mm = String(fc.time.getMinutes()).padStart(2, '0');
                     const pureTitle = fc.name.replace(/^\d{2}:\d{2}\s*/, '');
+                    const openMin = Number(fc.openBeforeMin ?? 30);
                     candidates.push({
+                        schedRef: fc,
                         time: fc.time,
                         timeStr: `${hh}:${mm}`,
                         title: pureTitle,
                         score: getScoreForBossName(pureTitle),
                         typeHtml: pureTitle.includes("메인타임") ? `<span class="tag-main">★ 메인타임</span>` : (pureTitle.includes("공성전") ? `<span class="tag-siege">일요일 고정</span>` : `<span class="tag-fixed">정규 고정</span>`),
-                        note: pureTitle.includes("메인타임") ? "혈맹 최우선 필수 참여 (30분 전 오픈)" : "지정 시간 30분 전 오픈 ~ 30분 후 마감",
+                        note: pureTitle.includes("메인타임") ? `혈맹 최우선 필수 참여 (${openMin}분 전 오픈)` : `보스타임 ${openMin}분 전 오픈 ~ 완료 시 마감`,
                         rowClass: pureTitle.includes("메인타임") ? "main-time-row" : (pureTitle.includes("공성전") ? "siege-row" : "")
                     });
                 });
             }
 
             candidates = candidates.filter(item => {
-                const closeTime = new Date(item.time.getTime() + 30 * 60 * 1000);
-                return now < closeTime;
+                if (isSlotCompletedState(item.schedRef, now)) return false;
+                const validP = getValidParticipantsList(item.schedRef);
+                if (validP.length === 0 && now.getTime() > item.time.getTime() + 30 * 60 * 1000) return false;
+                return now.getTime() <= item.time.getTime() + 6 * 60 * 60 * 1000;
             });
 
             candidates.sort((a, b) => a.time - b.time);
@@ -2136,18 +2337,19 @@
                     const isToday = r.time.getDate() === now.getDate();
                     const datePrefix = isToday ? '' : `(${String(r.time.getMonth()+1)}/${String(r.time.getDate())}) `;
                     
+                    const openMin = Number(r.schedRef.openBeforeMin ?? 30);
                     let diffMin = (now.getTime() - r.time.getTime()) / (1000 * 60);
                     let finalRowClass = r.rowClass;
                     let finalTypeHtml = r.typeHtml;
 
-                    if (diffMin >= 0 && diffMin <= 30) {
+                    if (diffMin >= -openMin) {
                         if (r.rowClass.includes('main-time-row')) {
                             finalRowClass = "main-time-row";
                         } else {
                             finalRowClass = "ongoing-row";
                         }
                         finalTypeHtml = `<span class="tag-ongoing">진행 중</span>`;
-                    } else if (idx === 0 && diffMin < 0) {
+                    } else if (idx === 0 && diffMin < -openMin) {
                         if (!r.rowClass.includes('main-time-row')) {
                             finalRowClass = "next-upcoming-row";
                             finalTypeHtml = `<span class="tag-next">진행 예정</span>`;
@@ -2175,19 +2377,53 @@
             const min = parseInt(document.getElementById('fixed-sched-min').value || '0', 10);
             const title = document.getElementById('fixed-sched-title').value.trim();
             const isMain = document.getElementById('fixed-sched-main').value;
+            const openBeforeMin = parseInt(document.getElementById('fixed-sched-open').value || '30', 10);
 
-            if (!title || isNaN(hour) || isNaN(min) || min < 0 || min > 59) {
-                alert("정규 보스 명칭과 올바른 시간을 입력해 주세요.");
+            if (!title || isNaN(hour) || isNaN(min) || min < 0 || min > 59 || isNaN(openBeforeMin) || openBeforeMin < 1) {
+                alert("정규 보스 명칭, 시간, 오픈 기준(분)을 올바르게 입력해 주세요.");
                 return;
             }
 
             const key = `fixed_${day}_${String(hour).padStart(2,'0')}_${String(min).padStart(2,'0')}_${Date.now()}`;
-            const obj = { day, hour, min, title, isMain };
+            const obj = { day, hour, min, title, isMain, openBeforeMin };
             extraFixedSchedules[key] = obj;
             await set(ref(db, `settings/fixedSchedules/${key}`), obj);
             document.getElementById('fixed-sched-title').value = '';
             document.getElementById('fixed-sched-min').value = '0';
+            document.getElementById('fixed-sched-open').value = '30';
             alert(`[${title}] 정규 보스 일정이 추가되었습니다.`);
+        };
+
+        window.saveFixedScheduleEdit = async function(key) {
+            if (!isOperator(currentUser)) return;
+            const dayEl = document.getElementById(`edit-fixed-day-${key}`);
+            const hourEl = document.getElementById(`edit-fixed-hour-${key}`);
+            const minEl = document.getElementById(`edit-fixed-min-${key}`);
+            const titleEl = document.getElementById(`edit-fixed-title-${key}`);
+            const mainEl = document.getElementById(`edit-fixed-main-${key}`);
+            const openEl = document.getElementById(`edit-fixed-open-${key}`);
+            if (!dayEl || !hourEl || !minEl || !titleEl || !mainEl || !openEl) return;
+
+            const updated = {
+                day: dayEl.value,
+                hour: parseInt(hourEl.value, 10),
+                min: parseInt(minEl.value || '0', 10),
+                title: titleEl.value.trim(),
+                isMain: mainEl.value,
+                openBeforeMin: parseInt(openEl.value || '30', 10)
+            };
+
+            if (!updated.title || isNaN(updated.hour) || isNaN(updated.min) || isNaN(updated.openBeforeMin) || updated.openBeforeMin < 1) {
+                alert("모든 항목을 올바르게 입력해 주세요.");
+                return;
+            }
+
+            extraFixedSchedules[key] = updated;
+            renderFixedScheduleList();
+            renderTimetable();
+            updateDashboard();
+            await set(ref(db, `settings/fixedSchedules/${key}`), updated);
+            alert(`[${updated.title}] 설정이 저장되었습니다. (차후 일정부터 즉시 반영됩니다.)`);
         };
 
         window.deleteFixedSchedule = async function(key) {
@@ -2200,22 +2436,49 @@
         function renderFixedScheduleList() {
             const container = document.getElementById('fixed-schedule-list');
             if (!container) return;
-            const entries = Object.entries(extraFixedSchedules);
+            const entries = Object.entries(extraFixedSchedules).filter(([, val]) => Boolean(val));
             if (entries.length === 0) {
-                container.innerHTML = "추가된 정규 보스가 없습니다.";
+                container.innerHTML = "등록된 정규 보스가 없습니다.";
                 return;
             }
-            const dayLabels = { 'ALL': '매일', '0': '일요일', '1': '월요일', '2': '화요일', '3': '수요일', '4': '목요일', '5': '금요일', '6': '토요일' };
-            let html = "<b>[추가된 정규 고정 보스 목록]</b><div style='margin-top:8px; display:flex; flex-direction:column; gap:6px;'>";
+
+            entries.sort((a, b) => {
+                const hA = Number(a[1].hour ?? 0) * 60 + Number(a[1].min ?? 0);
+                const hB = Number(b[1].hour ?? 0) * 60 + Number(b[1].min ?? 0);
+                if (hA !== hB) return hA - hB;
+                return String(a[1].day ?? 'ALL').localeCompare(String(b[1].day ?? 'ALL'));
+            });
+
+            let html = "<b>[전체 정규 고정 보스 목록 — 시간대순 / 항시 수정 가능]</b><div style='margin-top:8px; display:flex; flex-direction:column; gap:6px;'>";
             entries.forEach(([key, val]) => {
-                if (!val) return;
-                const hh = String(val.hour ?? 0).padStart(2, '0');
-                const mm = String(val.min ?? 0).padStart(2, '0');
-                const badge = val.isMain === 'main' ? `<span class="tag-main" style="margin-right:6px;">★ 메인타임</span>` : `<span class="tag-fixed" style="margin-right:6px;">정규 고정</span>`;
+                const curDay = String(val.day ?? 'ALL');
+                const curHour = parseInt(val.hour ?? 0, 10);
+                const curMin = parseInt(val.min ?? 0, 10);
+                const curMain = val.isMain || 'normal';
+                const curOpen = Number(val.openBeforeMin ?? getDefaultOpenBeforeMin(val.title));
+
                 html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:#120d22; padding:8px 12px; border-radius:6px; border:1px solid #2a1f4e;">
-                        <div>${badge} <b>[${dayLabels[val.day] || '매일'} ${hh}:${mm}]</b> ${val.title}</div>
-                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px;" onclick="deleteFixedSchedule('${key}')">삭제</button>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; background:#120d22; padding:8px 10px; border-radius:6px; border:1px solid #2a1f4e;">
+                        <select id="edit-fixed-day-${key}" class="admin-input" style="padding:5px; min-height:34px; font-size:12px;">
+                            <option value="ALL" ${curDay==='ALL'?'selected':''}>매일</option>
+                            <option value="0" ${curDay==='0'?'selected':''}>일요일</option>
+                            <option value="1" ${curDay==='1'?'selected':''}>월요일</option>
+                            <option value="2" ${curDay==='2'?'selected':''}>화요일</option>
+                            <option value="3" ${curDay==='3'?'selected':''}>수요일</option>
+                            <option value="4" ${curDay==='4'?'selected':''}>목요일</option>
+                            <option value="5" ${curDay==='5'?'selected':''}>금요일</option>
+                            <option value="6" ${curDay==='6'?'selected':''}>토요일</option>
+                        </select>
+                        <input type="number" id="edit-fixed-hour-${key}" class="admin-input" value="${curHour}" min="0" max="23" style="width:52px; padding:5px; min-height:34px; font-size:12px;">시
+                        <input type="number" id="edit-fixed-min-${key}" class="admin-input" value="${curMin}" min="0" max="59" style="width:52px; padding:5px; min-height:34px; font-size:12px;">분
+                        <input type="text" id="edit-fixed-title-${key}" class="admin-input" value="${val.title || ''}" style="flex:1; min-width:130px; padding:5px; min-height:34px; font-size:12px;">
+                        <select id="edit-fixed-main-${key}" class="admin-input" style="padding:5px; min-height:34px; font-size:12px;">
+                            <option value="normal" ${curMain==='normal'?'selected':''}>일반 고정</option>
+                            <option value="main" ${curMain==='main'?'selected':''}>★ 메인타임</option>
+                        </select>
+                        <input type="number" id="edit-fixed-open-${key}" class="admin-input" value="${curOpen}" min="1" max="120" style="width:58px; padding:5px; min-height:34px; font-size:12px;" title="보스 시간 몇 분 전 참여 버튼 오픈"><span style="font-size:12px; color:#68d391; font-weight:bold;">분 전 오픈</span>
+                        <button class="btn-sm secondary" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="saveFixedScheduleEdit('${key}')">수정</button>
+                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="deleteFixedSchedule('${key}')">삭제</button>
                     </div>
                 `;
             });
@@ -2249,20 +2512,17 @@
             if (!container) return;
             const entries = Object.entries(bossImagesConfig);
             if (entries.length === 0) {
-                container.innerHTML = "등록된 보스 이미지가 없습니다.";
+                container.innerHTML = "<span style='color:#a0aec0;'>등록된 보스 이미지가 없습니다.</span>";
                 return;
             }
-            let html = "<div style='display:flex; flex-direction:column; gap:6px;'>";
+            let html = "<div class='img-chip-grid'>";
             entries.forEach(([kw, url]) => {
                 html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:#120d22; padding:8px 12px; border-radius:6px; border:1px solid #2a1f4e;">
-                        <div>
-                            <b style="color:#fbd38d;">[${kw}]</b> 
-                            <span style="color:#48bb78; font-size:12px; margin-left:8px;">[이미지 등록됨]</span>
-                            <span style="color:#a0aec0; font-size:11px; margin-left:6px;" title="${url}">(${url.length > 30 ? url.slice(0, 30) + '...' : url})</span>
-                        </div>
-                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px;" onclick="deleteBossImageMapping('${kw}')">삭제</button>
-                    </div>
+                    <span class="img-chip" title="${kw}: ${url}">
+                        <span class="img-chip-key">[${kw}]</span>
+                        <span class="img-chip-url">${url}</span>
+                        <button type="button" class="img-chip-del" onclick="deleteBossImageMapping('${kw}')">✕</button>
+                    </span>
                 `;
             });
             html += "</div>";
@@ -2721,7 +2981,6 @@
             const excelTargetDate = excelIndepInput && excelIndepInput.value ? excelIndepInput.value : targetDateStr;
 
             renderExcelTableForDay(excelTargetDate, rankingArray, monthData, bonusData);
-            renderRecentBonusLogs(bonusData, selectedMonth);
             filterRankingAndExcel();
         };
 
@@ -2733,43 +2992,33 @@
 
             let daySlotsMap = {};
 
-            for (let h = 0; h < 24; h++) {
-                let titles = [];
-                if (kaspaHours.includes(h)) titles.push("카스파 / 네크");
-                if (ifritHours.includes(h)) titles.push("이프리트 / 드레이크");
-                if (mainHours.includes(h)) titles.push("메인타임");
-                if (dow === 0 && h === 20) titles.push("공성전 (20:00~21:00)");
-
-                Object.values(extraFixedSchedules).forEach(ef => {
-                    if (!ef) return;
-                    const efHour = parseInt(ef.hour ?? 0, 10);
-                    const efMin = parseInt(ef.min ?? 0, 10);
-                    const efDay = String(ef.day ?? 'ALL');
-                    if (efMin === 0 && efHour === h && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
-                        const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
-                        titles.push(prefix + ef.title);
-                    }
-                });
-
-                if (titles.length > 0) {
-                    const hh = String(h).padStart(2, '0');
-                    const sKey = `${targetDateStr}_${hh}00_fixed`;
-                    daySlotsMap[sKey] = `${hh}:00 ${titles.join(' / ')}`;
-                }
-            }
-
-            Object.entries(extraFixedSchedules).forEach(([efKey, ef]) => {
+            const activeFixedMap = Object.keys(extraFixedSchedules).length > 0 ? extraFixedSchedules : createInitialFixedSchedules();
+            let groupedByTime = {};
+            Object.entries(activeFixedMap).forEach(([efKey, ef]) => {
                 if (!ef) return;
                 const efHour = parseInt(ef.hour ?? 0, 10);
                 const efMin = parseInt(ef.min ?? 0, 10);
                 const efDay = String(ef.day ?? 'ALL');
-                if (efMin > 0 && (efDay === 'ALL' || parseInt(efDay, 10) === dow)) {
-                    const hh = String(efHour).padStart(2, '0');
-                    const mm = String(efMin).padStart(2, '0');
-                    const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
-                    const sKey = `${targetDateStr}_${hh}${mm}_fixed_${efKey}`;
-                    daySlotsMap[sKey] = `${hh}:${mm} ${prefix}${ef.title}`;
+                if (efDay !== 'ALL' && parseInt(efDay, 10) !== dow) return;
+
+                const hh = String(efHour).padStart(2, '0');
+                const mm = String(efMin).padStart(2, '0');
+                const timeKey = `${hh}_${mm}`;
+                if (!groupedByTime[timeKey]) groupedByTime[timeKey] = { min: efMin, hh, mm, items: [] };
+                const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                const fullTitle = (prefix + (ef.title || '')).trim();
+                if (!groupedByTime[timeKey].items.some(it => it.fullTitle === fullTitle) && fullTitle) {
+                    groupedByTime[timeKey].items.push({ key: efKey, fullTitle });
                 }
+            });
+
+            Object.values(groupedByTime).forEach(group => {
+                if (group.items.length === 0) return;
+                const titles = group.items.map(it => it.fullTitle);
+                const sKey = group.min === 0
+                    ? `${targetDateStr}_${group.hh}00_fixed`
+                    : `${targetDateStr}_${group.hh}${group.mm}_fixed_${group.items[0].key}`;
+                daySlotsMap[sKey] = `${group.hh}:${group.mm} ${titles.join(' / ')}`;
             });
 
             Object.entries(customSchedules).forEach(([key, val]) => {
@@ -2811,8 +3060,6 @@
             }
 
             const daySlots = getDaySlotsList(targetDateStr);
-            const monthKey = targetDateStr.slice(0, 7);
-            const bMonthObj = (bonusData || {})[monthKey] || bonusData || {};
 
             let html = `<div class="excel-table-wrapper"><table class="excel-table"><thead><tr>`;
             html += `<th class="sticky-col-1" style="z-index: 6;">캐릭터명</th>`;
@@ -2951,7 +3198,7 @@
                     let rowData = [mem.name, mem.class];
                     let daySum = 0;
                     let dayBonuses = (bonusData[mem.uid] && typeof bonusData[mem.uid] === 'object') 
-                        ? Object.values(bonusData[mem.uid]).filter(b => Object.keys(bonusData[mem.uid]).find(k => k.startsWith(targetDateStr)))
+                        ? Object.entries(bonusData[mem.uid]).filter(([k]) => k.startsWith(targetDateStr)).map(([, v]) => v)
                         : [];
                     
                     let bSum = dayBonuses.reduce((acc, cur) => acc + (Number(cur.score) || 0), 0);
@@ -2984,73 +3231,66 @@
             alert("날짜별 탭이 분리된 엑셀 파일(.xlsx)이 성공적으로 다운로드되었습니다.");
         };
 
-        window.renderRecentBonusLogs = function(bonusData, selectedMonth) {
+        window.renderRecentBonusLogs = async function() {
             const container = document.getElementById('recent-bonus-logs-container');
             const viewDateInput = document.getElementById('bonus-log-view-date');
             if (!container) return;
 
             const targetDate = viewDateInput ? viewDateInput.value : "";
-            const curMonth = selectedMonth || getCurrentMonthKey();
+            const curMonth = targetDate ? targetDate.slice(0, 7) : getCurrentMonthKey();
 
-            if (!bonusData) {
-                get(ref(db, `bonus_scores/${curMonth}`)).then(snap => {
-                    processLogs(snap.val() || {});
-                });
-            } else {
-                processLogs(bonusData);
-            }
+            const snap = await get(ref(db, `bonus_scores/${curMonth}`));
+            const bData = snap.val() || {};
 
-            function processLogs(bData) {
-                let allLogs = [];
-                Object.entries(bData || {}).forEach(([uid, bMap]) => {
-                    const m = membersData[uid];
-                    const charName = m ? m.name : '알수없음';
-                    const charClass = m ? (m.class || '기사') : '기사';
-                    if (bMap && typeof bMap === 'object') {
-                        Object.entries(bMap).forEach(([logKey, logObj]) => {
-                            const logDate = logKey.split('_')[0];
-                            if (targetDate && logDate !== targetDate) return;
-                            allLogs.push({
-                                uid,
-                                charName,
-                                charClass,
-                                logKey,
-                                date: logDate,
-                                score: logObj.score,
-                                reason: logObj.reason,
-                                writer: logObj.writer || '운영진',
-                                timestamp: logObj.timestamp || 0
-                            });
+            let allLogs = [];
+            Object.entries(bData).forEach(([uid, bMap]) => {
+                const m = membersData[uid];
+                const charName = m ? m.name : '알수없음';
+                const charClass = m ? (m.class || '기사') : '기사';
+                if (bMap && typeof bMap === 'object') {
+                    Object.entries(bMap).forEach(([logKey, logObj]) => {
+                        const logDate = logKey.split('_')[0];
+                        if (targetDate && logDate !== targetDate) return;
+                        allLogs.push({
+                            uid,
+                            charName,
+                            charClass,
+                            logKey,
+                            date: logDate,
+                            score: logObj.score,
+                            reason: logObj.reason,
+                            writer: logObj.writer || '운영진',
+                            timestamp: logObj.timestamp || 0
                         });
-                    }
-                });
-
-                allLogs.sort((a, b) => b.timestamp - a.timestamp);
-
-                if (allLogs.length === 0) {
-                    container.innerHTML = `<div style="text-align:center; color:#a0aec0; padding:10px;">선택한 날짜(${targetDate || '전체'})에 해당하는 가감점 이력이 없습니다.</div>`;
-                    return;
+                    });
                 }
+            });
 
-                let html = `<table style="font-size:12px;"><thead><tr><th>날짜</th><th>캐릭터명</th><th>점수</th><th>사유</th><th>부여자</th><th>관리</th></tr></thead><tbody>`;
-                allLogs.forEach(item => {
-                    let color = item.score >= 0 ? '#48bb78' : '#e53e3e';
-                    let prefix = item.score > 0 ? '+' : '';
-                    html += `
-                        <tr>
-                            <td>${item.date}</td>
-                            <td><b>${item.charName}</b> <span style="font-size:11px; color:#b794f4;">[${item.charClass}]</span></td>
-                            <td style="color:${color}; font-weight:bold;">${prefix}${item.score}점</td>
-                            <td>${item.reason}</td>
-                            <td style="color:#a0aec0;">${item.writer}</td>
-                            <td><button class="btn-sm danger" style="padding:2px 6px; font-size:10px;" onclick="deleteBonusLog('${curMonth}', '${item.uid}', '${item.logKey}')">삭제</button></td>
-                        </tr>
-                    `;
-                });
-                html += `</tbody></table>`;
-                container.innerHTML = html;
+            allLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (allLogs.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#a0aec0; padding:10px;">선택한 날짜(${targetDate || '전체'})에 해당하는 가감점 이력이 없습니다.</div>`;
+                return;
             }
-        }
+
+            let html = `<table style="font-size:12px;"><thead><tr><th>날짜</th><th>캐릭터명</th><th>점수</th><th>사유</th><th>부여자</th><th>관리</th></tr></thead><tbody>`;
+            allLogs.forEach(item => {
+                let color = item.score >= 0 ? '#48bb78' : '#e53e3e';
+                let prefix = item.score > 0 ? '+' : '';
+                html += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b>${item.charName}</b> <span style="font-size:11px; color:#b794f4;">[${item.charClass}]</span></td>
+                        <td style="color:${color}; font-weight:bold;">${prefix}${item.score}점</td>
+                        <td>${item.reason}</td>
+                        <td style="color:#a0aec0;">${item.writer}</td>
+                        <td><button class="btn-sm danger" style="padding:2px 6px; font-size:10px;" onclick="deleteBonusLog('${curMonth}', '${item.uid}', '${item.logKey}')">삭제</button></td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        };
 
         window.deleteBonusLog = async function(monthKey, uid, logKey) {
             if (!isOperator(currentUser)) return;
@@ -3058,6 +3298,7 @@
 
             await remove(ref(db, `bonus_scores/${monthKey}/${uid}/${logKey}`));
             alert("가감점 내역이 삭제되었습니다.");
+            renderRecentBonusLogs();
             loadRankingData();
         };
 
@@ -3216,12 +3457,13 @@
             const minStr = document.getElementById('schedule-min').value.trim() || '0';
             const title = document.getElementById('schedule-title').value.trim();
             const scoreVal = parseInt(document.getElementById('schedule-score').value, 10) || 2;
+            const openBeforeMin = parseInt(document.getElementById('schedule-open').value || '30', 10);
 
             const h = parseInt(hourStr, 10);
             const m = parseInt(minStr, 10);
 
-            if (isNaN(h) || h < 0 || h > 23 || isNaN(m) || m < 0 || m > 59 || !title) {
-                alert("올바른 시간과 일정 명칭을 입력해 주세요.");
+            if (isNaN(h) || h < 0 || h > 23 || isNaN(m) || m < 0 || m > 59 || !title || isNaN(openBeforeMin) || openBeforeMin < 1) {
+                alert("올바른 시간, 일정 명칭, 오픈 기준(분)을 입력해 주세요.");
                 return;
             }
             if (type === 'once' && !dateStr) {
@@ -3230,7 +3472,7 @@
             }
 
             const key = `${type}_${day}_${String(h).padStart(2, '0')}_${String(m).padStart(2, '0')}_${Date.now()}`;
-            const newEntry = { type, day, date: dateStr, hour: h, min: m, title, score: scoreVal };
+            const newEntry = { type, day, date: dateStr, hour: h, min: m, title, score: scoreVal, openBeforeMin };
 
             customSchedules[key] = newEntry;
             renderCustomScheduleList();
@@ -3240,6 +3482,7 @@
             document.getElementById('schedule-title').value = '';
             document.getElementById('schedule-min').value = '0';
             document.getElementById('schedule-score').value = '2';
+            document.getElementById('schedule-open').value = '30';
 
             await set(ref(db, `settings/customSchedules/${key}`), newEntry);
             alert(`[${title}] 유동 일정이 성공적으로 등록되었습니다.`);
@@ -3254,6 +3497,7 @@
             const minEl = document.getElementById(`edit-sched-min-${key}`);
             const titleEl = document.getElementById(`edit-sched-title-${key}`);
             const scoreEl = document.getElementById(`edit-sched-score-${key}`);
+            const openEl = document.getElementById(`edit-sched-open-${key}`);
             if (!typeEl || !hourEl || !minEl || !titleEl || !scoreEl) return;
 
             const updated = {
@@ -3263,7 +3507,8 @@
                 hour: parseInt(hourEl.value, 10),
                 min: parseInt(minEl.value, 10),
                 title: titleEl.value.trim(),
-                score: parseInt(scoreEl.value, 10) || 2
+                score: parseInt(scoreEl.value, 10) || 2,
+                openBeforeMin: openEl ? (parseInt(openEl.value, 10) || 30) : 30
             };
             if (!updated.title) {
                 alert("일정 명칭을 입력해 주세요.");
@@ -3334,7 +3579,8 @@
                         <input type="number" id="edit-sched-hour-${key}" class="admin-input" value="${parsed.hour}" min="0" max="23" style="width: 55px; padding: 5px;">시
                         <input type="number" id="edit-sched-min-${key}" class="admin-input" value="${parsed.min}" min="0" max="59" style="width: 55px; padding: 5px;">분
                         <input type="text" id="edit-sched-title-${key}" class="admin-input" value="${parsed.title}" style="flex: 1; min-width: 120px; padding: 5px;">
-                        <input type="number" id="edit-sched-score-${key}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 65px; padding: 5px;" title="배점">점수
+                        <input type="number" id="edit-sched-score-${key}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 60px; padding: 5px;" title="배점">점수
+                        <input type="number" id="edit-sched-open-${key}" class="admin-input" value="${parsed.openBeforeMin}" min="1" max="120" style="width: 60px; padding: 5px;" title="오픈 기준(분 전)">분 전 오픈
                         <button class="btn-sm secondary" style="padding: 5px 10px;" onclick="saveCustomScheduleEdit('${key}')">수정</button>
                         <button class="btn-sm danger" style="padding: 5px 10px;" onclick="deleteCustomSchedule('${key}')">삭제</button>
                     </div>
@@ -3353,53 +3599,83 @@
             await remove(ref(db, `settings/customSchedules/${key}`));
         };
 
-        function populateBonusSlotSelect() {
-            const select = document.getElementById('bonus-slot-select');
-            const targetSelect = document.getElementById('bonus-select-slot-target');
-            const filterDateInput = document.getElementById('bonus-filter-date');
-            const attManageDateInput = document.getElementById('attendance-manage-date');
-            if (!select || !targetSelect) return;
-
-            const targetDateStr = filterDateInput ? filterDateInput.value : (attManageDateInput ? attManageDateInput.value : "");
-            const curMonth = getCurrentMonthKey();
-            const monthObj = attendanceByMonth[curMonth] || {};
-
-            const slotEntries = Object.entries(monthObj).filter(([slotKey, data]) => {
-                if (!data || !data.participants || Object.keys(data.participants).length === 0) return false;
-                if (targetDateStr) {
-                    const datePart = slotKey.split('_')[0];
-                    if (datePart !== targetDateStr) return false;
-                }
-                return true;
-            });
-
-            slotEntries.sort((a, b) => (b[1].targetTimestamp || 0) - (a[1].targetTimestamp || 0));
-
-            let html = `<option value="">-- 보스 타임 선택 (${slotEntries.length}건) --</option>`;
-            let targetHtml = `<option value="">-- 보스 타임 선택 일괄체크 --</option>`;
-
-            slotEntries.forEach(([slotKey, data]) => {
-                const pValues = Object.values(data.participants || {}).filter(p => p.name !== 'admin');
-                const datePart = slotKey.split('_')[0];
-                const title = data.name || slotKey;
-                const optText = `[${datePart}] ${title} — 참여자 ${pValues.length}명`;
-                html += `<option value="${slotKey}">${optText}</option>`;
-                targetHtml += `<option value="${slotKey}">${optText}</option>`;
-            });
-
-            select.innerHTML = html;
-            targetSelect.innerHTML = targetHtml;
-            previewBonusSlotTargets();
+        async function getMonthAttendanceMap(monthKey) {
+            if (!monthKey) return {};
+            if (!attendanceByMonth[monthKey]) {
+                ensureMonthSubscribed(monthKey);
+                const snap = await get(ref(db, `attendance/${monthKey}`));
+                attendanceByMonth[monthKey] = snap.val() || {};
+            }
+            return attendanceByMonth[monthKey] || {};
         }
 
-        window.checkSlotParticipantsForBonus = function() {
+        function buildRecordedSlotOptionsForDate(targetDateStr, monthObj) {
+            if (!targetDateStr) return [];
+            const entries = Object.entries(monthObj || {}).filter(([slotKey, data]) => {
+                if (!slotKey.startsWith(targetDateStr)) return false;
+                if (!data || !data.participants) return false;
+                const validP = Object.values(data.participants).filter(p => p && p.name !== 'admin');
+                return validP.length > 0;
+            });
+
+            entries.sort((a, b) => a[0].localeCompare(b[0]));
+
+            return entries.map(([slotKey, data]) => {
+                const validP = Object.values(data.participants || {}).filter(p => p && p.name !== 'admin');
+                const title = data.name || slotKey;
+                return {
+                    slotKey,
+                    text: `[${targetDateStr}] ${title} — 참여자 ${validP.length}명`
+                };
+            });
+        }
+
+        window.populateBonusCheckSlotSelect = async function() {
+            const filterDateInput = document.getElementById('bonus-filter-date');
+            const targetSelect = document.getElementById('bonus-select-slot-target');
+            if (!targetSelect) return;
+
+            const targetDateStr = filterDateInput ? filterDateInput.value : "";
+            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
+            const monthObj = await getMonthAttendanceMap(monthKey);
+
+            const options = buildRecordedSlotOptionsForDate(targetDateStr, monthObj);
+            let targetHtml = `<option value="">-- 보스 타임 선택 일괄체크 (${options.length}건) --</option>`;
+            options.forEach(opt => {
+                targetHtml += `<option value="${opt.slotKey}">${opt.text}</option>`;
+            });
+            targetSelect.innerHTML = targetHtml;
+        };
+
+        window.populateAttendanceManageSlotSelect = async function() {
+            const attManageDateInput = document.getElementById('attendance-manage-date');
+            const select = document.getElementById('bonus-slot-select');
+            if (!select) return;
+
+            const targetDateStr = attManageDateInput ? attManageDateInput.value : "";
+            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
+            const monthObj = await getMonthAttendanceMap(monthKey);
+
+            const options = buildRecordedSlotOptionsForDate(targetDateStr, monthObj);
+            let html = `<option value="">-- 보스 타임 선택 (${options.length}건) --</option>`;
+            options.forEach(opt => {
+                html += `<option value="${opt.slotKey}">${opt.text}</option>`;
+            });
+            select.innerHTML = html;
+            previewBonusSlotTargets();
+        };
+
+        window.checkSlotParticipantsForBonus = async function() {
+            const filterDateInput = document.getElementById('bonus-filter-date');
             const targetSelect = document.getElementById('bonus-select-slot-target');
             if (!targetSelect) return;
             const slotKey = targetSelect.value;
             if (!slotKey) return;
 
-            const curMonth = getCurrentMonthKey();
-            const slotObj = (attendanceByMonth[curMonth] || {})[slotKey] || {};
+            const targetDateStr = filterDateInput ? filterDateInput.value : slotKey.split('_')[0];
+            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
+            const monthObj = await getMonthAttendanceMap(monthKey);
+            const slotObj = monthObj[slotKey] || {};
             const parts = slotObj.participants || {};
             const participantUids = Object.keys(parts);
 
@@ -3410,7 +3686,8 @@
             });
         };
 
-        window.previewBonusSlotTargets = function() {
+        window.previewBonusSlotTargets = async function() {
+            const attManageDateInput = document.getElementById('attendance-manage-date');
             const select = document.getElementById('bonus-slot-select');
             const preview = document.getElementById('bonus-slot-preview');
             const listContainer = document.getElementById('slot-participants-edit-list');
@@ -3422,12 +3699,15 @@
                 listContainer.innerHTML = "";
                 return;
             }
-            const curMonth = getCurrentMonthKey();
-            const slotObj = (attendanceByMonth[curMonth] || {})[slotKey] || {};
+
+            const targetDateStr = attManageDateInput && attManageDateInput.value ? attManageDateInput.value : slotKey.split('_')[0];
+            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
+            const monthObj = await getMonthAttendanceMap(monthKey);
+            const slotObj = monthObj[slotKey] || {};
             const parts = slotObj.participants || {};
             
             let validParts = Object.entries(parts).filter(([uid, p]) => {
-                if (uid === 'admin_account' || p.name === 'admin') return false;
+                if (uid === 'admin_account' || !p || p.name === 'admin') return false;
                 const m = membersData[uid];
                 return !m || m.approved !== false;
             });
@@ -3450,7 +3730,7 @@
                         <td>${p.startTime || '-'}</td>
                         <td style="color:#48bb78;">${p.status}</td>
                         <td>
-                            <button class="btn-sm danger" style="padding:3px 8px; font-size:11px;" onclick="deleteSingleParticipant('${curMonth}', '${slotKey}', '${uid}', '${memberName}')">제외</button>
+                            <button class="btn-sm danger" style="padding:3px 8px; font-size:11px;" onclick="deleteSingleParticipant('${monthKey}', '${slotKey}', '${uid}', '${memberName}')">제외</button>
                         </td>
                     </tr>
                 `;
@@ -3472,17 +3752,20 @@
 
         window.deleteSelectedAttendanceSlot = async function() {
             if (!isOperator(currentUser)) return;
+            const attManageDateInput = document.getElementById('attendance-manage-date');
             const slotKey = document.getElementById('bonus-slot-select').value;
-            const curMonth = getCurrentMonthKey();
             if (!slotKey) {
                 alert("삭제할 보스 타임 기록을 선택해 주세요.");
                 return;
             }
+            const targetDateStr = attManageDateInput && attManageDateInput.value ? attManageDateInput.value : slotKey.split('_')[0];
+            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
             if (!confirm("선택한 보스 타임의 전체 출석 기록을 삭제하시겠습니까?")) return;
 
-            await remove(ref(db, `attendance/${curMonth}/${slotKey}`));
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}`));
             alert("선택한 출석 기록이 삭제되었습니다.");
-            populateBonusSlotSelect();
+            populateAttendanceManageSlotSelect();
+            populateBonusCheckSlotSelect();
             document.getElementById('slot-participants-edit-list').innerHTML = "";
             loadRankingData();
             updateDashboard();
@@ -3515,7 +3798,6 @@
             const scoreVal = parseInt(document.getElementById('bonus-multi-score').value, 10);
             const reasonVal = document.getElementById('bonus-multi-reason').value.trim() || '관리자 조정';
             const filterDateInput = document.getElementById('bonus-filter-date');
-            const curMonth = getCurrentMonthKey();
 
             if (checkedBoxes.length === 0 || isNaN(scoreVal)) {
                 alert("점수를 부여할 혈원을 1명 이상 체크하고 점수를 입력해 주세요.");
@@ -3524,11 +3806,12 @@
 
             const now = getSyncedCurrentTime();
             const dateStr = filterDateInput && filterDateInput.value ? filterDateInput.value : getKSTDateString(now);
+            const targetMonth = dateStr.slice(0, 7);
             const entryKey = `${dateStr}_${Date.now()}`;
 
             for (const chk of checkedBoxes) {
                 const uid = chk.value;
-                const pushRef = ref(db, `bonus_scores/${curMonth}/${uid}/${entryKey}`);
+                const pushRef = ref(db, `bonus_scores/${targetMonth}/${uid}/${entryKey}`);
                 await set(pushRef, {
                     score: scoreVal,
                     reason: reasonVal,
@@ -3541,6 +3824,7 @@
             document.getElementById('bonus-multi-reason').value = '';
             toggleAllBonusCheckboxes(false);
             alert(`선택한 혈원 ${checkedBoxes.length}명에게 점수(${scoreVal > 0 ? '+' + scoreVal : scoreVal}점)가 정상 반영되었습니다!`);
+            renderRecentBonusLogs();
             loadRankingData();
         };
 
