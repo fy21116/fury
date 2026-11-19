@@ -7,7 +7,15 @@
     <!-- SheetJS 라이브러리 (날짜별 탭이 분리된 .xlsx 엑셀 다운로드용) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #0d0918; color: white; font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; margin: 0; padding: 0; min-height: 100vh; padding-bottom: 70px; }
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0918; display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .login-box { background: #18122d; border: 2px solid #805ad5; border-radius: 14px; padding: 35px 25px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .login-box h1 { color: #d6bcfa; margin: 0 0 8px 0; font-size: 22px; }
+        .login-box p { color: #a0aec0; font-size: 13px; margin-bottom: 22px; line-height: 1.5; }
+        .input-group { margin-bottom: 12px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; color: #b794f4; margin-bottom: 5px; font-weight: bold; }
+        .login-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #44337a; background: #0d0918; color: white; font-size: 15px; }
         body { background-color: #0d0918; color: white; font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; margin: 0; padding: 0; min-height: 100vh; padding-bottom: 70px; }
         .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0918; display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
         .login-box { background: #18122d; border: 2px solid #805ad5; border-radius: 14px; padding: 35px 25px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -28,8 +36,9 @@
         .logo-img { width: 100%; height: auto; max-height: 170px; object-fit: contain; display: block; }
         
         .menu-list { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
-        .menu-item { width: 100%; padding: 14px 15px; border-radius: 8px; color: #a0aec0; font-size: 14px; cursor: pointer; border: none; background: none; text-align: left; font-weight: bold; min-height: 48px; }
+        .menu-item { width: 100%; padding: 14px 15px; border-radius: 8px; color: #a0aec0; font-size: 14px; cursor: pointer; border: none; background: none; text-align: left; font-weight: bold; min-height: 48px; display: flex; justify-content: space-between; align-items: center; }
         .menu-item.active, .menu-item:hover { background-color: #2a1f4e; color: #d6bcfa; }
+        .new-badge { background: #e53e3e; color: #ffffff; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 999px; line-height: 1.2; }
         .user-profile { padding-top: 15px; border-top: 1px solid #2a1f4e; display: flex; justify-content: space-between; align-items: center; }
         .role-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #44337a; color: #d6bcfa; }
         .role-badge.admin { background: #9b2c2c; color: #feb2b2; }
@@ -222,6 +231,14 @@
             border-right: 2px solid #805ad5;
         }
 
+        .board-featured-card { background: #120d22; border: 1px solid #6b46c1; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+        .board-featured-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; border-bottom: 1px solid #2a1f4e; padding-bottom: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .board-featured-title { font-size: 18px; font-weight: bold; color: #e9d8fd; margin: 0; }
+        .board-featured-date { font-size: 12px; color: #a0aec0; font-weight: bold; }
+        .board-featured-body { font-size: 14px; color: #e2e8f0; line-height: 1.65; white-space: pre-line; word-break: break-word; }
+        .board-archive-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: #120d22; border: 1px solid #2a1f4e; border-radius: 8px; margin-bottom: 8px; cursor: pointer; flex-wrap: wrap; }
+        .board-archive-item:hover, .board-archive-item.active-item { border-color: #805ad5; background: rgba(128, 90, 213, 0.14); }
+
         .mobile-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #120d22; border-top: 1px solid #2a1f4e; z-index: 1500; justify-content: space-around; padding: 8px 0; }
         .mobile-nav-item { background: none; border: none; color: #a0aec0; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1; }
         .mobile-nav-item.active { color: #d6bcfa; }
@@ -293,10 +310,11 @@
                     <option value="군주">군주</option>
                 </select>
             </div>
-            <div class="input-group" style="margin-bottom:18px;">
-                <label>새로운 고유번호 (비밀번호 4자리)</label>
-                <input type="password" id="settings-input-code" class="login-input" placeholder="변경할 비밀번호 입력" maxlength="6">
+            <div class="input-group" style="margin-bottom:10px;">
+                <label>새로운 비밀번호 (4자리)</label>
+                <input type="password" id="settings-input-code" class="login-input" placeholder="비밀번호 입력" maxlength="6">
             </div>
+            <div style="font-size:11px; color:#a0aec0; margin-bottom:16px;">비밀번호를 잊었거나 초기화가 필요한 경우 운영진에게 문의해 주세요.</div>
             <div style="display:flex; gap:10px;">
                 <button class="login-btn" onclick="submitAccountSettings()" style="margin-top:0; background:#2f855a;">저장하기</button>
                 <button class="login-btn" onclick="closeSettingsModal()" style="margin-top:0; background:#2d3748;">취소</button>
@@ -314,6 +332,9 @@
         <button class="mobile-nav-item" onclick="switchTabMobile('ranking', this)">
             <span>📊</span><span>점수/출석부</span>
         </button>
+        <button class="mobile-nav-item" onclick="switchTabMobile('board', this)">
+            <span>📌</span><span>공지사항</span>
+        </button>
         <button class="mobile-nav-item" id="mobile-admin-btn" style="display:none;" onclick="switchTabMobile('admin', this)">
             <span>⚙️</span><span>운영진관리</span>
         </button>
@@ -322,7 +343,7 @@
     <div class="login-screen" id="login-screen">
         <div class="login-box">
             <h1 id="auth-title">퓨리 혈맹 로그인</h1>
-            <p id="auth-desc">캐릭터명과 4자리 고유번호를 입력하세요.</p>
+            <p id="auth-desc">캐릭터명과 비밀번호를 입력하세요.<br><span style="font-size:11px; color:#718096;">비밀번호 분실·초기화는 운영진에게 문의하세요.</span></p>
             <div class="input-group">
                 <label>캐릭터명 (닉네임)</label>
                 <input type="text" id="auth-name" class="login-input" placeholder="닉네임 입력" autocomplete="off">
@@ -337,7 +358,7 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>고유번호 (4자리 비밀번호)</label>
+                <label>비밀번호</label>
                 <input type="password" id="auth-code" class="login-input" placeholder="비밀번호 입력" maxlength="6" autocomplete="new-password" onkeyup="if(event.key==='Enter') handleAuthAction()">
             </div>
             <button class="login-btn" id="auth-action-btn" onclick="handleAuthAction()">접속하기</button>
@@ -355,11 +376,12 @@
                     <img src="image_1.png" alt="FURY CLAN" class="logo-img" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div style=\'font-weight:bold; font-size:24px; color:#b794f4; padding:20px 0; text-align:center;\'>FURY CLAN</div>';">
                 </div>
                 <div class="menu-list">
-                    <button class="menu-item active" onclick="switchTab('boss', this)">보스 참여</button>
-                    <button class="menu-item" onclick="switchTab('items', this)">보스 전리품 내역</button>
-                    <button class="menu-item" onclick="switchTab('ranking', this)">점수 및 엑셀 출석부</button>
-                    <button class="menu-item" id="admin-menu-btn" style="display: none; color: #feb2b2;" onclick="switchTab('admin', this)">운영진 관리</button>
-                    <button class="menu-item" id="master-db-menu-btn" style="display: none; color: #fc8181;" onclick="switchTab('master_db', this)">🚨 DB 원본 관리</button>
+                    <button class="menu-item active" onclick="switchTab('boss', this)"><span>보스 참여</span></button>
+                    <button class="menu-item" onclick="switchTab('items', this)"><span>보스 전리품 내역</span></button>
+                    <button class="menu-item" onclick="switchTab('ranking', this)"><span>점수 및 엑셀 출석부</span></button>
+                    <button class="menu-item" id="board-menu-btn" onclick="switchTab('board', this)"><span>공지사항</span><span id="board-new-badge" class="new-badge" style="display:none;">N</span></button>
+                    <button class="menu-item" id="admin-menu-btn" style="display: none; color: #feb2b2;" onclick="switchTab('admin', this)"><span>운영진 관리</span></button>
+                    <button class="menu-item" id="master-db-menu-btn" style="display: none; color: #fc8181;" onclick="switchTab('master_db', this)"><span>🚨 DB 원본 관리</span></button>
                 </div>
                 <div id="sidebar-pending-section" style="display: none; margin-top: 15px; padding: 10px; background: rgba(214, 158, 46, 0.12); border: 1px dashed #d69e2e; border-radius: 8px;">
                     <div style="font-size: 12px; font-weight: bold; color: #fbd38d; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
@@ -420,9 +442,9 @@
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <select id="loot-period-select" class="month-select" onchange="filterLootTable()" style="padding: 6px; font-size: 13px;">
                             <option value="all">전체 기간 보기</option>
-                            <option value="day">일별 보기</option>
+                            <option value="day" selected>당일 보기</option>
                             <option value="week">주별 보기</option>
-                            <option value="month" selected>월별 보기</option>
+                            <option value="month">월별 보기</option>
                         </select>
                         <input type="date" id="loot-date-filter" class="admin-input" onchange="filterLootTable()" style="display:none; padding: 5px; font-size: 13px;">
                         <input type="text" id="loot-search-input" class="admin-input" placeholder="🔍 아이템명 또는 득템자 검색..." oninput="filterLootTable()" style="width: 160px; padding: 8px; font-size: 13px;">
@@ -434,10 +456,12 @@
 - 혈원 누구나 득템한 아이템과 수량을 등록할 수 있으며, 운영진은 잘못된 내역을 수정 및 관리할 수 있습니다.
                     </p>
                     <div class="admin-form" style="background: #120d22; padding: 15px; border-radius: 8px; border: 1px solid #2a1f4e; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <input type="text" id="item-boss-name" class="admin-input" placeholder="보스 이름 (예: 드레이크)" style="flex: 1; min-width: 130px;">
+                        <input type="text" id="item-boss-name" class="admin-input" list="item-boss-datalist" placeholder="보스 이름 (예: 드레이크)" style="flex: 1; min-width: 130px;">
+                        <datalist id="item-boss-datalist"></datalist>
                         <input type="text" id="item-name" class="admin-input" placeholder="아이템 명" style="flex: 1; min-width: 150px;">
                         <input type="number" id="item-count" class="admin-input" placeholder="수량" value="1" min="1" style="width: 70px;">
-                        <input type="text" id="item-owner" class="admin-input" placeholder="득템자 캐릭터명" style="flex: 1; min-width: 110px;">
+                        <input type="text" id="item-owner" class="admin-input" list="item-owner-datalist" placeholder="득템자 캐릭터명" style="flex: 1; min-width: 110px;">
+                        <datalist id="item-owner-datalist"></datalist>
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <span style="font-size: 12px; color: #b794f4; white-space: nowrap;">획득일시:</span>
                             <input type="datetime-local" id="item-acquired-date" class="admin-input" style="padding: 6px; font-size: 12px;">
@@ -552,6 +576,43 @@
                     <div class="excel-table-wrapper" id="excel-table-container">
                         <div style="text-align: center; color: #a0aec0; padding: 30px;">출석 데이터를 불러오는 중입니다...</div>
                     </div>
+                </div>
+            </div>
+
+            <div id="tab-board" class="tab-content">
+                <div class="section-title">
+                    <span>공지사항</span>
+                    <button id="board-return-latest-btn" class="btn-sm secondary" style="display:none;" onclick="returnToLatestBoardPost()">최신 공지 보기</button>
+                </div>
+
+                <div id="board-admin-write-box" class="panel-box" style="display:none;">
+                    <div style="font-weight: bold; color: #fbd38d; margin-bottom: 10px;">공지 작성 및 수정 (운영진 전용)</div>
+                    <input type="hidden" id="board-edit-id" value="">
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="board-post-title" class="login-input" placeholder="공지 제목을 입력하세요" style="font-size: 14px; padding: 10px 12px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <textarea id="board-post-content" class="admin-input" placeholder="공지 내용을 입력하세요. 엔터(줄바꿈)가 그대로 반영됩니다." style="width: 100%; height: 130px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-sm success" id="board-submit-btn" onclick="submitBoardPost()">공지 등록</button>
+                        <button class="btn-sm secondary" id="board-cancel-edit-btn" style="display:none;" onclick="cancelBoardEdit()">수정 취소</button>
+                    </div>
+                </div>
+
+                <div class="panel-box">
+                    <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 12px;" id="board-top-section-label">최신 공지</div>
+                    <div id="board-featured-container">
+                        <div style="text-align: center; color: #a0aec0; padding: 20px;">등록된 공지사항이 없습니다.</div>
+                    </div>
+                </div>
+
+                <div class="panel-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <span style="font-weight: bold; color: #d6bcfa;">이전 공지 목록</span>
+                        <button class="btn-sm secondary" id="board-archive-toggle-btn" onclick="toggleBoardArchiveList()">접기 / 펼치기</button>
+                    </div>
+                    <div id="board-archive-list-container"></div>
                 </div>
             </div>
 
@@ -732,7 +793,7 @@
                                 <tr>
                                     <th>캐릭터명</th>
                                     <th>클래스</th>
-                                    <th>고유번호</th>
+                                    <th>비밀번호</th>
                                     <th>직급(권한)</th>
                                     <th>관리</th>
                                 </tr>
@@ -787,7 +848,7 @@
                                 <th>DB Key (UID)</th>
                                 <th>캐릭터명</th>
                                 <th>클래스</th>
-                                <th>고유번호(비번)</th>
+                                <th>비밀번호</th>
                                 <th>승인상태</th>
                                 <th>권한(직급)</th>
                                 <th>DB 영구삭제</th>
@@ -942,6 +1003,9 @@
         let isSignupMode = false;
         let currentNotice = { text: "", deadline: 0, id: "" };
         let nicknameHistoryData = {};
+        let boardPostsData = {};
+        let selectedBoardPostId = null;
+        let isBoardArchiveCollapsed = false;
 
         function isOperator(user) {
             if (!user) return false;
@@ -994,6 +1058,7 @@
                     handleLogout();
                     return;
                 }
+                updateLootQuickDatalists();
                 renderAdminMemberList();
                 renderRawMembersViewer();
                 renderPendingSidebarList();
@@ -1004,6 +1069,7 @@
 
             onValue(ref(db, 'settings/customSchedules'), (snap) => {
                 customSchedules = snap.val() || {};
+                updateLootQuickDatalists();
                 renderCustomScheduleList();
                 renderTimetable();
                 updateDashboard();
@@ -1018,6 +1084,7 @@
                     await set(ref(db, 'settings/fixedSchedules'), rawVal);
                 }
                 extraFixedSchedules = rawVal;
+                updateLootQuickDatalists();
                 renderFixedScheduleList();
                 renderTimetable();
                 updateDashboard();
@@ -1060,6 +1127,12 @@
                 nicknameHistoryData = snap.val() || {};
                 renderNicknameHistoryList();
             });
+
+            onValue(ref(db, 'board_posts'), (snap) => {
+                boardPostsData = snap.val() || {};
+                updateBoardNewBadge();
+                renderBoardTab();
+            });
         }
 
         function currentNoticeTextHandler(val) {
@@ -1078,14 +1151,15 @@
 
         window.forceRefreshAdminData = async function() {
             try {
-                const [mSnap, cSnap, fSnap, imgSnap, bSnap, nSnap, hSnap] = await Promise.all([
+                const [mSnap, cSnap, fSnap, imgSnap, bSnap, nSnap, hSnap, pSnap] = await Promise.all([
                     get(ref(db, 'members')),
                     get(ref(db, 'settings/customSchedules')),
                     get(ref(db, 'settings/fixedSchedules')),
                     get(ref(db, 'settings/bossImages')),
                     get(ref(db, 'settings/bossScores')),
                     get(ref(db, 'settings/notice')),
-                    get(ref(db, 'nickname_history'))
+                    get(ref(db, 'nickname_history')),
+                    get(ref(db, 'board_posts'))
                 ]);
                 if (mSnap.exists()) membersData = mSnap.val() || {};
                 if (cSnap.exists()) customSchedules = cSnap.val() || {};
@@ -1094,7 +1168,9 @@
                 if (bSnap.exists() && bSnap.val() !== null) bossScoresConfig = bSnap.val();
                 if (nSnap.exists()) currentNoticeTextHandler(nSnap.val());
                 if (hSnap.exists()) nicknameHistoryData = hSnap.val() || {};
+                if (pSnap.exists()) boardPostsData = pSnap.val() || {};
 
+                updateLootQuickDatalists();
                 renderAdminMemberList();
                 renderRawMembersViewer();
                 renderPendingSidebarList();
@@ -1108,6 +1184,8 @@
                 renderRecentBonusLogs();
                 renderTimetable();
                 renderNicknameHistoryList();
+                updateBoardNewBadge();
+                renderBoardTab();
                 updateDashboard();
                 loadRankingData();
             } catch (e) {
@@ -1127,6 +1205,8 @@
             if (dateInput) dateInput.value = todayStr;
             const excelIndepDate = document.getElementById('excel-independent-date');
             if (excelIndepDate) excelIndepDate.value = todayStr;
+            const lootDateFilter = document.getElementById('loot-date-filter');
+            if (lootDateFilter) lootDateFilter.value = todayStr;
 
             const schedDateInput = document.getElementById('schedule-date');
             if (schedDateInput) schedDateInput.value = todayStr;
@@ -1146,6 +1226,7 @@
                 extraFixedSchedules = createInitialFixedSchedules();
             }
 
+            updateLootQuickDatalists();
             renderBossScoreSettingsList();
             renderCustomScheduleList();
             renderFixedScheduleList();
@@ -1153,6 +1234,7 @@
             populateBonusCheckSlotSelect();
             populateAttendanceManageSlotSelect();
             renderTimetable();
+            renderBoardTab();
             attachRealtimeListeners();
             updateDashboard();
             setInterval(updateDashboard, 1000);
@@ -1191,13 +1273,13 @@
             const classGroup = document.getElementById('auth-class-group');
             if (isSignupMode) {
                 document.getElementById('auth-title').innerText = "퓨리 혈맹 회원가입";
-                document.getElementById('auth-desc').innerHTML = "캐릭터명, 클래스, 4자리 고유번호를 입력하세요.<br>(운영진 승인 후 로그인 가능합니다.)";
+                document.getElementById('auth-desc').innerHTML = "캐릭터명, 클래스, 비밀번호를 입력하세요.<br>(운영진 승인 후 로그인 가능합니다.)<br><span style='font-size:11px; color:#718096;'>비밀번호 분실·초기화는 운영진에게 문의하세요.</span>";
                 document.getElementById('auth-action-btn').innerText = "가입 신청하기";
                 document.getElementById('toggle-auth-text').innerHTML = "이미 계정이 있으신가요? <span>로그인하기</span>";
                 if (classGroup) classGroup.style.display = 'block';
             } else {
                 document.getElementById('auth-title').innerText = "퓨리 혈맹 로그인";
-                document.getElementById('auth-desc').innerText = "캐릭터명과 4자리 고유번호를 입력하세요.";
+                document.getElementById('auth-desc').innerHTML = "캐릭터명과 비밀번호를 입력하세요.<br><span style='font-size:11px; color:#718096;'>비밀번호 분실·초기화는 운영진에게 문의하세요.</span>";
                 document.getElementById('auth-action-btn').innerText = "접속하기";
                 document.getElementById('toggle-auth-text').innerHTML = "계정이 없으신가요? <span>회원가입 신청하기</span>";
                 if (classGroup) classGroup.style.display = 'none';
@@ -1213,7 +1295,7 @@
             const errEl = document.getElementById('auth-error');
 
             if (!nameInput || !codeInput) {
-                errEl.innerText = "캐릭터명과 고유번호를 모두 입력해 주세요.";
+                errEl.innerText = "캐릭터명과 비밀번호를 모두 입력해 주세요.";
                 return;
             }
 
@@ -1231,7 +1313,7 @@
 
             if (isSignupMode) {
                 if (codeInput.length < 4) {
-                    errEl.innerText = "고유번호는 4자리 이상으로 설정해 주세요.";
+                    errEl.innerText = "비밀번호는 4자리 이상으로 설정해 주세요.";
                     return;
                 }
                 const exists = Object.values(list).some(m => m && m.name === nameInput);
@@ -1256,7 +1338,7 @@
                 }
 
                 if (!matchedUser) {
-                    errEl.innerText = "등록되지 않은 캐릭터명이거나 고유번호가 일치하지 않습니다.";
+                    errEl.innerText = "등록되지 않은 캐릭터명이거나 비밀번호가 일치하지 않습니다.";
                     return;
                 }
 
@@ -1275,6 +1357,7 @@
             currentUser = user;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-wrapper').style.display = 'flex';
+            updateLootQuickDatalists();
             updateProfileDisplay();
             renderAdminMemberList();
             renderRawMembersViewer();
@@ -1283,6 +1366,8 @@
             populateAttendanceManageSlotSelect();
             populateBonusUserCheckboxes();
             renderRecentBonusLogs();
+            updateBoardNewBadge();
+            renderBoardTab();
             updateDashboard();
             loadRankingData();
 
@@ -1308,7 +1393,7 @@
             const newCode = document.getElementById('settings-input-code').value.trim();
 
             if (!newName || !newCode) {
-                alert("캐릭터명과 고유번호를 모두 입력해 주세요.");
+                alert("캐릭터명과 비밀번호를 모두 입력해 주세요.");
                 return;
             }
 
@@ -1409,6 +1494,231 @@
             document.getElementById('admin-notice-input').value = '';
         };
 
+        function getSortedBoardPosts() {
+            return Object.entries(boardPostsData)
+                .filter(([, p]) => Boolean(p && p.title))
+                .map(([id, p]) => ({ id, ...p }))
+                .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        }
+
+        function updateBoardNewBadge() {
+            const badge = document.getElementById('board-new-badge');
+            if (!badge) return;
+            const sorted = getSortedBoardPosts();
+            if (sorted.length === 0) {
+                badge.style.display = 'none';
+                return;
+            }
+            const latestPost = sorted[0];
+            const seenId = localStorage.getItem('fury_seen_board_post_id');
+            if (seenId !== latestPost.id) {
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function markLatestBoardPostAsRead() {
+            const sorted = getSortedBoardPosts();
+            if (sorted.length > 0) {
+                localStorage.setItem('fury_seen_board_post_id', sorted[0].id);
+            }
+            updateBoardNewBadge();
+        }
+
+        window.submitBoardPost = async function() {
+            if (!isOperator(currentUser)) {
+                alert("운영진 권한이 필요합니다.");
+                return;
+            }
+            const editId = document.getElementById('board-edit-id').value.trim();
+            const title = document.getElementById('board-post-title').value.trim();
+            const content = document.getElementById('board-post-content').value;
+
+            if (!title || !content.trim()) {
+                alert("공지 제목과 내용을 모두 입력해 주세요.");
+                return;
+            }
+
+            const now = getSyncedCurrentTime();
+            const createdDate = getKSTDateString(now);
+
+            if (editId && boardPostsData[editId]) {
+                await update(ref(db, `board_posts/${editId}`), {
+                    title: title,
+                    content: content
+                });
+                alert("공지사항이 수정되었습니다.");
+                cancelBoardEdit();
+            } else {
+                const newRef = push(ref(db, 'board_posts'));
+                await set(newRef, {
+                    title: title,
+                    content: content,
+                    createdDate: createdDate,
+                    timestamp: now.getTime()
+                });
+                selectedBoardPostId = null;
+                document.getElementById('board-post-title').value = '';
+                document.getElementById('board-post-content').value = '';
+                alert("새 공지사항이 등록되었습니다.");
+            }
+        };
+
+        window.startEditBoardPost = function(postId) {
+            if (!isOperator(currentUser)) return;
+            const post = boardPostsData[postId];
+            if (!post) return;
+            document.getElementById('board-edit-id').value = postId;
+            document.getElementById('board-post-title').value = post.title || '';
+            document.getElementById('board-post-content').value = post.content || '';
+            document.getElementById('board-submit-btn').innerText = "수정 저장";
+            document.getElementById('board-cancel-edit-btn').style.display = "inline-block";
+            const writeBox = document.getElementById('board-admin-write-box');
+            if (writeBox) writeBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        window.cancelBoardEdit = function() {
+            document.getElementById('board-edit-id').value = '';
+            document.getElementById('board-post-title').value = '';
+            document.getElementById('board-post-content').value = '';
+            document.getElementById('board-submit-btn').innerText = "공지 등록";
+            document.getElementById('board-cancel-edit-btn').style.display = "none";
+        };
+
+        window.deleteBoardPost = async function(postId) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("이 공지사항을 삭제하시겠습니까?")) return;
+            if (selectedBoardPostId === postId) {
+                selectedBoardPostId = null;
+            }
+            const editId = document.getElementById('board-edit-id').value;
+            if (editId === postId) {
+                cancelBoardEdit();
+            }
+            await remove(ref(db, `board_posts/${postId}`));
+            alert("공지사항이 삭제되었습니다.");
+        };
+
+        window.selectBoardPostForView = function(postId) {
+            const sorted = getSortedBoardPosts();
+            if (sorted.length > 0 && sorted[0].id === postId) {
+                selectedBoardPostId = null;
+            } else {
+                selectedBoardPostId = postId;
+            }
+            renderBoardTab();
+        };
+
+        window.returnToLatestBoardPost = function() {
+            selectedBoardPostId = null;
+            renderBoardTab();
+        };
+
+        window.toggleBoardArchiveList = function() {
+            isBoardArchiveCollapsed = !isBoardArchiveCollapsed;
+            renderBoardTab();
+        };
+
+        function renderBoardTab() {
+            const writeBox = document.getElementById('board-admin-write-box');
+            const featuredContainer = document.getElementById('board-featured-container');
+            const archiveContainer = document.getElementById('board-archive-list-container');
+            const topLabel = document.getElementById('board-top-section-label');
+            const returnBtn = document.getElementById('board-return-latest-btn');
+            const toggleBtn = document.getElementById('board-archive-toggle-btn');
+
+            if (!featuredContainer || !archiveContainer) return;
+
+            if (writeBox) {
+                writeBox.style.display = isOperator(currentUser) ? 'block' : 'none';
+            }
+
+            const sorted = getSortedBoardPosts();
+            if (sorted.length === 0) {
+                if (topLabel) topLabel.innerText = "최신 공지";
+                if (returnBtn) returnBtn.style.display = 'none';
+                featuredContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 20px;">등록된 공지사항이 없습니다.</div>`;
+                archiveContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 14px; font-size: 13px;">이전 공지가 없습니다.</div>`;
+                return;
+            }
+
+            const latestPost = sorted[0];
+            let activePost = latestPost;
+            let isViewingOlder = false;
+
+            if (selectedBoardPostId && selectedBoardPostId !== latestPost.id) {
+                const found = sorted.find(p => p.id === selectedBoardPostId);
+                if (found) {
+                    activePost = found;
+                    isViewingOlder = true;
+                } else {
+                    selectedBoardPostId = null;
+                }
+            }
+
+            if (topLabel) {
+                topLabel.innerText = isViewingOlder ? "선택한 공지 보기" : "최신 공지";
+            }
+            if (returnBtn) {
+                returnBtn.style.display = isViewingOlder ? 'inline-block' : 'none';
+            }
+
+            const canManage = isOperator(currentUser);
+            const manageButtonsHtml = canManage ? `
+                <div style="display:flex; gap:6px; margin-top:14px;">
+                    <button class="btn-sm secondary" style="padding:5px 10px; font-size:12px; min-height:32px;" onclick="startEditBoardPost('${activePost.id}')">수정</button>
+                    <button class="btn-sm danger" style="padding:5px 10px; font-size:12px; min-height:32px;" onclick="deleteBoardPost('${activePost.id}')">삭제</button>
+                </div>
+            ` : '';
+
+            featuredContainer.innerHTML = `
+                <div class="board-featured-card">
+                    <div class="board-featured-header">
+                        <h3 class="board-featured-title">${activePost.title}</h3>
+                        <span class="board-featured-date">작성일: ${activePost.createdDate || '-'}</span>
+                    </div>
+                    <div class="board-featured-body">${activePost.content || ''}</div>
+                    ${manageButtonsHtml}
+                </div>
+            `;
+
+            const olderPosts = sorted.slice(1);
+            if (toggleBtn) {
+                toggleBtn.innerText = isBoardArchiveCollapsed ? `목록 펼치기 (${olderPosts.length}건)` : `목록 접기 (${olderPosts.length}건)`;
+            }
+
+            if (olderPosts.length === 0) {
+                archiveContainer.innerHTML = `<div style="text-align: center; color: #a0aec0; padding: 14px; font-size: 13px;">이전 공지가 없습니다.</div>`;
+                return;
+            }
+
+            if (isBoardArchiveCollapsed) {
+                archiveContainer.innerHTML = `<div style="color: #a0aec0; font-size: 13px; padding: 8px 4px;">이전 공지 목록이 접혀 있습니다. (${olderPosts.length}건)</div>`;
+                return;
+            }
+
+            let listHtml = '';
+            olderPosts.forEach(p => {
+                const isSelected = activePost.id === p.id;
+                listHtml += `
+                    <div class="board-archive-item ${isSelected ? 'active-item' : ''}" onclick="selectBoardPostForView('${p.id}')">
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <span style="font-size:12px; color:#a0aec0; font-weight:bold;">${p.createdDate || '-'}</span>
+                            <span style="font-size:14px; color:#e2e8f0; font-weight:bold;">${p.title}</span>
+                        </div>
+                        <div style="display:flex; gap:6px;" onclick="event.stopPropagation();">
+                            ${canManage ? `
+                                <button class="btn-sm secondary" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="startEditBoardPost('${p.id}')">수정</button>
+                                <button class="btn-sm danger" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="deleteBoardPost('${p.id}')">삭제</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            archiveContainer.innerHTML = listHtml;
+        }
+
         function updateProfileDisplay() {
             if (!currentUser) return;
             const userClass = currentUser.class || '기사';
@@ -1432,7 +1742,7 @@
             
             if (isOperator(currentUser)) {
                 roleBadge.className = "role-badge admin";
-                adminMenu.style.display = "block";
+                adminMenu.style.display = "flex";
                 if (mobileAdminBtn) mobileAdminBtn.style.display = "flex";
                 if (lootActionTh) lootActionTh.style.display = "table-cell";
             } else {
@@ -1443,12 +1753,13 @@
             }
 
             if (isMasterAdmin(currentUser)) {
-                masterDbMenu.style.display = "block";
+                masterDbMenu.style.display = "flex";
             } else {
                 masterDbMenu.style.display = "none";
             }
 
             renderPendingSidebarList();
+            renderBoardTab();
         }
 
         function renderPendingSidebarList() {
@@ -1511,6 +1822,11 @@
             if (tabName === 'boss') document.querySelector('.mobile-nav-item:nth-child(1)').classList.add('active');
             if (tabName === 'items') document.querySelector('.mobile-nav-item:nth-child(2)').classList.add('active');
             if (tabName === 'ranking') document.querySelector('.mobile-nav-item:nth-child(3)').classList.add('active');
+            if (tabName === 'board') {
+                document.querySelector('.mobile-nav-item:nth-child(4)').classList.add('active');
+                markLatestBoardPostAsRead();
+                renderBoardTab();
+            }
             if (tabName === 'admin') {
                 const adminMobile = document.getElementById('mobile-admin-btn');
                 if (adminMobile) adminMobile.classList.add('active');
@@ -1519,7 +1835,10 @@
             if (tabName === 'ranking') loadRankingData();
             if (tabName === 'admin') forceRefreshAdminData();
             if (tabName === 'master_db') forceRefreshAdminData();
-            if (tabName === 'items') renderItemList(window.lastItemsObj || {});
+            if (tabName === 'items') {
+                updateLootQuickDatalists();
+                renderItemList(window.lastItemsObj || {});
+            }
         };
 
         window.switchTabMobile = function(tabName, btnEl) {
@@ -1528,9 +1847,16 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
             btnEl.classList.add('active');
 
+            if (tabName === 'board') {
+                markLatestBoardPostAsRead();
+                renderBoardTab();
+            }
             if (tabName === 'ranking') loadRankingData();
             if (tabName === 'admin') forceRefreshAdminData();
-            if (tabName === 'items') renderItemList(window.lastItemsObj || {});
+            if (tabName === 'items') {
+                updateLootQuickDatalists();
+                renderItemList(window.lastItemsObj || {});
+            }
         };
 
         window.switchAdminSubTab = function(subName, btnEl) {
@@ -1783,7 +2109,7 @@
             return compP.length >= Math.ceil(validP.length / 2);
         }
 
-        function getPrimaryAndNextSchedules(now) {
+        function getAllSortedCandidatesForNow(now) {
             const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -1796,6 +2122,26 @@
             ];
 
             allCandidates.sort((a, b) => a.time - b.time);
+            return allCandidates;
+        }
+
+        function isNextSlotOpenedForUser(sched, now) {
+            const allCandidates = getAllSortedCandidatesForNow(now);
+            for (const c of allCandidates) {
+                if (c.time.getTime() > sched.time.getTime() && c.slotKey !== sched.slotKey) {
+                    const nextOpenBefore = Number(c.openBeforeMin ?? 30);
+                    const nextOpenTs = c.time.getTime() - nextOpenBefore * 60 * 1000;
+                    if (now.getTime() >= nextOpenTs) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+
+        function getPrimaryAndNextSchedules(now) {
+            const allCandidates = getAllSortedCandidatesForNow(now);
 
             let openOngoingList = [];
             let completedPastList = [];
@@ -1905,6 +2251,7 @@
             pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
             const isSlotClosed = isSlotCompletedState(sched, now);
+            const nextSlotOpened = isNextSlotOpenedForUser(sched, now);
 
             const preSignups = getPreSignups(sched);
             const preList = Object.entries(preSignups)
@@ -1920,6 +2267,7 @@
             const assignedScore = sched.customScore !== undefined ? sched.customScore : getScoreForBossName(sched.name);
             const myRecord = currentUser ? participants[currentUser.id] : null;
             const myPre = currentUser ? preSignups[currentUser.id] : null;
+            const isOptOutLocked = Boolean(myRecord && myRecord.optOutLocked);
 
             let badgeText = "오픈 대기";
             let badgeClass = "badge-status waiting";
@@ -1939,7 +2287,11 @@
                 cardStateClass = "completed-card";
                 statusDesc = "해당 일정은 완료되어 더 이상 참여할 수 없습니다.";
                 statusColor = "#feb2b2";
-                buttonsHtml = `<button class="participate-btn" disabled>완료됨 (참여 마감)</button>`;
+                if (myRecord && myRecord.status && myRecord.status.includes("참여 완료") && !nextSlotOpened) {
+                    buttonsHtml = `<button class="participate-btn cancel" onclick="cancelCompletedBossSlot('${encMonth}','${encSlot}')">참여 취소</button>`;
+                } else {
+                    buttonsHtml = `<button class="participate-btn" disabled>완료됨 (참여 마감)</button>`;
+                }
                 if (isOperator(currentUser)) {
                     buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감 해제">🔄 마감 해제</button>`;
                 }
@@ -1976,10 +2328,18 @@
                         <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}')">참여 종료 (완료)</button>
                         <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
                     `;
+                } else if (isOptOutLocked) {
+                    statusDesc = `[${currentUser.name}]님 참여 취소 처리됨 — 해당 타임은 재참여가 불가합니다.`;
+                    statusColor = "#feb2b2";
+                    buttonsHtml = `<button class="participate-btn" disabled>재참여 불가</button>`;
                 } else {
                     statusDesc = `[${currentUser.name}]님 보스 참여 완료 (${myRecord.endTime || ''} 종료 확정)`;
                     statusColor = "#68d391";
-                    buttonsHtml = `<button class="participate-btn" disabled>참여 완료됨</button>`;
+                    if (!nextSlotOpened) {
+                        buttonsHtml = `<button class="participate-btn cancel" onclick="cancelCompletedBossSlot('${encMonth}','${encSlot}')">참여 취소</button>`;
+                    } else {
+                        buttonsHtml = `<button class="participate-btn" disabled>참여 완료됨</button>`;
+                    }
                 }
                 if (isOperator(currentUser) && pList.length > 0) {
                     buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 강제 마감</button>`;
@@ -2178,6 +2538,11 @@
             if (slotSnap.exists()) {
                 const sData = slotSnap.val();
                 const parts = sData.participants || {};
+                const myExisting = parts[currentUser.id];
+                if (myExisting && myExisting.optOutLocked) {
+                    alert("이미 완료된 일정은 다시 참여가 불가하니 신중히 선택해주세요. 취소 후에는 해당 타임에 다시 참여할 수 없습니다.");
+                    return;
+                }
                 const validP = Object.values(parts).filter(p => p && p.name !== 'admin');
                 const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
                 if (sData.isClosed || (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
@@ -2200,6 +2565,7 @@
                 startTime: timeStr,
                 endTime: "",
                 score: score,
+                optOutLocked: false,
                 timestamp: now.getTime()
             });
             populateBonusCheckSlotSelect();
@@ -2218,6 +2584,48 @@
             loadRankingData();
         };
 
+        window.cancelCompletedBossSlot = async function(monthKey, slotKey) {
+            if (!currentUser) return;
+            const now = getSyncedCurrentTime();
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            if (slotSnap.exists()) {
+                const sData = slotSnap.val();
+                const targetTs = sData.targetTimestamp;
+                if (targetTs) {
+                    const allCandidates = getAllSortedCandidatesForNow(now);
+                    for (const c of allCandidates) {
+                        if (c.time.getTime() > Number(targetTs)) {
+                            const nextOpenMin = Number(c.openBeforeMin ?? 30);
+                            const nextOpenTs = c.time.getTime() - nextOpenMin * 60 * 1000;
+                            if (now.getTime() >= nextOpenTs) {
+                                alert("다음 보스 타임이 오픈되어 완료된 일정의 참여 취소가 마감되었습니다.");
+                                return;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const confirmMsg = "이미 완료된 일정은 다시 참여가 불가하니 신중히 선택해주세요. 취소 후에는 해당 타임에 다시 참여할 수 없습니다.\n\n참여를 취소하시겠습니까?";
+            if (!confirm(confirmMsg)) return;
+
+            await set(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
+                name: currentUser.name,
+                status: "참여 취소",
+                startTime: "",
+                endTime: "",
+                score: 0,
+                optOutLocked: true,
+                timestamp: now.getTime()
+            });
+
+            populateBonusCheckSlotSelect();
+            populateAttendanceManageSlotSelect();
+            loadRankingData();
+            updateDashboard();
+        };
+
         window.endBossSlot = async function(monthKey, slotKey) {
             if (!currentUser) return;
             const now = getSyncedCurrentTime();
@@ -2232,7 +2640,7 @@
             if (slotSnap.exists()) {
                 const sData = slotSnap.val();
                 const parts = sData.participants || {};
-                const validP = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin');
+                const validP = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
 
                 if (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
@@ -2529,6 +2937,36 @@
             container.innerHTML = html;
         }
 
+        function updateLootQuickDatalists() {
+            const bossListEl = document.getElementById('item-boss-datalist');
+            const ownerListEl = document.getElementById('item-owner-datalist');
+
+            if (bossListEl) {
+                const bossSet = new Set(Object.keys(bossScoresConfig || {}));
+                Object.values(extraFixedSchedules || {}).forEach(ef => {
+                    if (ef && ef.title) bossSet.add(ef.title);
+                });
+                Object.values(customSchedules || {}).forEach(cs => {
+                    const parsed = parseCustomEntry('tmp', cs);
+                    if (parsed && parsed.title) bossSet.add(parsed.title);
+                });
+                bossListEl.innerHTML = Array.from(bossSet)
+                    .filter(Boolean)
+                    .map(name => `<option value="${name}"></option>`)
+                    .join('');
+            }
+
+            if (ownerListEl) {
+                const names = Object.values(membersData || {})
+                    .filter(m => m && m.approved !== false && m.name && m.name !== 'admin')
+                    .map(m => m.name);
+                const uniqueNames = Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
+                ownerListEl.innerHTML = uniqueNames
+                    .map(n => `<option value="${n}"></option>`)
+                    .join('');
+            }
+        }
+
         window.registerItem = async function() {
             if (!currentUser) return;
             const bossName = document.getElementById('item-boss-name').value.trim();
@@ -2575,7 +3013,7 @@
 
         window.filterLootTable = function() {
             const itemsObj = window.lastItemsObj || {};
-            const period = document.getElementById('loot-period-select') ? document.getElementById('loot-period-select').value : "month";
+            const period = document.getElementById('loot-period-select') ? document.getElementById('loot-period-select').value : "day";
             const dateFilterInput = document.getElementById('loot-date-filter');
             const query = document.getElementById('loot-search-input') ? document.getElementById('loot-search-input').value.trim().toLowerCase() : "";
             const tbody = document.getElementById('item-table-body');
@@ -2583,7 +3021,12 @@
             if (!tbody) return;
 
             if (period === 'day') {
-                if (dateFilterInput) dateFilterInput.style.display = 'inline-block';
+                if (dateFilterInput) {
+                    dateFilterInput.style.display = 'inline-block';
+                    if (!dateFilterInput.value) {
+                        dateFilterInput.value = getKSTDateString(getSyncedCurrentTime());
+                    }
+                }
             } else {
                 if (dateFilterInput) dateFilterInput.style.display = 'none';
             }
@@ -2595,14 +3038,15 @@
             const now = getSyncedCurrentTime();
             const curYear = now.getFullYear();
             const curMonth = now.getMonth();
+            const todayStr = getKSTDateString(now);
 
             const filtered = list.filter(([key, item]) => {
                 const targetDateToCheck = item.acquiredDate || item.date || "";
                 const itemDatePart = targetDateToCheck.split(' ')[0];
 
                 if (period === 'day') {
-                    const targetDay = dateFilterInput ? dateFilterInput.value : "";
-                    if (targetDay && itemDatePart !== targetDay) return false;
+                    const targetDay = (dateFilterInput && dateFilterInput.value) ? dateFilterInput.value : todayStr;
+                    if (itemDatePart !== targetDay) return false;
                 } else if (period === 'week') {
                     const itemTs = new Date(targetDateToCheck.replace(/-/g, '/')).getTime();
                     const weekAgoTs = now.getTime() - (7 * 86400000);
@@ -2747,7 +3191,7 @@
                 for (const [sKey, sVal] of Object.entries(mVal || {})) {
                     const parts = (sVal && sVal.participants) ? sVal.participants : {};
                     for (const [uid, pInfo] of Object.entries(parts)) {
-                        if (uid !== 'admin_account') {
+                        if (uid !== 'admin_account' && !pInfo.optOutLocked) {
                             const m = membersData[uid];
                             if (m && m.approved !== false && m.name !== 'admin') {
                                 lifetimeScores[uid] = (lifetimeScores[uid] || 0) + (Number(pInfo.score) || 1);
@@ -2843,7 +3287,7 @@
                 const slotDatePart = slotKey.split('_')[0];
 
                 Object.entries(parts).forEach(([uid, pInfo]) => {
-                    if (uid === 'admin_account') return;
+                    if (uid === 'admin_account' || !pInfo || pInfo.optOutLocked) return;
                     const m = membersData[uid];
                     if (!m || m.approved === false || m.name === 'admin') return;
 
@@ -3086,7 +3530,7 @@
                 daySlots.forEach(ds => {
                     const slotObj = monthData[ds.slotKey] || {};
                     const parts = slotObj.participants || {};
-                    if (parts[row.uid]) {
+                    if (parts[row.uid] && !parts[row.uid].optOutLocked) {
                         dayScore += (Number(parts[row.uid].score) || 1);
                     }
                 });
@@ -3101,7 +3545,7 @@
                     const slotObj = monthData[ds.slotKey] || {};
                     const parts = slotObj.participants || {};
                     const rec = parts[row.uid];
-                    if (rec) {
+                    if (rec && !rec.optOutLocked) {
                         html += `<td style="background: rgba(72, 187, 120, 0.18); color: #48bb78; font-weight: bold;" title="참여시각: ${rec.startTime || 'O'}">O (+${rec.score || 1})</td>`;
                     } else {
                         html += `<td style="color: #4a5568;">-</td>`;
@@ -3160,7 +3604,7 @@
                 let total = 0;
                 Object.values(monthData).forEach(slotObj => {
                     const parts = slotObj.participants || {};
-                    if (parts[mem.uid]) total += (Number(parts[mem.uid].score) || 1);
+                    if (parts[mem.uid] && !parts[mem.uid].optOutLocked) total += (Number(parts[mem.uid].score) || 1);
                 });
                 const userBonus = bonusData[mem.uid] || {};
                 if (typeof userBonus === 'object') {
@@ -3208,7 +3652,7 @@
                         const slotObj = monthData[ds.slotKey] || {};
                         const parts = slotObj.participants || {};
                         const rec = parts[mem.uid];
-                        if (rec) {
+                        if (rec && !rec.optOutLocked) {
                             const sc = Number(rec.score) || 1;
                             daySum += sc;
                             return `O (+${sc})`;
@@ -3322,7 +3766,7 @@
             Object.entries(monthObj).forEach(([sKey, sObj]) => {
                 totalSlotsCount++;
                 const parts = sObj.participants || {};
-                if (parts[uid]) {
+                if (parts[uid] && !parts[uid].optOutLocked) {
                     totalParticipations++;
                     if ((sObj.name || sKey).includes("메인타임")) {
                         mainParticipations++;
@@ -4002,7 +4446,7 @@
             const newRole = document.getElementById(`edit-role-${uid}`).value;
 
             if (!newName || !newCode) {
-                alert("닉네임과 고유번호는 비워둘 수 없습니다.");
+                alert("닉네임과 비밀번호는 비워둘 수 없습니다.");
                 return;
             }
 
