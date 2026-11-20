@@ -314,6 +314,43 @@
         .tag-custom { background: #b7791f; color: #fefcbf; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .tag-siege { background: #805ad5; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .admin-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
+        input[type="date"], input[type="datetime-local"] {
+            color-scheme: dark;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(82%) sepia(24%) saturate(1352%) hue-rotate(213deg) brightness(101%) contrast(96%);
+            cursor: pointer;
+            opacity: 0.9;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+        .menu-left-group { display: flex; align-items: center; gap: 11px; }
+        .nav-svg-icon { width: 18px; height: 18px; flex-shrink: 0; color: currentColor; }
+        .mobile-nav-svg { width: 18px; height: 18px; color: currentColor; }
+        .activity-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .activity-kpi-card {
+            background: linear-gradient(180deg, #1b1433 0%, #140f26 100%);
+            border: 1px solid #44337a;
+            border-radius: 12px;
+            padding: 16px 18px;
+        }
+        .activity-kpi-label { font-size: 12px; color: #a0aec0; font-weight: bold; margin-bottom: 6px; }
+        .activity-kpi-val { font-size: 22px; font-weight: 900; color: #f7fafc; }
+        .activity-kpi-sub { font-size: 11.5px; color: #b794f4; margin-top: 5px; line-height: 1.4; }
+        @media (max-width: 950px) {
+            .activity-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 520px) {
+            .activity-kpi-grid { grid-template-columns: 1fr; }
+        }
         .admin-input, .month-select { padding: 10px; border-radius: 6px; border: 1px solid #44337a; background: #0d0918; color: white; font-size: 14px; min-height: 40px; }
         .btn-sm { padding: 8px 14px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 13px; color: white; background: #805ad5; min-height: 38px; }
         .btn-sm.danger { background: #c53030; }
@@ -487,20 +524,29 @@
 
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" onclick="switchTabMobile('boss', this)">
-            <span>⚔️</span><span>보스참여</span>
+            <svg class="mobile-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+            <span>홈</span>
+        </button>
+        <button class="mobile-nav-item" onclick="switchTabMobile('activity', this)">
+            <svg class="mobile-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>내 활동</span>
         </button>
         <button class="mobile-nav-item" onclick="switchTabMobile('items', this)">
-            <span>💎</span><span>전리품</span>
+            <svg class="mobile-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 18 3 22 9 12 21 2 9 6 3"/><line x1="2" y1="9" x2="22" y2="9"/></svg>
+            <span>전리품</span>
         </button>
         <button class="mobile-nav-item" onclick="switchTabMobile('ranking', this)">
-            <span>📊</span><span>점수/출석부</span>
+            <svg class="mobile-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <span>랭킹/점수</span>
         </button>
         <button class="mobile-nav-item" onclick="switchTabMobile('board', this)">
-            <span>📌</span><span>공지사항</span>
+            <svg class="mobile-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>공지사항</span>
             <span id="mobile-board-new-badge" class="mobile-new-badge" style="display:none;">N</span>
         </button>
         <button class="mobile-nav-item" id="mobile-admin-btn" style="display:none;" onclick="switchTabMobile('admin', this)">
-            <span>⚙️</span><span>운영진관리</span>
+            <svg class="mobile-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>운영진</span>
         </button>
     </nav>
 
@@ -540,12 +586,49 @@
                     <img src="image_1.png" alt="FURY CLAN" class="logo-img" onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div style=\'font-weight:bold; font-size:24px; color:#b794f4; padding:20px 0; text-align:center;\'>FURY CLAN</div>';">
                 </div>
                 <div class="menu-list">
-                    <button class="menu-item active" onclick="switchTab('boss', this)"><span>보스 참여</span></button>
-                    <button class="menu-item" onclick="switchTab('items', this)"><span>보스 전리품 내역</span></button>
-                    <button class="menu-item" onclick="switchTab('ranking', this)"><span>점수 및 엑셀 출석부</span></button>
-                    <button class="menu-item" id="board-menu-btn" onclick="switchTab('board', this)"><span>공지사항</span><span id="board-new-badge" class="new-badge" style="display:none;">N</span></button>
-                    <button class="menu-item" id="admin-menu-btn" style="display: none; color: #feb2b2;" onclick="switchTab('admin', this)"><span>운영진 관리</span></button>
-                    <button class="menu-item" id="master-db-menu-btn" style="display: none; color: #fc8181;" onclick="switchTab('master_db', this)"><span>🚨 DB 원본 관리</span></button>
+                    <button class="menu-item active" onclick="switchTab('boss', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+                            <span>홈</span>
+                        </span>
+                    </button>
+                    <button class="menu-item" onclick="switchTab('activity', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            <span>내 활동</span>
+                        </span>
+                    </button>
+                    <button class="menu-item" onclick="switchTab('items', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 18 3 22 9 12 21 2 9 6 3"/><line x1="2" y1="9" x2="22" y2="9"/></svg>
+                            <span>전리품</span>
+                        </span>
+                    </button>
+                    <button class="menu-item" onclick="switchTab('ranking', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                            <span>랭킹 / 점수</span>
+                        </span>
+                    </button>
+                    <button class="menu-item" id="board-menu-btn" onclick="switchTab('board', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <span>공지사항</span>
+                        </span>
+                        <span id="board-new-badge" class="new-badge" style="display:none;">N</span>
+                    </button>
+                    <button class="menu-item" id="admin-menu-btn" style="display: none; color: #feb2b2;" onclick="switchTab('admin', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            <span>운영진 관리</span>
+                        </span>
+                    </button>
+                    <button class="menu-item" id="master-db-menu-btn" style="display: none; color: #fc8181;" onclick="switchTab('master_db', this)">
+                        <span class="menu-left-group">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                            <span>DB 관리</span>
+                        </span>
+                    </button>
                 </div>
                 <div id="sidebar-pending-section" style="display: none; margin-top: 15px; padding: 10px; background: rgba(214, 158, 46, 0.12); border: 1px dashed #d69e2e; border-radius: 8px;">
                     <div style="font-size: 12px; font-weight: bold; color: #fbd38d; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
@@ -637,6 +720,92 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div id="tab-activity" class="tab-content">
+                <div class="section-title">
+                    <span>내 활동 내역 <span id="my-activity-user-label" style="font-size: 13px; color: #b794f4; font-weight: normal;"></span></span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <select id="my-activity-period" class="month-select" onchange="loadMyActivityData()">
+                            <option value="today">오늘</option>
+                            <option value="week">이번 주 (최근 7일)</option>
+                            <option value="month" selected>이번 달</option>
+                            <option value="all">전체 누적</option>
+                            <option value="custom">기간 직접 지정</option>
+                        </select>
+                        <div id="my-activity-custom-box" style="display: none; gap: 6px; align-items: center; background: #18122d; padding: 4px 8px; border-radius: 6px; border: 1px solid #6b46c1;">
+                            <input type="date" id="my-activity-start" class="admin-input" onchange="loadMyActivityData()" style="padding: 4px 6px; font-size: 12px; min-height: 32px;">
+                            <span style="color: #b794f4; font-weight: bold;">~</span>
+                            <input type="date" id="my-activity-end" class="admin-input" onchange="loadMyActivityData()" style="padding: 4px 6px; font-size: 12px; min-height: 32px;">
+                        </div>
+                        <button class="btn-sm secondary" onclick="loadMyActivityData()" style="padding: 6px 12px; font-size: 12px;">새로고침</button>
+                    </div>
+                </div>
+
+                <div class="activity-kpi-grid">
+                    <div class="activity-kpi-card">
+                        <div class="activity-kpi-label">조회 기간 획득 점수</div>
+                        <div class="activity-kpi-val" id="act-kpi-period-score" style="color: #fbd38d;">0점</div>
+                        <div class="activity-kpi-sub" id="act-kpi-period-breakdown">보스 0점 + 가감점 0점</div>
+                    </div>
+                    <div class="activity-kpi-card">
+                        <div class="activity-kpi-label">전체 누적 총점</div>
+                        <div class="activity-kpi-val" id="act-kpi-lifetime-score" style="color: #d6bcfa;">0점</div>
+                        <div class="activity-kpi-sub">가입 이후 전체 합산 점수</div>
+                    </div>
+                    <div class="activity-kpi-card">
+                        <div class="activity-kpi-label">조회 기간 보스 참여 횟수</div>
+                        <div class="activity-kpi-val" id="act-kpi-boss-count" style="color: #68d391;">0회</div>
+                        <div class="activity-kpi-sub" id="act-kpi-boss-breakdown">메인 0 · 이프/드레 0 · 카스파 0 · 특수 0</div>
+                    </div>
+                    <div class="activity-kpi-card">
+                        <div class="activity-kpi-label">조회 기간 가감점 순합계</div>
+                        <div class="activity-kpi-val" id="act-kpi-bonus-net">0점</div>
+                        <div class="activity-kpi-sub" id="act-kpi-bonus-count">가감점 이력 0건</div>
+                    </div>
+                </div>
+
+                <div class="panel-box">
+                    <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>내 보스 참여 상세 내역</span>
+                        <span id="act-boss-table-count" style="font-size: 12px; color: #a0aec0;">총 0건</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>참여 일자</th>
+                                <th>보스 / 일정 명칭</th>
+                                <th>참여 시작 ~ 종료</th>
+                                <th>참여 시간</th>
+                                <th>상태</th>
+                                <th style="color: #fbd38d;">획득 점수</th>
+                            </tr>
+                        </thead>
+                        <tbody id="my-activity-boss-tbody">
+                            <tr><td colspan="6" style="text-align: center; color: #a0aec0; padding: 20px;">참여 내역을 불러오는 중입니다...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel-box">
+                    <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>내 가감점 상세 이력</span>
+                        <span id="act-bonus-table-count" style="font-size: 12px; color: #a0aec0;">총 0건</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>부여 일자</th>
+                                <th>변동 점수</th>
+                                <th>사유</th>
+                                <th>처리 운영진</th>
+                            </tr>
+                        </thead>
+                        <tbody id="my-activity-bonus-tbody">
+                            <tr><td colspan="4" style="text-align: center; color: #a0aec0; padding: 20px;">가감점 이력이 없습니다.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -1503,6 +1672,15 @@
             if (rangeEndInput) {
                 rangeEndInput.value = todayStr;
             }
+            const actStartInput = document.getElementById('my-activity-start');
+            const actEndInput = document.getElementById('my-activity-end');
+            if (actStartInput) {
+                const mStart = new Date(initNow.getFullYear(), initNow.getMonth(), 1);
+                actStartInput.value = getKSTDateString(mStart);
+            }
+            if (actEndInput) {
+                actEndInput.value = todayStr;
+            }
 
             const schedDateInput = document.getElementById('schedule-date');
             if (schedDateInput) schedDateInput.value = todayStr;
@@ -1668,6 +1846,7 @@
             renderBoardTab();
             updateDashboard();
             loadRankingData();
+            loadMyActivityData();
 
             checkAndShowNoticePopup();
         }
@@ -2121,10 +2300,11 @@
 
             document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
             if (tabName === 'boss') document.querySelector('.mobile-nav-item:nth-child(1)').classList.add('active');
-            if (tabName === 'items') document.querySelector('.mobile-nav-item:nth-child(2)').classList.add('active');
-            if (tabName === 'ranking') document.querySelector('.mobile-nav-item:nth-child(3)').classList.add('active');
+            if (tabName === 'activity') document.querySelector('.mobile-nav-item:nth-child(2)').classList.add('active');
+            if (tabName === 'items') document.querySelector('.mobile-nav-item:nth-child(3)').classList.add('active');
+            if (tabName === 'ranking') document.querySelector('.mobile-nav-item:nth-child(4)').classList.add('active');
             if (tabName === 'board') {
-                document.querySelector('.mobile-nav-item:nth-child(4)').classList.add('active');
+                document.querySelector('.mobile-nav-item:nth-child(5)').classList.add('active');
                 selectedBoardPostId = null;
                 markLatestBoardPostAsRead();
                 renderBoardTab();
@@ -2134,6 +2314,7 @@
                 if (adminMobile) adminMobile.classList.add('active');
             }
 
+            if (tabName === 'activity') loadMyActivityData();
             if (tabName === 'ranking') loadRankingData();
             if (tabName === 'admin') forceRefreshAdminData();
             if (tabName === 'master_db') forceRefreshAdminData();
@@ -2149,11 +2330,19 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
             btnEl.classList.add('active');
 
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            const desktopBtns = document.querySelectorAll('.menu-list .menu-item');
+            const tabIdxMap = { boss: 0, activity: 1, items: 2, ranking: 3, board: 4, admin: 5 };
+            if (tabIdxMap[tabName] !== undefined && desktopBtns[tabIdxMap[tabName]]) {
+                desktopBtns[tabIdxMap[tabName]].classList.add('active');
+            }
+
             if (tabName === 'board') {
                 selectedBoardPostId = null;
                 markLatestBoardPostAsRead();
                 renderBoardTab();
             }
+            if (tabName === 'activity') loadMyActivityData();
             if (tabName === 'ranking') loadRankingData();
             if (tabName === 'admin') forceRefreshAdminData();
             if (tabName === 'items') {
@@ -3716,6 +3905,251 @@
             if (!confirm("이 전리품 기록을 삭제하시겠습니까?")) return;
             await remove(ref(db, `items/${key}`));
             alert("전리품 기록이 삭제되었습니다.");
+        };
+
+        window.loadMyActivityData = async function() {
+            if (!currentUser) return;
+            const userLabel = document.getElementById('my-activity-user-label');
+            if (userLabel) {
+                userLabel.innerText = `(${currentUser.name} [${currentUser.class || '기사'}])`;
+            }
+
+            const periodSelect = document.getElementById('my-activity-period');
+            const customBox = document.getElementById('my-activity-custom-box');
+            const startInput = document.getElementById('my-activity-start');
+            const endInput = document.getElementById('my-activity-end');
+
+            const period = periodSelect ? periodSelect.value : 'month';
+            if (customBox) {
+                customBox.style.display = (period === 'custom') ? 'flex' : 'none';
+            }
+
+            const now = getSyncedCurrentTime();
+            const todayStr = getKSTDateString(now);
+            const curMonthKey = todayStr.slice(0, 7);
+            const weekAgoDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+            const weekAgoStr = getKSTDateString(weekAgoDate);
+
+            const customStart = startInput ? startInput.value : '';
+            const customEnd = endInput ? endInput.value : '';
+
+            function isDateInFilter(dateStr) {
+                if (!dateStr) return false;
+                if (period === 'today') return dateStr === todayStr;
+                if (period === 'week') return dateStr >= weekAgoStr && dateStr <= todayStr;
+                if (period === 'month') return dateStr.startsWith(curMonthKey);
+                if (period === 'custom') {
+                    if (customStart && dateStr < customStart) return false;
+                    if (customEnd && dateStr > customEnd) return false;
+                    return true;
+                }
+                return true; // 'all'
+            }
+
+            const [allAttSnap, allBonusSnap] = await Promise.all([
+                get(ref(db, 'attendance')),
+                get(ref(db, 'bonus_scores'))
+            ]);
+            const allAttData = allAttSnap.val() || {};
+            const allBonusData = allBonusSnap.val() || {};
+
+            for (const [mKey, mVal] of Object.entries(allAttData)) {
+                if (!subscribedMonths[mKey]) {
+                    attendanceByMonth[mKey] = mVal || {};
+                }
+            }
+
+            const myUid = currentUser.id;
+            let lifetimeTotal = 0;
+
+            let periodBossScore = 0;
+            let periodBonusNet = 0;
+            let mainCnt = 0, ifritCnt = 0, kaspaCnt = 0, specialCnt = 0;
+
+            let bossRecords = [];
+            let bonusRecords = [];
+
+            Object.entries(allAttData).forEach(([mKey, mVal]) => {
+                Object.entries(mVal || {}).forEach(([slotKey, slotObj]) => {
+                    if (!slotObj || !slotObj.participants) return;
+                    const myPart = slotObj.participants[myUid];
+                    if (!myPart) return;
+
+                    const datePart = slotKey.split('_')[0];
+                    const bossTitle = slotObj.name || slotKey;
+                    const isCanceled = Boolean(myPart.optOutLocked || (myPart.status && myPart.status.includes('취소')));
+
+                    let sc = Number(myPart.score);
+                    if (isNaN(sc)) {
+                        sc = getCustomScheduleScore(slotKey);
+                        if (sc === null) sc = getScoreForBossName(bossTitle);
+                    }
+                    if (isCanceled) sc = 0;
+
+                    if (!isCanceled) {
+                        lifetimeTotal += sc;
+                    }
+
+                    if (isDateInFilter(datePart)) {
+                        if (!isCanceled) {
+                            periodBossScore += sc;
+                            if (bossTitle.includes("메인타임")) mainCnt++;
+                            else if (bossTitle.includes("이프리트") || bossTitle.includes("드레이크")) ifritCnt++;
+                            else if (bossTitle.includes("카스파") || bossTitle.includes("네크")) kaspaCnt++;
+                            else specialCnt++;
+                        }
+
+                        let durationText = "-";
+                        if (!isCanceled && myPart.timestamp) {
+                            const endTs = myPart.endTimestamp ? Number(myPart.endTimestamp) : now.getTime();
+                            const diffSec = Math.max(0, Math.floor((endTs - Number(myPart.timestamp)) / 1000));
+                            const dMin = Math.floor(diffSec / 60);
+                            const dSec = diffSec % 60;
+                            durationText = myPart.endTime ? `${dMin}분 ${dSec}초` : `${dMin}분 ${dSec}초 (진행 중)`;
+                        }
+
+                        bossRecords.push({
+                            date: datePart,
+                            slotKey,
+                            title: bossTitle,
+                            startTime: myPart.startTime || '-',
+                            endTime: myPart.endTime || '',
+                            durationText,
+                            status: myPart.status || '참여 완료',
+                            isCanceled,
+                            score: sc,
+                            timestamp: Number(myPart.timestamp) || 0
+                        });
+                    }
+                });
+            });
+
+            Object.entries(allBonusData).forEach(([bMonth, userMap]) => {
+                if (!userMap || typeof userMap !== 'object') return;
+                const myBonusMap = userMap[myUid];
+                if (!myBonusMap) return;
+
+                if (typeof myBonusMap === 'object') {
+                    Object.entries(myBonusMap).forEach(([logKey, logObj]) => {
+                        if (!logObj) return;
+                        const bDate = logKey.split('_')[0];
+                        const bScore = Number(logObj.score) || 0;
+                        lifetimeTotal += bScore;
+
+                        if (isDateInFilter(bDate)) {
+                            periodBonusNet += bScore;
+                            bonusRecords.push({
+                                date: bDate,
+                                score: bScore,
+                                reason: logObj.reason || '사유 없음',
+                                writer: logObj.writer || '운영진',
+                                timestamp: Number(logObj.timestamp) || 0
+                            });
+                        }
+                    });
+                } else {
+                    const legacyScore = Number(myBonusMap) || 0;
+                    lifetimeTotal += legacyScore;
+                    const fallbackDate = `${bMonth}-01`;
+                    if (isDateInFilter(fallbackDate)) {
+                        periodBonusNet += legacyScore;
+                        bonusRecords.push({
+                            date: fallbackDate,
+                            score: legacyScore,
+                            reason: '기타 보너스',
+                            writer: '운영진',
+                            timestamp: 0
+                        });
+                    }
+                }
+            });
+
+            bossRecords.sort((a, b) => b.date.localeCompare(a.date) || b.timestamp - a.timestamp || b.slotKey.localeCompare(a.slotKey));
+            bonusRecords.sort((a, b) => b.date.localeCompare(a.date) || b.timestamp - a.timestamp);
+
+            const totalValidBossCount = mainCnt + ifritCnt + kaspaCnt + specialCnt;
+            const periodTotalScore = periodBossScore + periodBonusNet;
+
+            const kpiPeriodEl = document.getElementById('act-kpi-period-score');
+            const kpiPeriodSubEl = document.getElementById('act-kpi-period-breakdown');
+            const kpiLifeEl = document.getElementById('act-kpi-lifetime-score');
+            const kpiBossCntEl = document.getElementById('act-kpi-boss-count');
+            const kpiBossSubEl = document.getElementById('act-kpi-boss-breakdown');
+            const kpiBonusEl = document.getElementById('act-kpi-bonus-net');
+            const kpiBonusSubEl = document.getElementById('act-kpi-bonus-count');
+
+            if (kpiPeriodEl) kpiPeriodEl.innerText = `${periodTotalScore}점`;
+            if (kpiPeriodSubEl) {
+                const bPrefix = periodBonusNet > 0 ? '+' : '';
+                kpiPeriodSubEl.innerText = `보스 ${periodBossScore}점 / 가감점 ${bPrefix}${periodBonusNet}점`;
+            }
+            if (kpiLifeEl) kpiLifeEl.innerText = `${lifetimeTotal}점`;
+            if (kpiBossCntEl) kpiBossCntEl.innerText = `${totalValidBossCount}회`;
+            if (kpiBossSubEl) kpiBossSubEl.innerText = `메인 ${mainCnt} · 이프/드레 ${ifritCnt} · 카스파 ${kaspaCnt} · 특수 ${specialCnt}`;
+            if (kpiBonusEl) {
+                const prefix = periodBonusNet > 0 ? '+' : '';
+                kpiBonusEl.innerText = `${prefix}${periodBonusNet}점`;
+                kpiBonusEl.style.color = periodBonusNet > 0 ? '#68d391' : (periodBonusNet < 0 ? '#fc8181' : '#f7fafc');
+            }
+            if (kpiBonusSubEl) kpiBonusSubEl.innerText = `가감점 이력 ${bonusRecords.length}건`;
+
+            const bossCntLabel = document.getElementById('act-boss-table-count');
+            if (bossCntLabel) bossCntLabel.innerText = `총 ${bossRecords.length}건`;
+
+            const bossTbody = document.getElementById('my-activity-boss-tbody');
+            if (bossTbody) {
+                if (bossRecords.length === 0) {
+                    bossTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0; padding: 20px;">선택한 기간에 해당하는 보스 참여 내역이 없습니다.</td></tr>`;
+                } else {
+                    bossTbody.innerHTML = bossRecords.map(rec => {
+                        const timeRange = rec.isCanceled
+                            ? '-'
+                            : `${rec.startTime} ~ ${rec.endTime || '진행 중'}`;
+                        const statusHtml = rec.isCanceled
+                            ? `<span class="status-chip" style="background:rgba(229,62,62,0.16); color:#feb2b2; border:1px solid rgba(229,62,62,0.45);">✕ ${rec.status}</span>`
+                            : (rec.status === '참여 중'
+                                ? `<span class="status-chip active">● ${rec.status}</span>`
+                                : `<span class="status-chip done">✓ ${rec.status}</span>`);
+                        const scoreHtml = rec.isCanceled
+                            ? `<span style="color:#a0aec0;">0점</span>`
+                            : `<span style="color:#fbd38d; font-weight:bold;">+${rec.score}점</span>`;
+
+                        return `
+                            <tr>
+                                <td>${rec.date}</td>
+                                <td style="font-weight: bold; color: #e9d8fd;">${rec.title}</td>
+                                <td style="color: #cbd5e0;">${timeRange}</td>
+                                <td style="color: #b794f4;">${rec.durationText}</td>
+                                <td>${statusHtml}</td>
+                                <td>${scoreHtml}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            const bonusCntLabel = document.getElementById('act-bonus-table-count');
+            if (bonusCntLabel) bonusCntLabel.innerText = `총 ${bonusRecords.length}건`;
+
+            const bonusTbody = document.getElementById('my-activity-bonus-tbody');
+            if (bonusTbody) {
+                if (bonusRecords.length === 0) {
+                    bonusTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a0aec0; padding: 20px;">선택한 기간에 해당하는 가감점 이력이 없습니다.</td></tr>`;
+                } else {
+                    bonusTbody.innerHTML = bonusRecords.map(b => {
+                        const color = b.score >= 0 ? '#68d391' : '#fc8181';
+                        const prefix = b.score > 0 ? '+' : '';
+                        return `
+                            <tr>
+                                <td>${b.date}</td>
+                                <td style="color: ${color}; font-weight: bold;">${prefix}${b.score}점</td>
+                                <td>${b.reason}</td>
+                                <td style="color: #a0aec0;">${b.writer}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
         };
 
         function populateRankingMonthSelector() {
