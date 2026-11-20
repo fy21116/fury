@@ -307,6 +307,7 @@
         .badge-status.closed { background-color: #742a2a; color: #feb2b2; border-color: #c53030; }
         .badge-status.waiting { background-color: #744210; color: #fbd38d; border-color: #975a16; }
         .badge-status.ongoing { background-color: #22543d; color: #68d391; border-color: #48bb78; }
+        .badge-status.reopened { background-color: #2b6cb0; color: #bee3f8; border-color: #4299e1; }
         .boss-time-text { font-size: 24px; font-weight: 900; margin-top: 6px; color: #fff; letter-spacing: 0.5px; }
         .action-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 16px; }
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -378,12 +379,15 @@
         .sched-table tr.main-time-row td { color: #fbd38d; border-bottom: 1px solid #744210; }
         .sched-table tr.ongoing-row { background: linear-gradient(90deg, rgba(49, 151, 149, 0.38) 0%, rgba(56, 161, 105, 0.22) 100%); font-weight: bold; }
         .sched-table tr.ongoing-row td { color: #9cdfdf; border-bottom: 1px solid #319795; }
+        .sched-table tr.completed-slot-row { background: rgba(74, 85, 104, 0.18); }
+        .sched-table tr.completed-slot-row td { color: #cbd5e0; border-bottom: 1px solid #2d3748; }
         .sched-table tr.next-upcoming-row { background: rgba(128, 90, 213, 0.22); font-weight: bold; }
         .sched-table tr.next-upcoming-row td { color: #e9d8fd; border-bottom: 1px solid #6b46c1; }
 
         .sched-table tr.siege-row { background-color: rgba(107, 70, 193, 0.28); font-weight: bold; }
         .tag-main { background: #e53e3e; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .tag-ongoing { background: #319795; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .tag-done { background: #2f855a; color: #c6f6d5; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .tag-next { background: #805ad5; color: white; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .tag-fixed { background: #2d3748; color: #cbd5e0; padding: 2px 7px; border-radius: 4px; font-size: 11px; }
         .tag-custom { background: #b7791f; color: #fefcbf; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
@@ -1305,7 +1309,7 @@
 
                 <div class="panel-box" style="border: 2px solid #e53e3e;">
                     <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 14px;">
-- Firebase DB `members` 노드에 저장된 모든 회원 데이터를 비밀번호까지 포함하여 투명하게 보여줍니다.
+- Firebase DB `members` 노드에 저장된 모든 회원 데이터를 비밀번호 및 마지막 활동 여부와 함께 보여줍니다.
                     </p>
                     <table>
                         <thead>
@@ -1316,11 +1320,12 @@
                                 <th>비밀번호</th>
                                 <th>승인상태</th>
                                 <th>권한(직급)</th>
+                                <th>마지막 활동</th>
                                 <th>DB 영구삭제</th>
                             </tr>
                         </thead>
                         <tbody id="raw-members-tbody">
-                            <tr><td colspan="7" style="text-align: center; color: #a0aec0; padding: 15px;">데이터를 불러오는 중입니다...</td></tr>
+                            <tr><td colspan="8" style="text-align: center; color: #a0aec0; padding: 15px;">데이터를 불러오는 중입니다...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1354,6 +1359,14 @@
             return escapeHtml(str);
         }
 
+        /* 닉네임 중복 방지용 정규화 함수 (앞뒤/중간 공백 및 보이지 않는 공백문자 제거 + 소문자 통일) */
+        function normalizeNickname(name) {
+            if (!name) return '';
+            return String(name)
+                .replace(/[\s\u00A0\u200B-\u200D\uFEFF]+/g, '')
+                .toLowerCase();
+        }
+
         /* Firebase 키 안전 인코딩/디코딩 ('/', '.', '#', '$', '[', ']' 충돌 방지) */
         function encodeFbKey(rawKey) {
             return String(rawKey)
@@ -1379,7 +1392,6 @@
             if (!rawObj || typeof rawObj !== 'object') return result;
             Object.entries(rawObj).forEach(([k, v]) => {
                 if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
-                    // 예전 비인코딩 '/' 키로 인해 중첩 객체가 생성된 경우 평탄화 복원
                     Object.entries(v).forEach(([subK, subV]) => {
                         if (typeof subV === 'number' || typeof subV === 'string') {
                             result[`${decodeFbKey(k)}/${decodeFbKey(subK)}`] = subV;
@@ -1546,9 +1558,9 @@
         let bossImagesConfig = { ...DEFAULT_BOSS_IMAGES };
 
         const DEFAULT_SYSTEM_GUIDE = `✓ 보스타임 15분~30분 전부터 [▶ 참여하기] 버튼이 활성화됩니다.
-✓ 보스 정각 이후 처치 완료 시 [참여 종료 (완료)]를 눌러주세요.
+✓ 보스 정각 이후 및 참여 후 3분 경과 시 [참여 종료 (완료)]를 눌러주세요.
 ✓ 실수로 종료를 누른 경우, 해당 타임 마감 전까지 [완료 취소]가 가능합니다.
-✓ 참여자 0명 시 정각 +30분 자동 마감되며, 참여자가 있을 경우 과반수 완료 또는 운영진 마감 시 완료 처리됩니다.`;
+✓ 참여자 0명 시 정각 +30분 자동 마감되며, 4명 이상일 경우 과반수 완료 또는 운영진 마감 시 완료 처리됩니다.`;
         let systemGuideText = DEFAULT_SYSTEM_GUIDE;
 
         let currentUser = null;
@@ -1563,6 +1575,7 @@
         let selectedBoardPostId = null;
         let isBoardArchiveCollapsed = false;
         let isBoardWriteFormExpanded = false;
+        let userLastActivityMap = {};
 
         function isOperator(user) {
             if (!user) return false;
@@ -1582,10 +1595,12 @@
             subscribedMonths[monthKey] = true;
             onValue(ref(db, `attendance/${monthKey}`), (snap) => {
                 attendanceByMonth[monthKey] = snap.val() || {};
+                rebuildLastActivityFromLoadedData();
                 populateBonusCheckSlotSelect();
                 populateAttendanceManageSlotSelect();
                 updateDashboard();
                 loadRankingData();
+                renderRawMembersViewer();
             });
             onValue(ref(db, `pre_signups/${monthKey}`), (snap) => {
                 preSignupsBySlot[monthKey] = snap.val() || {};
@@ -1607,6 +1622,49 @@
         function getCurrentMonthKey() {
             const now = getSyncedCurrentTime();
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function rebuildLastActivityFromLoadedData(allAttOverride) {
+            const map = {};
+            Object.entries(membersData || {}).forEach(([uid, m]) => {
+                if (m && m.lastLogin) {
+                    map[uid] = Math.max(map[uid] || 0, Number(m.lastLogin) || 0);
+                }
+            });
+
+            const sourceAtt = allAttOverride || attendanceByMonth;
+            Object.values(sourceAtt || {}).forEach(monthObj => {
+                Object.entries(monthObj || {}).forEach(([slotKey, slotObj]) => {
+                    if (!slotObj || !slotObj.participants) return;
+                    const datePart = slotKey.split('_')[0];
+                    const fallbackTs = parseDateTimeSafe(`${datePart} 12:00`);
+                    Object.entries(slotObj.participants).forEach(([uid, pInfo]) => {
+                        if (!pInfo) return;
+                        const ts = Number(pInfo.endTimestamp) || Number(pInfo.timestamp) || (isNaN(fallbackTs) ? 0 : fallbackTs);
+                        if (ts > (map[uid] || 0)) {
+                            map[uid] = ts;
+                        }
+                    });
+                });
+            });
+
+            userLastActivityMap = map;
+        }
+
+        function formatLastActivityText(uid) {
+            const mem = membersData[uid] || {};
+            const lastTs = Math.max(userLastActivityMap[uid] || 0, Number(mem.lastLogin) || 0);
+            if (!lastTs || lastTs <= 0) {
+                return `<span style="color:#718096;">활동 기록 없음</span>`;
+            }
+            const nowTs = getSyncedCurrentTime().getTime();
+            const diffMs = Math.max(0, nowTs - lastTs);
+            const dayMs = 24 * 60 * 60 * 1000;
+            if (diffMs < dayMs) {
+                return `<span style="color:#68d391; font-weight:bold;">24시간 이내 활동</span>`;
+            }
+            const diffDays = Math.floor(diffMs / dayMs);
+            return `<span style="color:#cbd5e0;">${diffDays}일 전</span>`;
         }
 
         function renderSystemGuide() {
@@ -1654,6 +1712,7 @@
         function attachRealtimeListeners() {
             onValue(ref(db, 'members'), (snap) => {
                 membersData = snap.val() || {};
+                rebuildLastActivityFromLoadedData();
 
                 if (currentUser && membersData[currentUser.id]) {
                     currentUser = { id: currentUser.id, ...membersData[currentUser.id] };
@@ -1785,7 +1844,7 @@
 
         window.forceRefreshAdminData = async function() {
             try {
-                const [mSnap, cSnap, fSnap, imgSnap, bSnap, nSnap, hSnap, pSnap, gSnap] = await Promise.all([
+                const [mSnap, cSnap, fSnap, imgSnap, bSnap, nSnap, hSnap, pSnap, gSnap, allAttSnap] = await Promise.all([
                     get(ref(db, 'members')),
                     get(ref(db, 'settings/customSchedules')),
                     get(ref(db, 'settings/fixedSchedules')),
@@ -1794,7 +1853,8 @@
                     get(ref(db, 'settings/notice')),
                     get(ref(db, 'nickname_history')),
                     get(ref(db, 'board_posts')),
-                    get(ref(db, 'settings/systemGuide'))
+                    get(ref(db, 'settings/systemGuide')),
+                    get(ref(db, 'attendance'))
                 ]);
                 if (mSnap.exists()) membersData = mSnap.val() || {};
                 if (cSnap.exists()) customSchedules = cSnap.val() || {};
@@ -1805,6 +1865,12 @@
                 if (hSnap.exists()) nicknameHistoryData = hSnap.val() || {};
                 if (pSnap.exists()) boardPostsData = pSnap.val() || {};
                 if (gSnap.exists() && gSnap.val() !== null) systemGuideText = String(gSnap.val());
+
+                const allAttVal = allAttSnap.exists() ? (allAttSnap.val() || {}) : {};
+                Object.entries(allAttVal).forEach(([mk, mv]) => {
+                    attendanceByMonth[mk] = mv || {};
+                });
+                rebuildLastActivityFromLoadedData(allAttVal);
 
                 updateLootQuickDatalists();
                 renderAdminMemberList();
@@ -1951,17 +2017,19 @@
         };
 
         window.handleAuthAction = async function() {
-            const nameInput = document.getElementById('auth-name').value.trim();
+            const rawNameInput = document.getElementById('auth-name').value;
+            const nameInput = rawNameInput.replace(/\s+/g, ' ').trim();
+            const normalizedInput = normalizeNickname(nameInput);
             const codeInput = document.getElementById('auth-code').value.trim();
             const classInput = document.getElementById('auth-class') ? document.getElementById('auth-class').value : '기사';
             const errEl = document.getElementById('auth-error');
 
-            if (!nameInput || !codeInput) {
+            if (!normalizedInput || !codeInput) {
                 errEl.innerText = "캐릭터명과 비밀번호를 모두 입력해 주세요.";
                 return;
             }
 
-            if (!isSignupMode && nameInput === 'admin' && codeInput === '0004') {
+            if (!isSignupMode && normalizedInput === 'admin' && codeInput === '0004') {
                 const adminUser = { id: 'admin_account', name: 'admin', code: '0004', role: 'master', approved: true, class: '군주' };
                 set(ref(db, 'members/admin_account'), adminUser);
                 localStorage.setItem('fury_session', JSON.stringify(adminUser));
@@ -1978,14 +2046,22 @@
                     errEl.innerText = "비밀번호는 4자리 이상으로 설정해 주세요.";
                     return;
                 }
-                const exists = Object.values(list).some(m => m && m.name === nameInput);
-                if (exists) {
-                    errEl.innerText = "이미 사용 중이거나 승인 대기 중인 캐릭터명입니다.";
+                const duplicateMember = Object.values(list).find(m => m && normalizeNickname(m.name) === normalizedInput);
+                if (duplicateMember) {
+                    errEl.innerText = `이미 등록되었거나 승인 대기 중인 캐릭터명(${duplicateMember.name})입니다.`;
                     return;
                 }
 
-                const newId = 'user_' + Date.now();
-                await set(ref(db, `members/${newId}`), { name: nameInput, code: codeInput, class: classInput, role: 'member', approved: false });
+                const nowTs = getSyncedCurrentTime().getTime();
+                const newId = 'user_' + nowTs;
+                await set(ref(db, `members/${newId}`), {
+                    name: nameInput,
+                    code: codeInput,
+                    class: classInput,
+                    role: 'member',
+                    approved: false,
+                    lastLogin: nowTs
+                });
 
                 alert("회원가입 신청이 완료되었습니다.\n운영진 승인 후 로그인하실 수 있습니다.");
                 isSignupMode = false;
@@ -1993,7 +2069,7 @@
             } else {
                 let matchedUser = null;
                 for (const [id, info] of Object.entries(list)) {
-                    if (info && info.name === nameInput && String(info.code) === String(codeInput)) {
+                    if (info && (info.name === nameInput || normalizeNickname(info.name) === normalizedInput) && String(info.code) === String(codeInput)) {
                         matchedUser = { id, ...info };
                         break;
                     }
@@ -2009,6 +2085,10 @@
                     return;
                 }
 
+                const nowTs = getSyncedCurrentTime().getTime();
+                await update(ref(db, `members/${matchedUser.id}`), { lastLogin: nowTs });
+                matchedUser.lastLogin = nowTs;
+
                 errEl.innerText = "";
                 localStorage.setItem('fury_session', JSON.stringify({ id: matchedUser.id, name: matchedUser.name, code: matchedUser.code }));
                 loginSuccess(matchedUser);
@@ -2017,6 +2097,10 @@
 
         function loginSuccess(user) {
             currentUser = user;
+            if (currentUser && currentUser.id && currentUser.id !== 'admin_account') {
+                const nowTs = getSyncedCurrentTime().getTime();
+                update(ref(db, `members/${currentUser.id}`), { lastLogin: nowTs });
+            }
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-wrapper').style.display = 'flex';
             updateLootQuickDatalists();
@@ -2052,18 +2136,19 @@
 
         window.submitAccountSettings = async function() {
             if (!currentUser) return;
-            const newName = document.getElementById('settings-input-name').value.trim();
+            const newName = document.getElementById('settings-input-name').value.replace(/\s+/g, ' ').trim();
+            const normalizedNew = normalizeNickname(newName);
             const newClass = document.getElementById('settings-input-class').value;
             const newCode = document.getElementById('settings-input-code').value.trim();
 
-            if (!newName || !newCode) {
+            if (!normalizedNew || !newCode) {
                 alert("캐릭터명과 비밀번호를 모두 입력해 주세요.");
                 return;
             }
 
-            const exists = Object.entries(membersData).some(([uid, m]) => m && m.name === newName && uid !== currentUser.id);
+            const exists = Object.entries(membersData).some(([uid, m]) => m && normalizeNickname(m.name) === normalizedNew && uid !== currentUser.id);
             if (exists) {
-                alert("이미 사용 중인 캐릭터명입니다.");
+                alert("이미 사용 중이거나 동일한 표기의 캐릭터명이 존재합니다.");
                 return;
             }
 
@@ -2799,6 +2884,7 @@
             const slotObj = getSlotDataObj(sched);
             if (slotObj.isClosed) return true;
 
+            /* 운영진이 상태 초기화를 누른 경우(31분 이후 포함) 30분 자동 마감 및 과반수 자동 마감 예외 처리 */
             const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
             if (isAdminReopened) {
                 return false;
@@ -2810,6 +2896,10 @@
                 if (now.getTime() >= sched.time.getTime() + 30 * 60 * 1000) {
                     return true;
                 }
+                return false;
+            }
+
+            if (validP.length <= 3) {
                 return false;
             }
 
@@ -2829,14 +2919,15 @@
                 ...buildCustomCandidatesForRange(now)
             ];
 
-            allCandidates.sort((a, b) => a.time - b.time);
+            allCandidates.sort((a, b) => a.time - b.time || String(a.fixedKey || a.customId || a.slotKey).localeCompare(String(b.fixedKey || b.customId || b.slotKey)));
             return allCandidates;
         }
 
         function isNextSlotOpenedForUser(sched, now) {
             const allCandidates = getAllSortedCandidatesForNow(now);
+            const curTs = sched.time.getTime();
             for (const c of allCandidates) {
-                if (c.time.getTime() > sched.time.getTime() && c.slotKey !== sched.slotKey) {
+                if (c.time.getTime() > curTs) {
                     const nextOpenBefore = Number(c.openBeforeMin ?? 30);
                     const nextOpenTs = c.time.getTime() - nextOpenBefore * 60 * 1000;
                     if (now.getTime() >= nextOpenTs) {
@@ -2848,60 +2939,77 @@
             return false;
         }
 
+        /* 동일 시각(YYYY-MM-DD HH:mm) 보스 묶음 기준: 한쪽이 완료되어도 다음 보스 오픈 전까지 두 카드 모두 유지 후 동시 전환 */
         function getPrimaryAndNextSchedules(now) {
             const allCandidates = getAllSortedCandidatesForNow(now);
 
-            let openOngoingList = [];
-            let completedPastList = [];
-            let upcomingWaitingList = [];
-
+            const groupsMap = new Map();
             for (const c of allCandidates) {
-                const openBeforeMin = Number(c.openBeforeMin ?? 30);
-                const openTs = c.time.getTime() - openBeforeMin * 60 * 1000;
-                const completed = isSlotCompletedState(c, now);
+                const ts = c.time.getTime();
+                if (!groupsMap.has(ts)) {
+                    groupsMap.set(ts, []);
+                }
+                groupsMap.get(ts).push(c);
+            }
 
-                if (now.getTime() < openTs) {
-                    upcomingWaitingList.push(c);
+            const sortedGroups = Array.from(groupsMap.entries())
+                .sort((a, b) => a[0] - b[0])
+                .map(([ts, items]) => {
+                    const minOpenBefore = Math.max(...items.map(it => Number(it.openBeforeMin ?? 30)));
+                    const openTs = ts - minOpenBefore * 60 * 1000;
+                    const anyActive = items.some(it => !isSlotCompletedState(it, now));
+                    const allCompleted = items.every(it => isSlotCompletedState(it, now));
+                    return {
+                        ts,
+                        openTs,
+                        items,
+                        anyActive,
+                        allCompleted
+                    };
+                });
+
+            let openOngoingGroups = [];
+            let completedPastGroups = [];
+            let upcomingWaitingGroups = [];
+
+            for (const g of sortedGroups) {
+                if (now.getTime() < g.openTs) {
+                    upcomingWaitingGroups.push(g);
                 } else {
-                    if (completed) {
-                        completedPastList.push(c);
+                    if (g.anyActive) {
+                        openOngoingGroups.push(g);
                     } else {
-                        openOngoingList.push(c);
+                        completedPastGroups.push(g);
                     }
                 }
             }
 
-            openOngoingList.sort((a, b) => Math.abs(now.getTime() - a.time.getTime()) - Math.abs(now.getTime() - b.time.getTime()));
+            openOngoingGroups.sort((a, b) => Math.abs(now.getTime() - a.ts) - Math.abs(now.getTime() - b.ts));
 
             let primaryCards = [];
             let nextScheduled = null;
 
-            if (openOngoingList.length > 0) {
-                const firstTime = openOngoingList[0].time.getTime();
-                const sameTimeOngoing = openOngoingList.filter(c => c.time.getTime() === firstTime);
-                primaryCards = sameTimeOngoing.slice(0, 2);
-                nextScheduled = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
+            if (openOngoingGroups.length > 0) {
+                primaryCards = openOngoingGroups[0].items.slice(0, 2);
+                nextScheduled = upcomingWaitingGroups.length > 0 ? upcomingWaitingGroups[0].items[0] : null;
             } else {
-                const lastCompleted = completedPastList.length > 0 ? completedPastList[completedPastList.length - 1] : null;
-                const nextUp = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
+                const lastCompletedGroup = completedPastGroups.length > 0 ? completedPastGroups[completedPastGroups.length - 1] : null;
+                const nextUpGroup = upcomingWaitingGroups.length > 0 ? upcomingWaitingGroups[0] : null;
 
-                if (lastCompleted && nextUp) {
-                    const lastTime = lastCompleted.time.getTime();
-                    const sameTimeCompleted = completedPastList.filter(c => c.time.getTime() === lastTime);
-                    primaryCards = sameTimeCompleted.slice(0, 2);
-                    nextScheduled = nextUp;
-                } else if (nextUp) {
-                    const nextTime = nextUp.time.getTime();
-                    const sameTimeUpcoming = upcomingWaitingList.filter(c => c.time.getTime() === nextTime);
-                    primaryCards = sameTimeUpcoming.slice(0, 2);
-                    const remainingUpcoming = upcomingWaitingList.filter(c => c.time.getTime() > nextTime);
-                    nextScheduled = remainingUpcoming.length > 0 ? remainingUpcoming[0] : null;
-                } else if (lastCompleted) {
-                    const lastTime = lastCompleted.time.getTime();
-                    const sameTimeCompleted = completedPastList.filter(c => c.time.getTime() === lastTime);
-                    primaryCards = sameTimeCompleted.slice(0, 2);
+                if (lastCompletedGroup && nextUpGroup) {
+                    primaryCards = lastCompletedGroup.items.slice(0, 2);
+                    nextScheduled = nextUpGroup.items[0];
+                } else if (nextUpGroup) {
+                    primaryCards = nextUpGroup.items.slice(0, 2);
+                    nextScheduled = upcomingWaitingGroups.length > 1 ? upcomingWaitingGroups[1].items[0] : null;
+                } else if (lastCompletedGroup) {
+                    primaryCards = lastCompletedGroup.items.slice(0, 2);
                 }
             }
+
+            const openOngoingList = openOngoingGroups.flatMap(g => g.items);
+            const completedPastList = completedPastGroups.flatMap(g => g.items);
+            const upcomingWaitingList = upcomingWaitingGroups.flatMap(g => g.items);
 
             return { primaryCards, nextScheduled, openOngoingList, completedPastList, upcomingWaitingList };
         }
@@ -2937,7 +3045,7 @@
                 let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 let totalCount = validParticipants.length;
                 let completedCount = validParticipants.filter(p => p.status && p.status.includes("참여 완료")).length;
-                let shouldCloseByMajority = (totalCount > 0 && completedCount >= Math.ceil(totalCount / 2));
+                let shouldCloseByMajority = (totalCount >= 4 && completedCount >= Math.ceil(totalCount / 2));
 
                 if (shouldCloseByMajority || slotData.isClosed) {
                     if (!slotData.isClosed) {
@@ -2974,6 +3082,7 @@
             pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
             const isSlotClosed = isSlotCompletedState(sched, now);
+            const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
             const nextSlotOpened = isNextSlotOpenedForUser(sched, now);
 
             const preSignups = getPreSignups(sched);
@@ -3017,8 +3126,7 @@
                     buttonsHtml = `<button class="participate-btn" disabled>완료됨 (참여 마감)</button>`;
                 }
                 if (isOperator(currentUser)) {
-                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감만 해제 (기존 완료 기록 유지)">🔄 마감 해제</button>`;
-                    buttonsHtml += `<button class="btn-sm danger" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록을 참여 중으로 초기화">🛠️ 상태 초기화</button>`;
+                    buttonsHtml += `<button class="btn-sm danger" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="마감 해제(30분 경과 포함) 및 종료 시각·완료·잠금 상태를 참여 중으로 초기화">🛠️ 상태 초기화</button>`;
                 }
             } else if (diffMinutes < -openBeforeMin) {
                 const remainMin = Math.max(1, Math.ceil(Math.abs(diffMinutes) - openBeforeMin));
@@ -3038,20 +3146,36 @@
                     buttonsHtml = `<button class="participate-btn" disabled>${openBeforeMin}분 전 오픈</button>`;
                 }
             } else {
-                badgeText = "진행 중";
-                badgeClass = "badge-status ongoing";
+                badgeText = isAdminReopened ? "진행 중 (운영진 재오픈)" : "진행 중";
+                badgeClass = isAdminReopened ? "badge-status reopened" : "badge-status ongoing";
                 if (!myRecord) {
-                    statusDesc = diffMinutes > 0
-                        ? "보스가 진행 중입니다! 완료(과반수/마감) 전까지 늦참 참여가 가능합니다."
-                        : "보스가 진행 중입니다! [▶ 참여하기]를 눌러 참여하세요.";
+                    statusDesc = isAdminReopened
+                        ? "운영진 상태 초기화로 재오픈된 일정입니다! [▶ 참여하기]를 눌러 참여할 수 있습니다."
+                        : (diffMinutes > 0
+                            ? "보스가 진행 중입니다! 완료(과반수/마감) 전까지 늦참 참여가 가능합니다."
+                            : "보스가 진행 중입니다! [▶ 참여하기]를 눌러 참여하세요.");
                     statusColor = "#ffffff";
                     buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
                 } else if (myRecord.status === "참여 중") {
+                    const joinedTs = Number(myRecord.timestamp) || now.getTime();
+                    const elapsedSinceJoinSec = Math.max(0, Math.floor((now.getTime() - joinedTs) / 1000));
+                    const remainWaitSec = Math.max(0, 180 - elapsedSinceJoinSec);
+                    const waitMinStr = String(Math.floor(remainWaitSec / 60)).padStart(2, '0');
+                    const waitSecStr = String(remainWaitSec % 60).padStart(2, '0');
+
                     if (isBeforeExactTime) {
-                        statusDesc = `[${escapeHtml(currentUser.name)}]님 현재 참여 중 (${escapeHtml(myRecord.startTime)} 시작) — 보스 정각 이후부터 참여 종료(완료)가 가능합니다.`;
+                        const endBtnLabel = remainWaitSec > 0 ? `종료 가능까지 ${waitMinStr}:${waitSecStr}` : "참여 종료 (완료)";
+                        statusDesc = `[${escapeHtml(currentUser.name)}]님 현재 참여 중 (${escapeHtml(myRecord.startTime)} 시작) — 보스 정각 이후 및 참여 3분 후부터 종료가 가능합니다.`;
                         statusColor = "#ecc94b";
                         buttonsHtml = `
-                            <button class="participate-btn end-btn" disabled>참여 종료 (완료)</button>
+                            <button class="participate-btn end-btn" disabled>${endBtnLabel}</button>
+                            <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
+                        `;
+                    } else if (remainWaitSec > 0) {
+                        statusDesc = `[${escapeHtml(currentUser.name)}]님 현재 참여 중 (${escapeHtml(myRecord.startTime)} 시작) — 참여 종료는 참여 3분 후 가능합니다. (${waitMinStr}:${waitSecStr} 남음)`;
+                        statusColor = "#ecc94b";
+                        buttonsHtml = `
+                            <button class="participate-btn end-btn" disabled>종료 가능까지 ${waitMinStr}:${waitSecStr}</button>
                             <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
                         `;
                     } else {
@@ -3071,7 +3195,7 @@
                     statusColor = "#68d391";
                     buttonsHtml = `<button class="participate-btn cancel" onclick="revertCompletedToOngoing('${encMonth}','${encSlot}')">완료 취소</button>`;
                 }
-                if (isOperator(currentUser) && pList.length > 0) {
+                if (isOperator(currentUser) && (pList.length > 0 || isAdminReopened)) {
                     buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 강제 마감</button>`;
                     buttonsHtml += `<button class="btn-sm secondary" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록을 참여 중으로 초기화">🛠️ 상태 초기화</button>`;
                 }
@@ -3132,6 +3256,10 @@
                 <div class="boss-count-num">${pList.length}명</div>
             `;
 
+            const bottomGuideHtml = sched.isCustom
+                ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다.<br>참여 종료는 참여 3분 후 가능 합니다."
+                : "+30분 자동 마감되며 4명 이상일경우 과반수 완료 마감됩니다.<br>참여 종료는 참여 3분 후 가능 합니다.";
+
             return `
                 <div class="boss-card ${cardStateClass} ${sched.isCustom ? 'custom-card' : ''}">
                     <div class="boss-banner">
@@ -3153,7 +3281,7 @@
                     <div class="action-box">
                         <div>
                             <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px; color: ${statusColor};">${statusDesc}</div>
-                            <div style="font-size: 12px; color: #a0aec0;">${sched.isCustom ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다." : "참여자 0명 시 정각 +30분 자동 마감되며, 참여자가 있을 경우 과반수 완료 또는 운영진 강제 마감 시 완료 처리됩니다."}</div>
+                            <div style="font-size: 12px; color: #a0aec0; line-height: 1.5;">${bottomGuideHtml}</div>
                         </div>
                         <div class="btn-group">${buttonsHtml}</div>
                     </div>
@@ -3452,7 +3580,7 @@
                 const validP = Object.values(parts).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
                 const isAdminReopened = Boolean(sData.reopenedManual || sData.reopenedByAdmin);
-                if (sData.isClosed || (!isAdminReopened && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
+                if (sData.isClosed || (!isAdminReopened && validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2))) {
                     alert("해당 일정은 완료되어 더 이상 참여할 수 없습니다.");
                     return;
                 }
@@ -3564,6 +3692,20 @@
                 return;
             }
 
+            const myPartData = (sData.participants && sData.participants[currentUser.id]) ? sData.participants[currentUser.id] : null;
+            if (myPartData && myPartData.timestamp) {
+                const joinedMs = Number(myPartData.timestamp);
+                const elapsedSec = Math.floor((now.getTime() - joinedMs) / 1000);
+                if (elapsedSec < 180) {
+                    const remain = 180 - Math.max(0, elapsedSec);
+                    const rMin = String(Math.floor(remain / 60)).padStart(2, '0');
+                    const rSec = String(remain % 60).padStart(2, '0');
+                    alert(`참여 종료는 참여 3분 후 가능 합니다. (남은 시간: ${rMin}:${rSec})`);
+                    updateDashboard();
+                    return;
+                }
+            }
+
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
             await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
                 status: "참여 완료",
@@ -3579,7 +3721,7 @@
                 const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
                 const isAdminReopened = Boolean(refreshedData.reopenedManual || refreshedData.reopenedByAdmin);
 
-                if (!isAdminReopened && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
+                if (!isAdminReopened && validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2)) {
                     await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                         isClosed: true,
                         closedReason: "과반수 참여 완료 마감"
@@ -3624,7 +3766,7 @@
             if (slotSnap.exists()) {
                 const parts = slotSnap.val();
                 for (const [uid, pData] of Object.entries(parts)) {
-                    if (pData && pData.status === "참여 중") {
+                    if (pData && !pData.optOutLocked && pData.status === "참여 중") {
                         if (attendanceByMonth[monthKey][slotKey].participants && attendanceByMonth[monthKey][slotKey].participants[uid]) {
                             attendanceByMonth[monthKey][slotKey].participants[uid].status = "참여 완료 (마감)";
                             attendanceByMonth[monthKey][slotKey].participants[uid].endTime = timeStr;
@@ -3642,32 +3784,9 @@
             updateDashboard();
         };
 
-        window.reopenBossSlot = async function(monthKey, slotKey) {
-            if (!isOperator(currentUser)) return;
-            if (!confirm("완료 마감된 보스 타임을 다시 오픈하시겠습니까?\n(기존 참여 기록과 완료 상태는 그대로 유지되며, 추가 늦참 참여가 열립니다.)")) return;
-
-            if (!attendanceByMonth[monthKey]) attendanceByMonth[monthKey] = {};
-            if (!attendanceByMonth[monthKey][slotKey]) attendanceByMonth[monthKey][slotKey] = {};
-            attendanceByMonth[monthKey][slotKey].isClosed = false;
-            attendanceByMonth[monthKey][slotKey].reopenedManual = true;
-            attendanceByMonth[monthKey][slotKey].reopenedByAdmin = true;
-            attendanceByMonth[monthKey][slotKey].closedReason = null;
-
-            updateDashboard();
-
-            await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
-                isClosed: false,
-                reopenedManual: true,
-                reopenedByAdmin: true,
-                closedReason: null
-            });
-            updateDashboard();
-            loadRankingData();
-        };
-
         window.resetBossSlotState = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("🛠️ [슬롯 상태 초기화]\n\n해당 보스 타임의 마감 플래그와 모든 참여자의 종료 시각·완료·취소 잠금 상태를 초기화하여 전원 '참여 중' 상태로 되돌리시겠습니까?\n(참여자 명단과 참여 시작 시각은 유지됩니다.)")) return;
+            if (!confirm("🛠️ [슬롯 상태 초기화]\n\n해당 보스 타임의 마감(30분 경과 자동 마감 포함)을 해제하고, 모든 참여자의 종료 시각·완료·취소 잠금 상태를 초기화하여 전원 '참여 중' 상태로 되돌리시겠습니까?\n(참여자 명단과 참여 시작 시각은 유지되며, 운영진이 강제 마감하기 전까지 30분 자동 마감이 적용되지 않습니다.)")) return;
 
             const now = getSyncedCurrentTime();
             const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -3677,12 +3796,14 @@
             attendanceByMonth[monthKey][slotKey].isClosed = false;
             attendanceByMonth[monthKey][slotKey].reopenedManual = true;
             attendanceByMonth[monthKey][slotKey].reopenedByAdmin = true;
+            attendanceByMonth[monthKey][slotKey].reopenedAt = now.getTime();
             attendanceByMonth[monthKey][slotKey].closedReason = null;
 
             const updates = {
                 [`attendance/${monthKey}/${slotKey}/isClosed`]: false,
                 [`attendance/${monthKey}/${slotKey}/reopenedManual`]: true,
                 [`attendance/${monthKey}/${slotKey}/reopenedByAdmin`]: true,
+                [`attendance/${monthKey}/${slotKey}/reopenedAt`]: now.getTime(),
                 [`attendance/${monthKey}/${slotKey}/closedReason`]: null
             };
 
@@ -3712,11 +3833,12 @@
 
             updateDashboard();
             await update(ref(db), updates);
-            alert("슬롯 상태 및 종료 시각 기록이 초기화되었습니다.");
+            alert("슬롯 상태 및 종료 시각 기록이 초기화되었습니다. (30분 경과 자동 마감이 해제되었습니다.)");
             updateDashboard();
             loadRankingData();
         };
 
+        /* 보스 시간표: 다음 보스 타임 오픈 전까지는 현재 타임을 진행 중 또는 진행 완료로 유지, 다음 일정은 진행 예정으로 표시 */
         function renderTimetable() {
             const tbody = document.getElementById('timetable-body');
             const filterInfoEl = document.getElementById('timetable-filter-info');
@@ -3727,12 +3849,12 @@
                 const hh = String(now.getHours()).padStart(2, '0');
                 const mm = String(now.getMinutes()).padStart(2, '0');
                 const ss = String(now.getSeconds()).padStart(2, '0');
-                filterInfoEl.innerHTML = `⏱️ 현재 기준 시각: <b style="color:#e9d8fd;">${hh}:${mm}:${ss}</b> · <span style="color:#cbd5e0;">필터 기준: 시작 전 예정 일정 및 현재 진행 중 일정 우선 노출 (정각 +30분 경과 또는 수동 강제 마감 슬롯만 제외)</span>`;
+                filterInfoEl.innerHTML = `⏱️ 현재 기준 시각: <b style="color:#e9d8fd;">${hh}:${mm}:${ss}</b> · <span style="color:#cbd5e0;">필터 기준: 다음 보스 타임 오픈 전까지 현재 타임 유지(진행 중 / 진행 완료), 다음 일정은 진행 예정 표시</span>`;
             }
 
             let candidates = [];
             
-            for (let offset = 0; offset <= 2; offset++) {
+            for (let offset = -1; offset <= 2; offset++) {
                 const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
                 const dailyFixed = buildFixedCandidatesForDate(targetDate);
                 dailyFixed.forEach(fc => {
@@ -3755,7 +3877,7 @@
 
             const customList = buildCustomCandidatesForRange(now);
             customList.forEach(cc => {
-                if (cc.time.getTime() < now.getTime() - 6 * 60 * 60 * 1000) return;
+                if (cc.time.getTime() < now.getTime() - 12 * 60 * 60 * 1000) return;
                 const hh = String(cc.time.getHours()).padStart(2, '0');
                 const mm = String(cc.time.getMinutes()).padStart(2, '0');
                 const pureTitle = cc.pureTitle || cc.name.replace(/^\(\d+\/\d+\s*[일월화수목금토]\)\s*/, '').replace(/^\d{2}:\d{2}\s*/, '');
@@ -3773,18 +3895,37 @@
                 });
             });
 
-            candidates = candidates.filter(item => {
-                const slotObj = getSlotDataObj(item.schedRef);
-                if (slotObj.isClosed) return false;
-                if (slotObj.reopenedManual || slotObj.reopenedByAdmin) {
-                    return now.getTime() <= item.time.getTime() + 6 * 60 * 60 * 1000;
+            candidates.sort((a, b) => a.time - b.time || String(a.title).localeCompare(String(b.title)));
+
+            /* 시간대별 그룹화하여 현재 오픈된 타임 중 가장 최신 시각 그룹 찾기 */
+            const uniqueTimes = Array.from(new Set(candidates.map(c => c.time.getTime()))).sort((a, b) => a - b);
+            let latestOpenedTimeTs = null;
+            for (const ts of uniqueTimes) {
+                const sameTimeItems = candidates.filter(c => c.time.getTime() === ts);
+                const maxOpenMin = Math.max(...sameTimeItems.map(it => Number(it.schedRef.openBeforeMin ?? 30)));
+                const openTs = ts - maxOpenMin * 60 * 1000;
+                if (now.getTime() >= openTs) {
+                    latestOpenedTimeTs = ts;
                 }
-                if (now.getTime() > item.time.getTime() + 30 * 60 * 1000) return false;
-                return true;
+            }
+
+            /* 다음 보스 오픈 전까지는 현재 타임(latestOpenedTimeTs)을 진행 중/진행 완료 상태로 유지하고, 그 이후 예정 일정을 이어서 표시 */
+            const filteredCandidates = candidates.filter(item => {
+                const itemTs = item.time.getTime();
+                if (latestOpenedTimeTs !== null && itemTs === latestOpenedTimeTs) {
+                    return true;
+                }
+                const openMin = Number(item.schedRef.openBeforeMin ?? 30);
+                const openTs = itemTs - openMin * 60 * 1000;
+                return now.getTime() < openTs;
             });
 
-            candidates.sort((a, b) => a.time - b.time || String(a.title).localeCompare(String(b.title)));
-            const upcoming4 = candidates.slice(0, 4);
+            const upcoming4 = filteredCandidates.slice(0, 4);
+            const firstUpcomingIdx = upcoming4.findIndex(item => {
+                const openMin = Number(item.schedRef.openBeforeMin ?? 30);
+                const openTs = item.time.getTime() - openMin * 60 * 1000;
+                return now.getTime() < openTs;
+            });
 
             let html = '';
             if (upcoming4.length === 0) {
@@ -3795,22 +3936,29 @@
                     const datePrefix = isToday ? '' : `(${String(r.time.getMonth()+1)}/${String(r.time.getDate())}) `;
                     
                     const openMin = Number(r.schedRef.openBeforeMin ?? 30);
-                    let diffMin = (now.getTime() - r.time.getTime()) / (1000 * 60);
+                    const diffMin = (now.getTime() - r.time.getTime()) / (1000 * 60);
+                    const isCompleted = isSlotCompletedState(r.schedRef, now);
+
                     let finalRowClass = r.rowClass;
                     let finalTypeHtml = r.typeHtml;
 
                     if (diffMin >= -openMin) {
-                        if (r.rowClass.includes('main-time-row')) {
-                            finalRowClass = "main-time-row";
+                        if (isCompleted) {
+                            finalRowClass = "completed-slot-row";
+                            finalTypeHtml = `<span class="tag-done">진행 완료</span>`;
                         } else {
-                            finalRowClass = "ongoing-row";
+                            if (r.rowClass.includes('main-time-row')) {
+                                finalRowClass = "main-time-row";
+                            } else {
+                                finalRowClass = "ongoing-row";
+                            }
+                            finalTypeHtml = `<span class="tag-ongoing">진행 중</span>`;
                         }
-                        finalTypeHtml = `<span class="tag-ongoing">진행 중</span>`;
-                    } else if (idx === 0 && diffMin < -openMin) {
+                    } else if (idx === firstUpcomingIdx) {
                         if (!r.rowClass.includes('main-time-row')) {
                             finalRowClass = "next-upcoming-row";
-                            finalTypeHtml = `<span class="tag-next">진행 예정</span>`;
                         }
+                        finalTypeHtml = `<span class="tag-next">진행 예정</span>`;
                     }
 
                     html += `
@@ -4296,6 +4444,7 @@
                     attendanceByMonth[mKey] = mVal || {};
                 }
             }
+            rebuildLastActivityFromLoadedData(allAttData);
 
             const myUid = currentUser.id;
             let lifetimeTotal = 0;
@@ -4564,6 +4713,9 @@
                     attendanceByMonth[mKey] = mVal || {};
                 }
             }
+            rebuildLastActivityFromLoadedData(allAttData);
+            renderRawMembersViewer();
+
             const monthData = attendanceByMonth[selectedMonth] || allAttData[selectedMonth] || {};
             const dailyMonthData = attendanceByMonth[targetDateMonth] || allAttData[targetDateMonth] || {};
 
@@ -5978,7 +6130,7 @@
             }
 
             if (filteredEntries.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0; padding: 15px;">조건에 일치하는 회원 데이터가 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0; padding: 15px;">조건에 일치하는 회원 데이터가 없습니다.</td></tr>`;
                 return;
             }
 
@@ -5986,6 +6138,7 @@
             filteredEntries.forEach(([uid, m]) => {
                 const isProtectedAdmin = uid === 'admin_account' || m.name === 'admin';
                 const statusText = m.approved === false ? '<span style="color:#ecc94b;">승인 대기중</span>' : (m.approved === true ? '<span style="color:#48bb78;">승인됨</span>' : escapeHtml(String(m.approved)));
+                const lastActHtml = isProtectedAdmin ? '<span style="color:#a0aec0;">시스템 계정</span>' : formatLastActivityText(uid);
                 const safeUid = escapeAttr(uid);
                 const safeNameAttr = escapeAttr(m.name || uid);
 
@@ -5997,6 +6150,7 @@
                         <td style="color: #fbd38d; font-family: monospace; font-weight: bold;">${escapeHtml(m.code || '-')}</td>
                         <td>${statusText}</td>
                         <td>${escapeHtml(m.role || 'member')}</td>
+                        <td>${lastActHtml}</td>
                         <td>
                             ${!isProtectedAdmin ? `<button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="hardDeleteRawMember('${safeUid}', '${safeNameAttr}')">DB 영구삭제</button>` : '<span style="font-size: 11px; color: #718096;">시스템 보호</span>'}
                         </td>
@@ -6024,13 +6178,20 @@
 
         window.saveMemberEdit = async function(uid, oldName) {
             if (!isOperator(currentUser)) return;
-            const newName = document.getElementById(`edit-name-${uid}`).value.trim();
+            const newName = document.getElementById(`edit-name-${uid}`).value.replace(/\s+/g, ' ').trim();
+            const normalizedNew = normalizeNickname(newName);
             const newClass = document.getElementById(`edit-class-${uid}`).value;
             const newCode = document.getElementById(`edit-code-${uid}`).value.trim();
             const newRole = document.getElementById(`edit-role-${uid}`).value;
 
-            if (!newName || !newCode) {
+            if (!normalizedNew || !newCode) {
                 alert("닉네임과 비밀번호는 비워둘 수 없습니다.");
+                return;
+            }
+
+            const duplicateExists = Object.entries(membersData).some(([otherUid, m]) => m && normalizeNickname(m.name) === normalizedNew && otherUid !== uid);
+            if (duplicateExists) {
+                alert("이미 사용 중이거나 동일한 표기의 캐릭터명이 존재합니다.");
                 return;
             }
 
@@ -6060,7 +6221,7 @@
             }
 
             const updatedObj = { name: newName, class: newClass, code: newCode, role: newRole, approved: true };
-            membersData[uid] = updatedObj;
+            membersData[uid] = { ...targetOldRecord, ...updatedObj };
             renderAdminMemberList();
             renderRawMembersViewer();
             await update(ref(db, `members/${uid}`), updatedObj);
