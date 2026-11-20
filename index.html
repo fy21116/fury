@@ -172,6 +172,39 @@
         .admin-sub-content { display: none; }
         .admin-sub-content.active { display: block; }
 
+        /* 동일 시각 보스 2개 좌우 2열 카드 배치 그리드 */
+        .boss-cards-dual-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            align-items: stretch;
+        }
+        .boss-cards-dual-grid .boss-card {
+            margin-bottom: 14px;
+            padding: 18px;
+        }
+        .boss-cards-dual-grid .boss-illust-wrap {
+            width: 125px;
+            min-height: 125px;
+        }
+        .boss-cards-dual-grid .boss-banner-center {
+            min-width: 150px;
+            padding: 14px;
+        }
+        .boss-cards-dual-grid .boss-banner-right {
+            width: 135px;
+            padding: 12px 10px 16px 10px;
+        }
+        .boss-cards-dual-grid .boss-time-text {
+            font-size: 20px;
+        }
+        .boss-cards-dual-grid .boss-count-num {
+            font-size: 24px;
+        }
+        .boss-cards-dual-grid table {
+            min-width: 100%;
+        }
+
         .boss-card { background: linear-gradient(180deg, #1b1433 0%, #161029 100%); border: 1px solid #44337a; border-radius: 14px; padding: 22px; margin-bottom: 14px; box-shadow: 0 6px 24px rgba(0,0,0,0.55); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .boss-card.ongoing-card { border-color: #805ad5; box-shadow: 0 6px 26px rgba(128, 90, 213, 0.22); }
         .boss-card.main-card { border-color: #e53e3e; box-shadow: 0 6px 26px rgba(229, 62, 62, 0.22); }
@@ -215,23 +248,65 @@
             justify-content: center;
             min-width: 220px;
         }
+        /* 우측 참여 인원 네모 박스: 중앙 정렬 및 살짝 상단 배치 */
         .boss-banner-right {
             width: 200px;
-            padding: 16px 18px;
+            padding: 14px 16px 22px 16px;
             border-left: 1px solid rgba(183, 148, 244, 0.2);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
             background: rgba(18, 13, 34, 0.4);
             flex-shrink: 0;
         }
-        .boss-count-label { font-size: 13px; color: #cbd5e0; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-weight: bold; }
-        .boss-count-num { font-size: 28px; font-weight: 900; color: #e9d8fd; text-shadow: 0 0 14px rgba(183, 148, 244, 0.85); letter-spacing: -0.5px; }
+        .boss-count-label { font-size: 13px; color: #cbd5e0; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: bold; width: 100%; }
+        .boss-count-num { font-size: 28px; font-weight: 900; color: #e9d8fd; text-shadow: 0 0 14px rgba(183, 148, 244, 0.85); letter-spacing: -0.5px; text-align: center; width: 100%; line-height: 1.15; }
 
-        .badge-status { background-color: #2f855a; color: #9cdfdf; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; }
-        .badge-status.closed { background-color: #742a2a; color: #feb2b2; border: 1px solid #c53030; }
-        .badge-status.waiting { background-color: #744210; color: #fbd38d; }
-        .badge-status.ongoing { background-color: #22543d; color: #68d391; border: 1px solid #48bb78; }
+        /* 카드 상단 일정 구분 라벨과 상태 배지 규격 통일 */
+        .boss-badge-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .badge-type-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 25px;
+            padding: 0 10px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: bold;
+            line-height: 1;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+        .badge-type-chip.fixed { background: #44337a; color: #d6bcfa; border-color: #553c9a; }
+        .badge-type-chip.custom { background: #d69e2e; color: #0d0918; border-color: #ecc94b; }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 25px;
+            padding: 0 10px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: bold;
+            line-height: 1;
+            background-color: #2f855a;
+            color: #9cdfdf;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+        .badge-status.closed { background-color: #742a2a; color: #feb2b2; border-color: #c53030; }
+        .badge-status.waiting { background-color: #744210; color: #fbd38d; border-color: #975a16; }
+        .badge-status.ongoing { background-color: #22543d; color: #68d391; border-color: #48bb78; }
         .boss-time-text { font-size: 24px; font-weight: 900; margin-top: 6px; color: #fff; letter-spacing: 0.5px; }
         .action-box { background-color: #120d22; border: 1px solid #2a1f4e; border-radius: 10px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 16px; }
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -347,6 +422,7 @@
         .activity-kpi-sub { font-size: 11.5px; color: #b794f4; margin-top: 5px; line-height: 1.4; }
         @media (max-width: 950px) {
             .activity-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .boss-cards-dual-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 520px) {
             .activity-kpi-grid { grid-template-columns: 1fr; }
@@ -666,9 +742,12 @@
                         <div id="boss-cards-container"></div>
 
                         <div class="panel-box">
-                            <div style="font-weight: bold; margin-bottom: 12px; color: #d6bcfa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 6px; color: #d6bcfa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                                 <span>보스 시간표 (다가올 일정 4개)</span>
                                 <span style="font-size: 12px; color: #fbd38d;">★ 메인타임(03, 09, 15, 21시) 혈맹 필수 참여</span>
+                            </div>
+                            <div id="timetable-filter-info" style="font-size: 11.5px; color: #a0aec0; margin-bottom: 12px; background: #120d22; padding: 7px 10px; border-radius: 6px; border: 1px solid #2a1f4e;">
+                                기준 시각 동기화 중...
                             </div>
                             <table class="sched-table">
                                 <thead>
@@ -1258,6 +1337,20 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeAttr(str) {
+            return escapeHtml(str);
+        }
+
         let serverTimeOffset = 0;
         onValue(ref(db, ".info/serverTimeOffset"), (snap) => {
             serverTimeOffset = snap.val() || 0;
@@ -1272,6 +1365,17 @@
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const d = String(dateObj.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
+        }
+
+        function extractTimeFromSlotKey(slotKey) {
+            if (!slotKey) return '';
+            const parts = String(slotKey).split('_');
+            if (parts.length >= 2 && /^\d{4}$/.test(parts[1])) {
+                return `${parts[1].slice(0, 2)}:${parts[1].slice(2, 4)}`;
+            }
+            const match = String(slotKey).match(/(\d{2})[:]?(\d{2})/);
+            if (match) return `${match[1]}:${match[2]}`;
+            return String(slotKey).slice(11, 16);
         }
 
         window.shiftDate = function(days) {
@@ -1520,11 +1624,14 @@
 
             onValue(ref(db, 'settings/fixedSchedules'), async (snap) => {
                 let rawVal = snap.val() || {};
+                const initFlagSnap = await get(ref(db, 'settings/fixedSchedulesInitialized'));
+                const isInitialized = initFlagSnap.exists() && initFlagSnap.val() === true;
                 const hasBase = Object.keys(rawVal).some(k => k.startsWith('base_'));
-                if (!hasBase) {
+                if (!hasBase && !isInitialized) {
                     const baseDefaults = createInitialFixedSchedules();
                     rawVal = { ...baseDefaults, ...rawVal };
                     await set(ref(db, 'settings/fixedSchedules'), rawVal);
+                    await set(ref(db, 'settings/fixedSchedulesInitialized'), true);
                 }
                 extraFixedSchedules = rawVal;
                 updateLootQuickDatalists();
@@ -1533,23 +1640,35 @@
                 updateDashboard();
             });
 
-            onValue(ref(db, 'settings/bossImages'), (snap) => {
+            onValue(ref(db, 'settings/bossImages'), async (snap) => {
                 if (snap.exists() && snap.val() !== null) {
                     bossImagesConfig = snap.val();
                 } else {
-                    bossImagesConfig = { ...DEFAULT_BOSS_IMAGES };
-                    set(ref(db, 'settings/bossImages'), bossImagesConfig);
+                    const initSnap = await get(ref(db, 'settings/bossImagesInitialized'));
+                    if (!initSnap.exists() || initSnap.val() !== true) {
+                        bossImagesConfig = { ...DEFAULT_BOSS_IMAGES };
+                        await set(ref(db, 'settings/bossImages'), bossImagesConfig);
+                        await set(ref(db, 'settings/bossImagesInitialized'), true);
+                    } else {
+                        bossImagesConfig = {};
+                    }
                 }
                 renderBossImageMappingList();
                 updateDashboard();
             });
 
-            onValue(ref(db, 'settings/bossScores'), (snap) => {
+            onValue(ref(db, 'settings/bossScores'), async (snap) => {
                 if (snap.exists() && snap.val() !== null) {
                     bossScoresConfig = snap.val();
                 } else {
-                    bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
-                    set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                    const initSnap = await get(ref(db, 'settings/bossScoresInitialized'));
+                    if (!initSnap.exists() || initSnap.val() !== true) {
+                        bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
+                        await set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                        await set(ref(db, 'settings/bossScoresInitialized'), true);
+                    } else {
+                        bossScoresConfig = {};
+                    }
                 }
                 renderBossScoreSettingsList();
                 renderTimetable();
@@ -1715,6 +1834,10 @@
             setInterval(updateDashboard, 1000);
 
             try {
+                const membersSnap = await get(ref(db, 'members'));
+                if (membersSnap.exists()) {
+                    membersData = membersSnap.val() || {};
+                }
                 const savedSession = localStorage.getItem('fury_session');
                 if (savedSession) {
                     const parsed = JSON.parse(savedSession);
@@ -1726,16 +1849,17 @@
                     }
                 }
 
-                const membersSnap = await get(ref(db, 'members'));
-                const membersList = membersSnap.val() || {};
+                const membersList = membersData || {};
                 let hasAdmin = Object.values(membersList).some(v => v && v.name === 'admin');
                 if (!hasAdmin) {
                     await set(ref(db, 'members/admin_account'), { name: 'admin', code: '0004', role: 'master', approved: true, class: '군주' });
                 }
 
                 const scoresSnap = await get(ref(db, 'settings/bossScores'));
-                if (!scoresSnap.exists() || scoresSnap.val() === null) {
+                const scoresInitSnap = await get(ref(db, 'settings/bossScoresInitialized'));
+                if ((!scoresSnap.exists() || scoresSnap.val() === null) && (!scoresInitSnap.exists() || scoresInitSnap.val() !== true)) {
                     await set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                    await set(ref(db, 'settings/bossScoresInitialized'), true);
                 }
             } catch (err) {
                 console.error("초기화 백그라운드 점검:", err);
@@ -2149,20 +2273,21 @@
             }
 
             const canManage = isOperator(currentUser);
+            const safeActiveId = escapeAttr(activePost.id);
             const manageButtonsHtml = canManage ? `
                 <div style="display:flex; gap:6px; margin-top:14px;">
-                    <button class="btn-sm secondary" style="padding:5px 10px; font-size:12px; min-height:32px;" onclick="startEditBoardPost('${activePost.id}')">수정</button>
-                    <button class="btn-sm danger" style="padding:5px 10px; font-size:12px; min-height:32px;" onclick="deleteBoardPost('${activePost.id}')">삭제</button>
+                    <button class="btn-sm secondary" style="padding:5px 10px; font-size:12px; min-height:32px;" onclick="startEditBoardPost('${safeActiveId}')">수정</button>
+                    <button class="btn-sm danger" style="padding:5px 10px; font-size:12px; min-height:32px;" onclick="deleteBoardPost('${safeActiveId}')">삭제</button>
                 </div>
             ` : '';
 
             featuredContainer.innerHTML = `
                 <div class="board-featured-card">
                     <div class="board-featured-header">
-                        <h3 class="board-featured-title">${activePost.title}</h3>
-                        <span class="board-featured-date">작성일: ${activePost.createdDate || '-'}</span>
+                        <h3 class="board-featured-title">${escapeHtml(activePost.title)}</h3>
+                        <span class="board-featured-date">작성일: ${escapeHtml(activePost.createdDate || '-')}</span>
                     </div>
-                    <div class="board-featured-body">${activePost.content || ''}</div>
+                    <div class="board-featured-body">${escapeHtml(activePost.content || '')}</div>
                     ${manageButtonsHtml}
                 </div>
             `;
@@ -2179,17 +2304,18 @@
             let listHtml = '';
             sorted.forEach(p => {
                 const isSelected = activePost.id === p.id;
+                const safePostId = escapeAttr(p.id);
                 listHtml += `
-                    <div class="board-archive-item ${isSelected ? 'active-item' : ''}" onclick="selectBoardPostForView('${p.id}')">
+                    <div class="board-archive-item ${isSelected ? 'active-item' : ''}" onclick="selectBoardPostForView('${safePostId}')">
                         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                            <span style="font-size:12px; color:#a0aec0; font-weight:bold;">${p.createdDate || '-'}</span>
-                            <span style="font-size:14px; color:#e2e8f0; font-weight:bold;">${p.title}</span>
+                            <span style="font-size:12px; color:#a0aec0; font-weight:bold;">${escapeHtml(p.createdDate || '-')}</span>
+                            <span style="font-size:14px; color:#e2e8f0; font-weight:bold;">${escapeHtml(p.title)}</span>
                             ${isSelected ? `<span style="font-size:11px; color:#fbd38d; font-weight:bold;">[열람 중]</span>` : ''}
                         </div>
                         <div style="display:flex; gap:6px;" onclick="event.stopPropagation();">
                             ${canManage ? `
-                                <button class="btn-sm secondary" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="startEditBoardPost('${p.id}')">수정</button>
-                                <button class="btn-sm danger" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="deleteBoardPost('${p.id}')">삭제</button>
+                                <button class="btn-sm secondary" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="startEditBoardPost('${safePostId}')">수정</button>
+                                <button class="btn-sm danger" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="deleteBoardPost('${safePostId}')">삭제</button>
                             ` : ''}
                         </div>
                     </div>
@@ -2267,12 +2393,14 @@
             if (pendingUsers.length > 0) {
                 let html = '';
                 pendingUsers.forEach(u => {
+                    const safeUid = escapeAttr(u.uid);
+                    const safeNameAttr = escapeAttr(u.name);
                     html += `
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; background: #18122d; padding: 4px 6px; border-radius: 4px;">
-                            <span><b>${u.name}</b> [${u.class}]</span>
+                            <span><b>${escapeHtml(u.name)}</b> [${escapeHtml(u.class)}]</span>
                             <div>
-                                <button onclick="approveMember('${u.uid}')" style="background:#2f855a; color:#fff; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">승인</button>
-                                <button onclick="deleteMember('${u.uid}', '${u.name}')" style="background:#c53030; color:#fff; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">거절</button>
+                                <button onclick="approveMember('${safeUid}')" style="background:#2f855a; color:#fff; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">승인</button>
+                                <button onclick="deleteMember('${safeUid}', '${safeNameAttr}')" style="background:#c53030; color:#fff; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">거절</button>
                             </div>
                         </div>
                     `;
@@ -2388,7 +2516,7 @@
             else if (bossName.includes("공성전")) { accent = "#ed8936"; label = "CASTLE SIEGE"; }
             else if (bossName.includes("카스파")) { accent = "#38b2ac"; label = "KASPA"; }
 
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+            const svg = `<svg xmlns="http://www.w3.org/200" width="300" height="200" viewBox="0 0 300 200">
                 <defs>
                     <radialGradient id="g" cx="40%" cy="50%" r="70%">
                         <stop offset="0%" stop-color="${accent}" stop-opacity="0.55"/>
@@ -2445,6 +2573,7 @@
             }
         };
 
+        /* 동일 시각 고정 보스 개별 후보 생성 (좌우 2열 카드 배치 및 독립 slotKey 관리) */
         function buildFixedCandidatesForDate(baseDate) {
             const y = baseDate.getFullYear();
             const m = baseDate.getMonth();
@@ -2455,8 +2584,11 @@
             let list = [];
 
             const activeFixedMap = Object.keys(extraFixedSchedules).length > 0 ? extraFixedSchedules : createInitialFixedSchedules();
+            const monthObj = attendanceByMonth[monthKey] || {};
 
-            let groupedByTime = {};
+            let timeCountMap = {};
+            const validEntries = [];
+
             Object.entries(activeFixedMap).forEach(([efKey, ef]) => {
                 if (!ef) return;
                 const efHour = parseInt(ef.hour ?? 0, 10);
@@ -2466,53 +2598,56 @@
 
                 const hh = String(efHour).padStart(2, '0');
                 const mm = String(efMin).padStart(2, '0');
-                const timeKey = `${hh}_${mm}`;
-
-                if (!groupedByTime[timeKey]) {
-                    groupedByTime[timeKey] = {
-                        hour: efHour,
-                        min: efMin,
-                        hh,
-                        mm,
-                        items: []
-                    };
-                }
-                const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                const prefix = ef.isMain === 'main' && !(ef.title || '').includes("메인타임") ? "메인타임 " : "";
                 const fullTitle = (prefix + (ef.title || '')).trim();
-                const openMin = Number(ef.openBeforeMin ?? getDefaultOpenBeforeMin(ef.title));
-                const alreadyExists = groupedByTime[timeKey].items.some(it => it.fullTitle === fullTitle);
-                if (!alreadyExists && fullTitle) {
-                    groupedByTime[timeKey].items.push({
-                        key: efKey,
-                        fullTitle: fullTitle,
-                        openBeforeMin: openMin
-                    });
-                }
-            });
+                if (!fullTitle) return;
 
-            Object.values(groupedByTime).forEach(group => {
-                if (group.items.length === 0) return;
-                const titles = group.items.map(it => it.fullTitle);
-                const maxOpenBeforeMin = Math.max(...group.items.map(it => it.openBeforeMin));
-                const slotKey = group.min === 0
-                    ? `${dateStr}_${group.hh}00_fixed`
-                    : `${dateStr}_${group.hh}${group.mm}_fixed_${group.items[0].key}`;
-
-                list.push({
-                    isCustom: false,
-                    time: new Date(y, m, d, group.hour, group.min, 0),
-                    monthKey: monthKey,
-                    dateStr: dateStr,
-                    hhmm: `${group.hh}:${group.mm}`,
-                    pureTitle: titles.join(' / '),
-                    slotKey: slotKey,
-                    legacySlotKey: group.min === 0 ? `${dateStr}_${group.hh}` : null,
-                    name: `${group.hh}:${group.mm} ${titles.join(' / ')}`,
-                    openBeforeMin: maxOpenBeforeMin
+                const timeKey = `${hh}_${mm}`;
+                timeCountMap[timeKey] = (timeCountMap[timeKey] || 0) + 1;
+                validEntries.push({
+                    efKey,
+                    ef,
+                    efHour,
+                    efMin,
+                    hh,
+                    mm,
+                    timeKey,
+                    fullTitle,
+                    openBeforeMin: Number(ef.openBeforeMin ?? getDefaultOpenBeforeMin(ef.title))
                 });
             });
 
-            list.sort((a, b) => a.time - b.time);
+            validEntries.forEach(item => {
+                const defaultSharedSlotKey = `${dateStr}_${item.hh}00_fixed`;
+                const individualSlotKey = `${dateStr}_${item.hh}${item.mm}_fixed_${item.efKey}`;
+                const isSingleAtTime = (timeCountMap[item.timeKey] === 1 && item.efMin === 0);
+
+                let slotKey = individualSlotKey;
+                let legacySlotKey = null;
+
+                if (isSingleAtTime) {
+                    slotKey = defaultSharedSlotKey;
+                    legacySlotKey = `${dateStr}_${item.hh}`;
+                } else if (monthObj[defaultSharedSlotKey] && !monthObj[individualSlotKey] && item.efKey.startsWith('base_')) {
+                    slotKey = defaultSharedSlotKey;
+                }
+
+                list.push({
+                    isCustom: false,
+                    fixedKey: item.efKey,
+                    time: new Date(y, m, d, item.efHour, item.efMin, 0),
+                    monthKey: monthKey,
+                    dateStr: dateStr,
+                    hhmm: `${item.hh}:${item.mm}`,
+                    pureTitle: item.fullTitle,
+                    slotKey: slotKey,
+                    legacySlotKey: legacySlotKey,
+                    name: `${item.hh}:${item.mm} ${item.fullTitle}`,
+                    openBeforeMin: item.openBeforeMin
+                });
+            });
+
+            list.sort((a, b) => a.time - b.time || String(a.fixedKey).localeCompare(String(b.fixedKey)));
             return list;
         }
 
@@ -2601,11 +2736,15 @@
             const slotObj = getSlotDataObj(sched);
             if (slotObj.isClosed) return true;
 
-            const validP = getValidParticipantsList(sched);
+            const validP = getValidParticipantsList(sched).filter(p => !p.optOutLocked);
             if (validP.length === 0) {
                 if (now.getTime() >= sched.time.getTime() + 30 * 60 * 1000) {
                     return true;
                 }
+                return false;
+            }
+
+            if (slotObj.reopenedManual) {
                 return false;
             }
 
@@ -2673,20 +2812,29 @@
             let nextScheduled = null;
 
             if (openOngoingList.length > 0) {
-                primaryCards = [openOngoingList[0]];
+                const firstTime = openOngoingList[0].time.getTime();
+                const sameTimeOngoing = openOngoingList.filter(c => c.time.getTime() === firstTime);
+                primaryCards = sameTimeOngoing.slice(0, 2);
                 nextScheduled = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
             } else {
                 const lastCompleted = completedPastList.length > 0 ? completedPastList[completedPastList.length - 1] : null;
                 const nextUp = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
 
                 if (lastCompleted && nextUp) {
-                    primaryCards = [lastCompleted];
+                    const lastTime = lastCompleted.time.getTime();
+                    const sameTimeCompleted = completedPastList.filter(c => c.time.getTime() === lastTime);
+                    primaryCards = sameTimeCompleted.slice(0, 2);
                     nextScheduled = nextUp;
                 } else if (nextUp) {
-                    primaryCards = [nextUp];
-                    nextScheduled = upcomingWaitingList.length > 1 ? upcomingWaitingList[1] : null;
+                    const nextTime = nextUp.time.getTime();
+                    const sameTimeUpcoming = upcomingWaitingList.filter(c => c.time.getTime() === nextTime);
+                    primaryCards = sameTimeUpcoming.slice(0, 2);
+                    const remainingUpcoming = upcomingWaitingList.filter(c => c.time.getTime() > nextTime);
+                    nextScheduled = remainingUpcoming.length > 0 ? remainingUpcoming[0] : null;
                 } else if (lastCompleted) {
-                    primaryCards = [lastCompleted];
+                    const lastTime = lastCompleted.time.getTime();
+                    const sameTimeCompleted = completedPastList.filter(c => c.time.getTime() === lastTime);
+                    primaryCards = sameTimeCompleted.slice(0, 2);
                 }
             }
 
@@ -2719,6 +2867,7 @@
 
             Object.entries(monthObj).forEach(([slotKey, slotData]) => {
                 if (!slotData || !slotData.participants) return;
+                if (slotData.reopenedManual) return;
 
                 let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 let totalCount = validParticipants.length;
@@ -2780,9 +2929,9 @@
             let buttonsHtml = "";
             let cardStateClass = sched.name.includes("메인타임") ? "main-card" : "ongoing-card";
 
-            const encMonth = sched.monthKey;
-            const encSlot = sched.slotKey;
-            const encName = sched.name.replace(/'/g, "\\'");
+            const encMonth = escapeAttr(sched.monthKey);
+            const encSlot = escapeAttr(sched.slotKey);
+            const encName = escapeAttr(sched.name);
             const targetTs = sched.time.getTime();
             const isBeforeExactTime = now.getTime() < targetTs;
 
@@ -2798,7 +2947,8 @@
                     buttonsHtml = `<button class="participate-btn" disabled>완료됨 (참여 마감)</button>`;
                 }
                 if (isOperator(currentUser)) {
-                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감 해제">🔄 마감 해제</button>`;
+                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감 해제 및 참여 중 복원">🔄 마감 해제</button>`;
+                    buttonsHtml += `<button class="btn-sm danger" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록 초기화">🛠️ 상태 초기화</button>`;
                 }
             } else if (diffMinutes < -openBeforeMin) {
                 const remainMin = Math.max(1, Math.ceil(Math.abs(diffMinutes) - openBeforeMin));
@@ -2828,14 +2978,14 @@
                     buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
                 } else if (myRecord.status === "참여 중") {
                     if (isBeforeExactTime) {
-                        statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작) — 보스 정각 이후부터 참여 종료(완료)가 가능합니다.`;
+                        statusDesc = `[${escapeHtml(currentUser.name)}]님 현재 참여 중 (${escapeHtml(myRecord.startTime)} 시작) — 보스 정각 이후부터 참여 종료(완료)가 가능합니다.`;
                         statusColor = "#ecc94b";
                         buttonsHtml = `
                             <button class="participate-btn end-btn" disabled>참여 종료 (완료)</button>
                             <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
                         `;
                     } else {
-                        statusDesc = `[${currentUser.name}]님 현재 참여 중 (${myRecord.startTime} 시작) — 보스 처치 후 [참여 종료 (완료)]를 눌러주세요.`;
+                        statusDesc = `[${escapeHtml(currentUser.name)}]님 현재 참여 중 (${escapeHtml(myRecord.startTime)} 시작) — 보스 처치 후 [참여 종료 (완료)]를 눌러주세요.`;
                         statusColor = "#48bb78";
                         buttonsHtml = `
                             <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}',${targetTs})">참여 종료 (완료)</button>
@@ -2843,22 +2993,23 @@
                         `;
                     }
                 } else if (isOptOutLocked) {
-                    statusDesc = `[${currentUser.name}]님 참여 취소 처리됨 — 해당 타임은 재참여가 불가합니다.`;
+                    statusDesc = `[${escapeHtml(currentUser.name)}]님 참여 취소 처리됨 — 해당 타임은 재참여가 불가합니다.`;
                     statusColor = "#feb2b2";
                     buttonsHtml = `<button class="participate-btn" disabled>재참여 불가</button>`;
                 } else {
-                    statusDesc = `[${currentUser.name}]님 보스 참여 완료 (${myRecord.endTime || ''} 종료 확정)`;
+                    statusDesc = `[${escapeHtml(currentUser.name)}]님 보스 참여 완료 (${escapeHtml(myRecord.endTime || '')} 종료 확정)`;
                     statusColor = "#68d391";
                     buttonsHtml = `<button class="participate-btn cancel" onclick="revertCompletedToOngoing('${encMonth}','${encSlot}')">완료 취소</button>`;
                 }
                 if (isOperator(currentUser) && pList.length > 0) {
                     buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 강제 마감</button>`;
+                    buttonsHtml += `<button class="btn-sm secondary" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록 초기화">🛠️ 상태 초기화</button>`;
                 }
             }
 
             const preNames = preList.map(item => {
                 const mem = membersData[item.uid];
-                return mem ? `${mem.name} [${mem.class || '기사'}]` : item.name;
+                return mem ? `${escapeHtml(mem.name)} [${escapeHtml(mem.class || '기사')}]` : escapeHtml(item.name);
             });
 
             let rowsHtml = '';
@@ -2870,23 +3021,25 @@
                     const latestName = mem ? mem.name : item.name;
                     const latestClass = mem ? (mem.class || '기사') : '기사';
                     const isMe = currentUser && item.uid === currentUser.id;
-                    const endCompare = item.endTimestamp ? item.endTimestamp : now.getTime();
-                    const elapsedSec = Math.max(0, Math.floor((endCompare - (item.timestamp || now.getTime())) / 1000));
+                    const startTs = Number(item.timestamp) || now.getTime();
+                    const rawEndTs = item.endTimestamp ? Number(item.endTimestamp) : now.getTime();
+                    const safeEndTs = rawEndTs > now.getTime() + 60000 ? now.getTime() : rawEndTs;
+                    const elapsedSec = Math.max(0, Math.floor((safeEndTs - startTs) / 1000));
                     const elMin = Math.floor(elapsedSec / 60);
                     const elSec = elapsedSec % 60;
-                    const durationStr = item.endTime ? `${elMin}분 ${elSec}초 (${item.endTime} 종료)` : `${elMin}분 ${elSec}초 경과`;
+                    const durationStr = item.endTime ? `${elMin}분 ${elSec}초 (${escapeHtml(item.endTime)} 종료)` : `${elMin}분 ${elSec}초 경과`;
 
                     const statusChipHtml = item.status === '참여 중'
-                        ? `<span class="status-chip active">● ${item.status}</span>`
+                        ? `<span class="status-chip active">● ${escapeHtml(item.status)}</span>`
                         : (item.optOutLocked
-                            ? `<span class="status-chip" style="background:rgba(229,62,62,0.16); color:#feb2b2; border:1px solid rgba(229,62,62,0.45);">✕ ${item.status}</span>`
-                            : `<span class="status-chip done">✓ ${item.status}</span>`);
+                            ? `<span class="status-chip" style="background:rgba(229,62,62,0.16); color:#feb2b2; border:1px solid rgba(229,62,62,0.45);">✕ ${escapeHtml(item.status)}</span>`
+                            : `<span class="status-chip done">✓ ${escapeHtml(item.status)}</span>`);
 
                     rowsHtml += `
                         <tr class="${isMe ? 'my-row' : ''}">
                             <td>${idx + 1}</td>
-                            <td><b>${latestName}</b> <span style="font-size:11px; color:#b794f4;">[${latestClass}]</span> ${isMe ? '(나)' : ''}</td>
-                            <td>${item.startTime || '-'}</td>
+                            <td><b>${escapeHtml(latestName)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(latestClass)}]</span> ${isMe ? '(나)' : ''}</td>
+                            <td>${escapeHtml(item.startTime || '-')}</td>
                             <td style="color: #d6bcfa;">${durationStr}</td>
                             <td>${statusChipHtml}</td>
                         </tr>
@@ -2895,10 +3048,10 @@
             }
 
             const cardTypeLabel = sched.isCustom
-                ? `<span style="background:#d69e2e; color:#0d0918; padding:4px 9px; border-radius:6px; font-size:11px; font-weight:bold; margin-right:6px;">운영진 추가 유동 일정</span>`
-                : `<span style="background:#44337a; color:#d6bcfa; padding:4px 9px; border-radius:6px; font-size:11px; font-weight:bold; margin-right:6px;">정규 고정 일정</span>`;
+                ? `<span class="badge-type-chip custom">운영진 추가 유동 일정</span>`
+                : `<span class="badge-type-chip fixed">정규 고정 일정</span>`;
 
-            const bossImgSrc = getBossImageForName(sched.name);
+            const bossImgSrc = escapeAttr(getBossImageForName(sched.name));
             const fallbackSvg = getFallbackBossSvg(sched.name);
 
             const rightCountHtml = sched.isCustom ? `
@@ -2916,8 +3069,8 @@
                             <img src="${bossImgSrc}" alt="Boss Illustration" class="boss-illust-img" onerror="this.onerror=null; this.src='${fallbackSvg}';">
                         </div>
                         <div class="boss-banner-center">
-                            <div>${cardTypeLabel}<span class="${badgeClass}">${badgeText}</span></div>
-                            <div class="boss-time-text">${sched.name}</div>
+                            <div class="boss-badge-row">${cardTypeLabel}<span class="${badgeClass}">${badgeText}</span></div>
+                            <div class="boss-time-text">${escapeHtml(sched.name)}</div>
                             <div style="color: #cbd5e0; font-size: 13px; margin-top: 6px;">
                                 👥 보스타임 <b>${openBeforeMin}분 전</b> 오픈 ~ 완료(과반수/마감) 전까지 참여 가능 | 배점: <b style="color:#b794f4;">${assignedScore}점</b>
                             </div>
@@ -2939,7 +3092,7 @@
                         <b>[✋ 참여 예정자 명단 (${preList.length}명)]</b>: ${preList.length > 0 ? preNames.join(', ') : '아직 사전 신청한 인원이 없습니다.'}
                     </div>` : ''}
                     <div class="card-party-box">
-                        <div style="font-weight: bold; margin-bottom: 8px; color: #d6bcfa; font-size: 13px;">실시간 참여 명단 (${sched.name})</div>
+                        <div style="font-weight: bold; margin-bottom: 8px; color: #d6bcfa; font-size: 13px;">실시간 참여 명단 (${escapeHtml(sched.name)})</div>
                         <table>
                             <thead>
                                 <tr>
@@ -2968,7 +3121,7 @@
                 <div class="next-boss-strip">
                     <div class="next-boss-strip-left">
                         <span class="next-boss-pill">예정</span>
-                        <span>다음 보스: <b style="color:#ffffff;">${nextSched.name}</b> <span style="color:#b794f4; font-weight:bold;">(배점 ${assignedScore}점)</span> · 오픈까지 <b>${remainMin}분</b></span>
+                        <span>다음 보스: <b style="color:#ffffff;">${escapeHtml(nextSched.name)}</b> <span style="color:#b794f4; font-weight:bold;">(배점 ${assignedScore}점)</span> · 오픈까지 <b>${remainMin}분</b></span>
                     </div>
                     <div class="next-boss-countdown">${openBeforeMin}분 전 [참여버튼] 활성화</div>
                 </div>
@@ -2995,7 +3148,8 @@
                     if (myRec && !myRec.optOutLocked) {
                         todayEarnedScore += (Number(myRec.score) || 1);
                         if (myRec.timestamp) {
-                            const endTs = myRec.endTimestamp ? Number(myRec.endTimestamp) : now.getTime();
+                            const rawEndTs = myRec.endTimestamp ? Number(myRec.endTimestamp) : now.getTime();
+                            const endTs = rawEndTs > now.getTime() + 60000 ? now.getTime() : rawEndTs;
                             if (endTs >= Number(myRec.timestamp)) {
                                 totalDurationMs += (endTs - Number(myRec.timestamp));
                             }
@@ -3062,7 +3216,7 @@
                         <div class="my-timeline-left">
                             <span class="timeline-dot ${dotClass}"></span>
                             <div>
-                                <div class="timeline-time-title">${getPureBossLabel(step1Prev)}</div>
+                                <div class="timeline-time-title">${escapeHtml(getPureBossLabel(step1Prev))}</div>
                                 <div class="timeline-sub-label">직전 보스 타임</div>
                             </div>
                         </div>
@@ -3104,7 +3258,7 @@
                         <div class="my-timeline-left">
                             <span class="timeline-dot ${dotClass}"></span>
                             <div>
-                                <div class="timeline-time-title">${getPureBossLabel(step2Curr)}</div>
+                                <div class="timeline-time-title">${escapeHtml(getPureBossLabel(step2Curr))}</div>
                                 <div class="timeline-sub-label">${isOpened ? '현재 진행 중' : `${openBeforeMin}분 전 오픈 예정`}</div>
                             </div>
                         </div>
@@ -3119,7 +3273,7 @@
                         <div class="my-timeline-left">
                             <span class="timeline-dot upcoming"></span>
                             <div>
-                                <div class="timeline-time-title">${getPureBossLabel(step3Next)}</div>
+                                <div class="timeline-time-title">${escapeHtml(getPureBossLabel(step3Next))}</div>
                                 <div class="timeline-sub-label">다음 보스 타임</div>
                             </div>
                         </div>
@@ -3170,9 +3324,17 @@
             const container = document.getElementById('boss-cards-container');
             if (container) {
                 let html = '';
-                primaryCards.forEach(cardSched => {
-                    html += buildBossCardHTML(cardSched, now);
-                });
+                if (primaryCards.length >= 2) {
+                    html += `<div class="boss-cards-dual-grid">`;
+                    primaryCards.forEach(cardSched => {
+                        html += buildBossCardHTML(cardSched, now);
+                    });
+                    html += `</div>`;
+                } else {
+                    primaryCards.forEach(cardSched => {
+                        html += buildBossCardHTML(cardSched, now);
+                    });
+                }
                 if (nextScheduled) {
                     html += buildNextBossStripHTML(nextScheduled, now);
                 }
@@ -3219,7 +3381,7 @@
                 }
                 const validP = Object.values(parts).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
-                if (sData.isClosed || (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
+                if (sData.isClosed || (!sData.reopenedManual && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
                     alert("해당 일정은 완료되어 더 이상 참여할 수 없습니다.");
                     return;
                 }
@@ -3345,7 +3507,7 @@
                 const validP = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
 
-                if (validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
+                if (!refreshedData.reopenedManual && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
                     await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                         isClosed: true,
                         closedReason: "과반수 참여 완료 마감"
@@ -3372,6 +3534,7 @@
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
             await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                 isClosed: true,
+                reopenedManual: false,
                 closedReason: `운영진(${currentUser.name}) 강제 마감`
             });
 
@@ -3393,19 +3556,79 @@
 
         window.reopenBossSlot = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("완료 마감된 보스 타임을 다시 오픈하시겠습니까?")) return;
+            if (!confirm("완료 마감된 보스 타임을 다시 오픈하시겠습니까?\n(기존 참여 완료자도 '참여 중' 상태로 함께 해제되어 재마감되지 않습니다.)")) return;
+
             await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                 isClosed: false,
+                reopenedManual: true,
                 closedReason: null
             });
+
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
+            if (slotSnap.exists()) {
+                const parts = slotSnap.val();
+                for (const [uid, pData] of Object.entries(parts)) {
+                    if (pData && !pData.optOutLocked && pData.status && pData.status.includes("참여 완료")) {
+                        await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
+                            status: "참여 중",
+                            endTime: "",
+                            endTimestamp: null
+                        });
+                    }
+                }
+            }
             updateDashboard();
+            loadRankingData();
+        };
+
+        window.resetBossSlotState = async function(monthKey, slotKey) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm("🛠️ [슬롯 상태 초기화]\n\n해당 보스 타임의 마감 플래그와 비정상 종료 시각·완료/취소 잠금 상태를 초기화하여 진행 중 상태로 되돌리시겠습니까?\n(참여 시작 시각과 명단은 유지되며, 종료 시각과 완료 상태만 초기화됩니다.)")) return;
+
+            const now = getSyncedCurrentTime();
+            const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+            await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
+                isClosed: false,
+                reopenedManual: true,
+                closedReason: null
+            });
+
+            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
+            if (slotSnap.exists()) {
+                const parts = slotSnap.val();
+                for (const [uid, pData] of Object.entries(parts)) {
+                    if (!pData || uid === 'admin_account' || pData.name === 'admin') continue;
+                    const fixStartTs = (pData.timestamp && Number(pData.timestamp) > now.getTime()) ? now.getTime() : pData.timestamp;
+                    const fixStartTime = (pData.timestamp && Number(pData.timestamp) > now.getTime()) ? nowTimeStr : pData.startTime;
+                    await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
+                        status: "참여 중",
+                        startTime: fixStartTime || nowTimeStr,
+                        timestamp: fixStartTs || now.getTime(),
+                        endTime: "",
+                        endTimestamp: null,
+                        optOutLocked: false
+                    });
+                }
+            }
+            alert("슬롯 상태 및 비정상 시각 기록이 초기화되었습니다.");
+            updateDashboard();
+            loadRankingData();
         };
 
         function renderTimetable() {
             const tbody = document.getElementById('timetable-body');
+            const filterInfoEl = document.getElementById('timetable-filter-info');
             if (!tbody) return;
 
             const now = getSyncedCurrentTime();
+            if (filterInfoEl) {
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                filterInfoEl.innerHTML = `⏱️ 현재 기준 시각: <b style="color:#e9d8fd;">${hh}:${mm}:${ss}</b> · <span style="color:#cbd5e0;">필터 기준: 시작 전 예정 일정 및 현재 진행 중 일정 우선 노출 (정각 +30분 경과 또는 수동 강제 마감 슬롯만 제외)</span>`;
+            }
+
             let candidates = [];
             
             for (let offset = 0; offset <= 2; offset++) {
@@ -3450,13 +3673,13 @@
             });
 
             candidates = candidates.filter(item => {
-                if (isSlotCompletedState(item.schedRef, now)) return false;
-                const validP = getValidParticipantsList(item.schedRef);
-                if (validP.length === 0 && now.getTime() > item.time.getTime() + 30 * 60 * 1000) return false;
-                return now.getTime() <= item.time.getTime() + 6 * 60 * 60 * 1000;
+                const slotObj = getSlotDataObj(item.schedRef);
+                if (slotObj.isClosed) return false;
+                if (now.getTime() > item.time.getTime() + 30 * 60 * 1000) return false;
+                return true;
             });
 
-            candidates.sort((a, b) => a.time - b.time);
+            candidates.sort((a, b) => a.time - b.time || String(a.title).localeCompare(String(b.title)));
             const upcoming4 = candidates.slice(0, 4);
 
             let html = '';
@@ -3490,9 +3713,9 @@
                         <tr class="${finalRowClass}">
                             <td style="font-weight: bold;">${datePrefix}${r.timeStr}</td>
                             <td>${finalTypeHtml}</td>
-                            <td>${r.title}</td>
+                            <td>${escapeHtml(r.title)}</td>
                             <td style="color: #b794f4; font-weight: bold;">${r.score}점</td>
-                            <td style="font-size: 12px; color: #cbd5e0;">${r.note}</td>
+                            <td style="font-size: 12px; color: #cbd5e0;">${escapeHtml(r.note)}</td>
                         </tr>
                     `;
                 });
@@ -3518,6 +3741,7 @@
             const obj = { day, hour, min, title, isMain, openBeforeMin };
             extraFixedSchedules[key] = obj;
             await set(ref(db, `settings/fixedSchedules/${key}`), obj);
+            await set(ref(db, 'settings/fixedSchedulesInitialized'), true);
             document.getElementById('fixed-sched-title').value = '';
             document.getElementById('fixed-sched-min').value = '0';
             document.getElementById('fixed-sched-open').value = '30';
@@ -3553,6 +3777,7 @@
             renderTimetable();
             updateDashboard();
             await set(ref(db, `settings/fixedSchedules/${key}`), updated);
+            await set(ref(db, 'settings/fixedSchedulesInitialized'), true);
             alert(`[${updated.title}] 설정이 저장되었습니다. (차후 일정부터 즉시 반영됩니다.)`);
         };
 
@@ -3560,6 +3785,7 @@
             if (!isOperator(currentUser)) return;
             if (!confirm("해당 정규 보스 일정을 삭제하시겠습니까?")) return;
             delete extraFixedSchedules[key];
+            await set(ref(db, 'settings/fixedSchedulesInitialized'), true);
             await remove(ref(db, `settings/fixedSchedules/${key}`));
         };
 
@@ -3586,10 +3812,11 @@
                 const curMin = parseInt(val.min ?? 0, 10);
                 const curMain = val.isMain || 'normal';
                 const curOpen = Number(val.openBeforeMin ?? getDefaultOpenBeforeMin(val.title));
+                const safeKey = escapeAttr(key);
 
                 html += `
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; background:#120d22; padding:8px 10px; border-radius:6px; border:1px solid #2a1f4e;">
-                        <select id="edit-fixed-day-${key}" class="admin-input" style="padding:5px; min-height:34px; font-size:12px;">
+                        <select id="edit-fixed-day-${safeKey}" class="admin-input" style="padding:5px; min-height:34px; font-size:12px;">
                             <option value="ALL" ${curDay==='ALL'?'selected':''}>매일</option>
                             <option value="0" ${curDay==='0'?'selected':''}>일요일</option>
                             <option value="1" ${curDay==='1'?'selected':''}>월요일</option>
@@ -3599,16 +3826,16 @@
                             <option value="5" ${curDay==='5'?'selected':''}>금요일</option>
                             <option value="6" ${curDay==='6'?'selected':''}>토요일</option>
                         </select>
-                        <input type="number" id="edit-fixed-hour-${key}" class="admin-input" value="${curHour}" min="0" max="23" style="width:52px; padding:5px; min-height:34px; font-size:12px;">시
-                        <input type="number" id="edit-fixed-min-${key}" class="admin-input" value="${curMin}" min="0" max="59" style="width:52px; padding:5px; min-height:34px; font-size:12px;">분
-                        <input type="text" id="edit-fixed-title-${key}" class="admin-input" value="${val.title || ''}" style="flex:1; min-width:130px; padding:5px; min-height:34px; font-size:12px;">
-                        <select id="edit-fixed-main-${key}" class="admin-input" style="padding:5px; min-height:34px; font-size:12px;">
+                        <input type="number" id="edit-fixed-hour-${safeKey}" class="admin-input" value="${curHour}" min="0" max="23" style="width:52px; padding:5px; min-height:34px; font-size:12px;">시
+                        <input type="number" id="edit-fixed-min-${safeKey}" class="admin-input" value="${curMin}" min="0" max="59" style="width:52px; padding:5px; min-height:34px; font-size:12px;">분
+                        <input type="text" id="edit-fixed-title-${safeKey}" class="admin-input" value="${escapeAttr(val.title || '')}" style="flex:1; min-width:130px; padding:5px; min-height:34px; font-size:12px;">
+                        <select id="edit-fixed-main-${safeKey}" class="admin-input" style="padding:5px; min-height:34px; font-size:12px;">
                             <option value="normal" ${curMain==='normal'?'selected':''}>일반 고정</option>
                             <option value="main" ${curMain==='main'?'selected':''}>★ 메인타임</option>
                         </select>
-                        <input type="number" id="edit-fixed-open-${key}" class="admin-input" value="${curOpen}" min="1" max="120" style="width:58px; padding:5px; min-height:34px; font-size:12px;" title="보스 시간 몇 분 전 참여 버튼 오픈"><span style="font-size:12px; color:#68d391; font-weight:bold;">분 전 오픈</span>
-                        <button class="btn-sm secondary" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="saveFixedScheduleEdit('${key}')">수정</button>
-                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="deleteFixedSchedule('${key}')">삭제</button>
+                        <input type="number" id="edit-fixed-open-${safeKey}" class="admin-input" value="${curOpen}" min="1" max="120" style="width:58px; padding:5px; min-height:34px; font-size:12px;" title="보스 시간 몇 분 전 참여 버튼 오픈"><span style="font-size:12px; color:#68d391; font-weight:bold;">분 전 오픈</span>
+                        <button class="btn-sm secondary" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="saveFixedScheduleEdit('${safeKey}')">수정</button>
+                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="deleteFixedSchedule('${safeKey}')">삭제</button>
                     </div>
                 `;
             });
@@ -3626,6 +3853,7 @@
             }
             bossImagesConfig[keyword] = url;
             await set(ref(db, `settings/bossImages/${keyword}`), url);
+            await set(ref(db, 'settings/bossImagesInitialized'), true);
             document.getElementById('boss-img-keyword').value = '';
             document.getElementById('boss-img-url').value = '';
             alert(`[${keyword}] 보스 일러스트 이미지가 설정되었습니다.`);
@@ -3634,6 +3862,7 @@
         window.deleteBossImageMapping = async function(keyword) {
             if (!isOperator(currentUser)) return;
             delete bossImagesConfig[keyword];
+            await set(ref(db, 'settings/bossImagesInitialized'), true);
             await set(ref(db, `settings/bossImages`), bossImagesConfig);
         };
 
@@ -3647,11 +3876,12 @@
             }
             let html = "<div class='img-chip-grid'>";
             entries.forEach(([kw, url]) => {
+                const safeKw = escapeAttr(kw);
                 html += `
-                    <span class="img-chip" title="${kw}: ${url}">
-                        <span class="img-chip-key">[${kw}]</span>
-                        <span class="img-chip-url">${url}</span>
-                        <button type="button" class="img-chip-del" onclick="deleteBossImageMapping('${kw}')">✕</button>
+                    <span class="img-chip" title="${escapeAttr(kw)}: ${escapeAttr(url)}">
+                        <span class="img-chip-key">[${escapeHtml(kw)}]</span>
+                        <span class="img-chip-url">${escapeHtml(url)}</span>
+                        <button type="button" class="img-chip-del" onclick="deleteBossImageMapping('${safeKw}')">✕</button>
                     </span>
                 `;
             });
@@ -3674,7 +3904,7 @@
                 });
                 bossListEl.innerHTML = Array.from(bossSet)
                     .filter(Boolean)
-                    .map(name => `<option value="${name}"></option>`)
+                    .map(name => `<option value="${escapeAttr(name)}"></option>`)
                     .join('');
             }
 
@@ -3684,7 +3914,7 @@
                     .map(m => m.name);
                 const uniqueNames = Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
                 ownerListEl.innerHTML = uniqueNames
-                    .map(n => `<option value="${n}"></option>`)
+                    .map(n => `<option value="${escapeAttr(n)}"></option>`)
                     .join('');
             }
         }
@@ -3857,18 +4087,19 @@
             let html = '';
             filtered.forEach(([key, item]) => {
                 const acquiredDisplay = item.acquiredDate || item.date || '-';
+                const safeKey = escapeAttr(key);
                 html += `
                     <tr>
-                        <td>${item.boss}</td>
-                        <td style="color: #b794f4; font-weight: bold;">${item.item}</td>
-                        <td>${item.count || 1}개</td>
-                        <td>${item.owner}</td>
-                        <td style="color: #ecc94b;">${item.writer || '-'}</td>
-                        <td style="color: #68d391; font-weight: bold;">${acquiredDisplay}</td>
-                        <td style="color: #a0aec0; font-size: 12px;">${item.date}</td>
+                        <td>${escapeHtml(item.boss)}</td>
+                        <td style="color: #b794f4; font-weight: bold;">${escapeHtml(item.item)}</td>
+                        <td>${escapeHtml(item.count || 1)}개</td>
+                        <td>${escapeHtml(item.owner)}</td>
+                        <td style="color: #ecc94b;">${escapeHtml(item.writer || '-')}</td>
+                        <td style="color: #68d391; font-weight: bold;">${escapeHtml(acquiredDisplay)}</td>
+                        <td style="color: #a0aec0; font-size: 12px;">${escapeHtml(item.date)}</td>
                         ${canEdit ? `<td style="white-space:nowrap;">
-                            <button class="btn-sm secondary" style="padding: 4px 8px; font-size: 11px; margin-right: 4px;" onclick="openLootEditModal('${key}')">수정</button>
-                            <button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteLootItem('${key}')">삭제</button>
+                            <button class="btn-sm secondary" style="padding: 4px 8px; font-size: 11px; margin-right: 4px;" onclick="openLootEditModal('${safeKey}')">수정</button>
+                            <button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteLootItem('${safeKey}')">삭제</button>
                         </td>` : ''}
                     </tr>
                 `;
@@ -3886,7 +4117,7 @@
 
             let rows = ["보스명,아이템명,수량,득템자,등록자,획득일시,등록일시"];
             list.forEach(([key, item]) => {
-                rows.push(`"${item.boss}","${item.item}","${item.count || 1}","${item.owner}","${item.writer || '-'}","${item.acquiredDate || item.date || ''}","${item.date}"`);
+                rows.push(`"${String(item.boss || '').replace(/"/g, '""')}","${String(item.item || '').replace(/"/g, '""')}","${item.count || 1}","${String(item.owner || '').replace(/"/g, '""')}","${String(item.writer || '-').replace(/"/g, '""')}","${item.acquiredDate || item.date || ''}","${item.date}"`);
             });
 
             const csvContent = "\uFEFF" + rows.join('\n');
@@ -4001,7 +4232,8 @@
 
                         let durationText = "-";
                         if (!isCanceled && myPart.timestamp) {
-                            const endTs = myPart.endTimestamp ? Number(myPart.endTimestamp) : now.getTime();
+                            const rawEndTs = myPart.endTimestamp ? Number(myPart.endTimestamp) : now.getTime();
+                            const endTs = rawEndTs > now.getTime() + 60000 ? now.getTime() : rawEndTs;
                             const diffSec = Math.max(0, Math.floor((endTs - Number(myPart.timestamp)) / 1000));
                             const dMin = Math.floor(diffSec / 60);
                             const dSec = diffSec % 60;
@@ -4104,22 +4336,22 @@
                     bossTbody.innerHTML = bossRecords.map(rec => {
                         const timeRange = rec.isCanceled
                             ? '-'
-                            : `${rec.startTime} ~ ${rec.endTime || '진행 중'}`;
+                            : `${escapeHtml(rec.startTime)} ~ ${escapeHtml(rec.endTime || '진행 중')}`;
                         const statusHtml = rec.isCanceled
-                            ? `<span class="status-chip" style="background:rgba(229,62,62,0.16); color:#feb2b2; border:1px solid rgba(229,62,62,0.45);">✕ ${rec.status}</span>`
+                            ? `<span class="status-chip" style="background:rgba(229,62,62,0.16); color:#feb2b2; border:1px solid rgba(229,62,62,0.45);">✕ ${escapeHtml(rec.status)}</span>`
                             : (rec.status === '참여 중'
-                                ? `<span class="status-chip active">● ${rec.status}</span>`
-                                : `<span class="status-chip done">✓ ${rec.status}</span>`);
+                                ? `<span class="status-chip active">● ${escapeHtml(rec.status)}</span>`
+                                : `<span class="status-chip done">✓ ${escapeHtml(rec.status)}</span>`);
                         const scoreHtml = rec.isCanceled
                             ? `<span style="color:#a0aec0;">0점</span>`
                             : `<span style="color:#fbd38d; font-weight:bold;">+${rec.score}점</span>`;
 
                         return `
                             <tr>
-                                <td>${rec.date}</td>
-                                <td style="font-weight: bold; color: #e9d8fd;">${rec.title}</td>
+                                <td>${escapeHtml(rec.date)}</td>
+                                <td style="font-weight: bold; color: #e9d8fd;">${escapeHtml(rec.title)}</td>
                                 <td style="color: #cbd5e0;">${timeRange}</td>
-                                <td style="color: #b794f4;">${rec.durationText}</td>
+                                <td style="color: #b794f4;">${escapeHtml(rec.durationText)}</td>
                                 <td>${statusHtml}</td>
                                 <td>${scoreHtml}</td>
                             </tr>
@@ -4141,10 +4373,10 @@
                         const prefix = b.score > 0 ? '+' : '';
                         return `
                             <tr>
-                                <td>${b.date}</td>
+                                <td>${escapeHtml(b.date)}</td>
                                 <td style="color: ${color}; font-weight: bold;">${prefix}${b.score}점</td>
-                                <td>${b.reason}</td>
-                                <td style="color: #a0aec0;">${b.writer}</td>
+                                <td>${escapeHtml(b.reason)}</td>
+                                <td style="color: #a0aec0;">${escapeHtml(b.writer)}</td>
                             </tr>
                         `;
                     }).join('');
@@ -4498,19 +4730,21 @@
                         let bTexts = filterBonus.map(b => {
                             let color = b.score >= 0 ? '#48bb78' : '#e53e3e';
                             let prefix = b.score > 0 ? '+' : '';
-                            return `<span style="color:${color}; font-weight:bold;" title="사유: ${b.reason}">${prefix}${b.score}점 (${b.reason})</span>`;
+                            return `<span style="color:${color}; font-weight:bold;" title="사유: ${escapeAttr(b.reason)}">${prefix}${b.score}점 (${escapeHtml(b.reason)})</span>`;
                         });
                         bonusDisplay = bTexts.join(', ');
                     }
 
-                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
+                    const safeUid = escapeAttr(row.uid);
+                    const safeNameAttr = escapeAttr(row.name);
+                    const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${safeUid}', '${safeNameAttr}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
                     const isKing = (idx === 0 && selectedWeek !== 'all' && selectedWeek !== 'custom_range' && row.weeklyTotal > 0 && sortMode !== 'class');
                     const kingCrown = isKing ? ' 👑 [출석왕]' : '';
 
                     sHtml += `
-                        <tr class="${isMe ? 'my-row' : ''}" data-name="${row.name}">
+                        <tr class="${isMe ? 'my-row' : ''}" data-name="${escapeAttr(row.name)}">
                             <td>${idx + 1}위</td>
-                            <td><span ${profileClickAction}><b>${row.name}</b> <span style="font-size:11px; color:#b794f4;">[${row.class}]</span>${isMe ? ' (나)' : ''}${kingCrown}</span></td>
+                            <td><span ${profileClickAction}><b>${escapeHtml(row.name)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(row.class)}]</span>${isMe ? ' (나)' : ''}${kingCrown}</span></td>
                             <td>${row.mainCount}회</td>
                             <td>${row.ifritCount}회</td>
                             <td>${row.kaspaCount}회</td>
@@ -4542,9 +4776,13 @@
             const dow = targetDate.getDay();
 
             let daySlotsMap = {};
+            const monthKey = targetDateStr.slice(0, 7);
+            const mData = attendanceByMonth[monthKey] || {};
 
             const activeFixedMap = Object.keys(extraFixedSchedules).length > 0 ? extraFixedSchedules : createInitialFixedSchedules();
-            let groupedByTime = {};
+            let timeCountMap = {};
+            const validEntries = [];
+
             Object.entries(activeFixedMap).forEach(([efKey, ef]) => {
                 if (!ef) return;
                 const efHour = parseInt(ef.hour ?? 0, 10);
@@ -4554,22 +4792,27 @@
 
                 const hh = String(efHour).padStart(2, '0');
                 const mm = String(efMin).padStart(2, '0');
-                const timeKey = `${hh}_${mm}`;
-                if (!groupedByTime[timeKey]) groupedByTime[timeKey] = { min: efMin, hh, mm, items: [] };
-                const prefix = ef.isMain === 'main' && !ef.title.includes("메인타임") ? "메인타임 " : "";
+                const prefix = ef.isMain === 'main' && !(ef.title || '').includes("메인타임") ? "메인타임 " : "";
                 const fullTitle = (prefix + (ef.title || '')).trim();
-                if (!groupedByTime[timeKey].items.some(it => it.fullTitle === fullTitle) && fullTitle) {
-                    groupedByTime[timeKey].items.push({ key: efKey, fullTitle });
-                }
+                if (!fullTitle) return;
+
+                const timeKey = `${hh}_${mm}`;
+                timeCountMap[timeKey] = (timeCountMap[timeKey] || 0) + 1;
+                validEntries.push({ efKey, efMin, hh, mm, timeKey, fullTitle });
             });
 
-            Object.values(groupedByTime).forEach(group => {
-                if (group.items.length === 0) return;
-                const titles = group.items.map(it => it.fullTitle);
-                const sKey = group.min === 0
-                    ? `${targetDateStr}_${group.hh}00_fixed`
-                    : `${targetDateStr}_${group.hh}${group.mm}_fixed_${group.items[0].key}`;
-                daySlotsMap[sKey] = `${group.hh}:${group.mm} ${titles.join(' / ')}`;
+            validEntries.forEach(item => {
+                const defaultSharedSlotKey = `${targetDateStr}_${item.hh}00_fixed`;
+                const individualSlotKey = `${targetDateStr}_${item.hh}${item.mm}_fixed_${item.efKey}`;
+                const isSingleAtTime = (timeCountMap[item.timeKey] === 1 && item.efMin === 0);
+
+                let sKey = individualSlotKey;
+                if (isSingleAtTime) {
+                    sKey = defaultSharedSlotKey;
+                } else if (mData[defaultSharedSlotKey] && !mData[individualSlotKey] && item.efKey.startsWith('base_')) {
+                    sKey = defaultSharedSlotKey;
+                }
+                daySlotsMap[sKey] = `${item.hh}:${item.mm} ${item.fullTitle}`;
             });
 
             Object.entries(customSchedules).forEach(([key, val]) => {
@@ -4587,8 +4830,6 @@
                 }
             });
 
-            const monthKey = targetDateStr.slice(0, 7);
-            const mData = attendanceByMonth[monthKey] || {};
             Object.keys(mData).forEach(sKey => {
                 if (sKey.startsWith(targetDateStr)) {
                     if (!daySlotsMap[sKey]) {
@@ -4617,14 +4858,8 @@
             html += `<th class="sticky-col-2" style="z-index: 6;">일일 합계</th>`;
 
             daySlots.forEach(ds => {
-                let timeDisplay = "";
-                const parts = ds.slotKey.split('_');
-                if (parts.length >= 2 && parts[1].length >= 4) {
-                    timeDisplay = `${parts[1].slice(0,2)}:${parts[1].slice(2,4)}`;
-                } else {
-                    timeDisplay = ds.slotKey.slice(11, 16);
-                }
-                html += `<th title="${ds.title}">${timeDisplay}<br><span style="font-size:11px; color:#a0aec0;">${ds.title.slice(0, 12)}</span></th>`;
+                const timeDisplay = extractTimeFromSlotKey(ds.slotKey);
+                html += `<th title="${escapeAttr(ds.title)}">${escapeHtml(timeDisplay)}<br><span style="font-size:11px; color:#a0aec0;">${escapeHtml(ds.title.slice(0, 12))}</span></th>`;
             });
             html += `<th>일일 가감점</th></tr></thead><tbody>`;
 
@@ -4642,10 +4877,12 @@
                     }
                 });
 
-                const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${row.uid}', '${row.name}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
+                const safeUid = escapeAttr(row.uid);
+                const safeNameAttr = escapeAttr(row.name);
+                const profileClickAction = isOperator(currentUser) ? `onclick="openMemberProfileModal('${safeUid}', '${safeNameAttr}')" style="cursor:pointer; color:#d6bcfa; text-decoration:underline;"` : '';
 
-                html += `<tr data-name="${row.name}">`;
-                html += `<td class="sticky-col-1" style="font-weight: bold;"><span ${profileClickAction}><b>${row.name}</b> <span style="font-size:11px; color:#b794f4;">[${row.class}]</span></span></td>`;
+                html += `<tr data-name="${safeNameAttr}">`;
+                html += `<td class="sticky-col-1" style="font-weight: bold;"><span ${profileClickAction}><b>${escapeHtml(row.name)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(row.class)}]</span></span></td>`;
                 html += `<td class="sticky-col-2" style="color: #fbd38d; font-weight: bold;">${dayScore}점</td>`;
 
                 daySlots.forEach(ds => {
@@ -4653,7 +4890,7 @@
                     const parts = slotObj.participants || {};
                     const rec = parts[row.uid];
                     if (rec && !rec.optOutLocked) {
-                        html += `<td style="background: rgba(72, 187, 120, 0.18); color: #48bb78; font-weight: bold;" title="참여시각: ${rec.startTime || 'O'}">O (+${rec.score || 1})</td>`;
+                        html += `<td style="background: rgba(72, 187, 120, 0.18); color: #48bb78; font-weight: bold;" title="참여시각: ${escapeAttr(rec.startTime || 'O')}">O (+${rec.score || 1})</td>`;
                     } else {
                         html += `<td style="color: #4a5568;">-</td>`;
                     }
@@ -4663,7 +4900,7 @@
                     let bColor = bonusSum >= 0 ? '#48bb78' : '#e53e3e';
                     let bPrefix = bonusSum > 0 ? '+' : '';
                     let reasons = dayBonuses.map(b => `${b.score >= 0 ? '+' : ''}${b.score}점 (${b.reason})`).join(', ');
-                    html += `<td style="color: ${bColor}; font-weight: bold;" title="${reasons}">${bPrefix}${bonusSum}점</td>`;
+                    html += `<td style="color: ${bColor}; font-weight: bold;" title="${escapeAttr(reasons)}">${bPrefix}${bonusSum}점</td>`;
                 } else {
                     html += `<td style="color: #4a5568;">-</td>`;
                 }
@@ -4820,7 +5057,7 @@
             allLogs.sort((a, b) => b.timestamp - a.timestamp);
 
             if (allLogs.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:#a0aec0; padding:10px;">선택한 날짜(${targetDate || '전체'})에 해당하는 가감점 이력이 없습니다.</div>`;
+                container.innerHTML = `<div style="text-align:center; color:#a0aec0; padding:10px;">선택한 날짜(${escapeHtml(targetDate || '전체')})에 해당하는 가감점 이력이 없습니다.</div>`;
                 return;
             }
 
@@ -4830,12 +5067,12 @@
                 let prefix = item.score > 0 ? '+' : '';
                 html += `
                     <tr>
-                        <td>${item.date}</td>
-                        <td><b>${item.charName}</b> <span style="font-size:11px; color:#b794f4;">[${item.charClass}]</span></td>
+                        <td>${escapeHtml(item.date)}</td>
+                        <td><b>${escapeHtml(item.charName)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(item.charClass)}]</span></td>
                         <td style="color:${color}; font-weight:bold;">${prefix}${item.score}점</td>
-                        <td>${item.reason}</td>
-                        <td style="color:#a0aec0;">${item.writer}</td>
-                        <td><button class="btn-sm danger" style="padding:2px 6px; font-size:10px;" onclick="deleteBonusLog('${curMonth}', '${item.uid}', '${item.logKey}')">삭제</button></td>
+                        <td>${escapeHtml(item.reason)}</td>
+                        <td style="color:#a0aec0;">${escapeHtml(item.writer)}</td>
+                        <td><button class="btn-sm danger" style="padding:2px 6px; font-size:10px;" onclick="deleteBonusLog('${escapeAttr(curMonth)}', '${escapeAttr(item.uid)}', '${escapeAttr(item.logKey)}')">삭제</button></td>
                     </tr>
                 `;
             });
@@ -4885,7 +5122,7 @@
 
             bodyEl.innerHTML = `
                 <div style="background:#120d22; padding:15px; border-radius:8px; border:1px solid #2a1f4e;">
-                    <div style="margin-bottom:8px;">• <b>캐릭터명</b>: ${name} <span style="color:#b794f4;">[${charClass}]</span> (UID: ${uid})</div>
+                    <div style="margin-bottom:8px;">• <b>캐릭터명</b>: ${escapeHtml(name)} <span style="color:#b794f4;">[${escapeHtml(charClass)}]</span> (UID: ${escapeHtml(uid)})</div>
                     <div style="margin-bottom:8px;">• <b>이번 달 총 보스 참여 횟수</b>: ${totalParticipations}회</div>
                     <div style="margin-bottom:8px;">• <b>★ 메인타임 참여 횟수</b>: ${mainParticipations}회</div>
                     <div style="margin-bottom:8px;">• <b>전체 보스 타임 대비 참여율</b>: <span style="color:#48bb78; font-weight:bold;">${attendanceRate}%</span></div>
@@ -4938,6 +5175,7 @@
             updateDashboard();
 
             await set(ref(db, `settings/bossScores/${key}`), newScore);
+            await set(ref(db, 'settings/bossScoresInitialized'), true);
             alert(`[${key}] 배점이 ${newScore}점으로 수정되었습니다.`);
         };
 
@@ -4956,6 +5194,7 @@
             updateDashboard();
 
             await set(ref(db, `settings/bossScores/${key}`), val);
+            await set(ref(db, 'settings/bossScoresInitialized'), true);
             document.getElementById('boss-score-key').value = '';
             document.getElementById('boss-score-val').value = '';
             alert(`[${key}] 기준이 ${val}점으로 신규 추가되었습니다.`);
@@ -4971,12 +5210,13 @@
             }
             let html = "<b>[보스별 차등 점수 기준표]</b><br><br>";
             entries.forEach(([key, score]) => {
+                const safeKey = escapeAttr(key);
                 html += `
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="min-width: 150px; font-weight: bold; color: #b794f4;">${key}</span>
-                        <input type="number" id="edit-score-${key}" class="admin-input" value="${score}" min="1" max="50" style="width: 80px; padding: 6px;"> 점수
-                        <button class="btn-sm secondary" onclick="saveBossScoreSetting('${key}')">점수 수정</button>
-                        <button class="btn-sm danger" onclick="deleteBossScore('${key}')">삭제</button>
+                        <span style="min-width: 150px; font-weight: bold; color: #b794f4;">${escapeHtml(key)}</span>
+                        <input type="number" id="edit-score-${safeKey}" class="admin-input" value="${score}" min="1" max="50" style="width: 80px; padding: 6px;"> 점수
+                        <button class="btn-sm secondary" onclick="saveBossScoreSetting('${safeKey}')">점수 수정</button>
+                        <button class="btn-sm danger" onclick="deleteBossScore('${safeKey}')">삭제</button>
                     </div>
                 `;
             });
@@ -4987,6 +5227,7 @@
             if (!isOperator(currentUser)) return;
             delete bossScoresConfig[key];
             renderBossScoreSettingsList();
+            await set(ref(db, 'settings/bossScoresInitialized'), true);
             await set(ref(db, `settings/bossScores`), bossScoresConfig);
         };
 
@@ -5102,16 +5343,17 @@
             entries.forEach(([key, val]) => {
                 const parsed = parseCustomEntry(key, val);
                 if (!parsed) return;
+                const safeKey = escapeAttr(key);
 
                 adminHtml += `
                     <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; background: #120d22; padding: 10px; border-radius: 6px; border: 1px solid #2a1f4e;">
-                        <select id="edit-sched-type-${key}" class="admin-input" style="padding: 5px;" onchange="toggleEditScheduleType('${key}')">
+                        <select id="edit-sched-type-${safeKey}" class="admin-input" style="padding: 5px;" onchange="toggleEditScheduleType('${safeKey}')">
                             <option value="recurring" ${parsed.type==='recurring'?'selected':''}>반복</option>
                             <option value="once" ${parsed.type==='once'?'selected':''}>1회성</option>
                         </select>
                         
-                        <span id="edit-rec-box-${key}" style="display:${parsed.type==='once'?'none':'inline-block'};">
-                            <select id="edit-sched-day-${key}" class="admin-input" style="padding: 5px;">
+                        <span id="edit-rec-box-${safeKey}" style="display:${parsed.type==='once'?'none':'inline-block'};">
+                            <select id="edit-sched-day-${safeKey}" class="admin-input" style="padding: 5px;">
                                 <option value="ALL" ${parsed.day==='ALL'?'selected':''}>매일</option>
                                 <option value="0" ${parsed.day==='0'?'selected':''}>일요일</option>
                                 <option value="1" ${parsed.day==='1'?'selected':''}>월요일</option>
@@ -5123,17 +5365,17 @@
                             </select>
                         </span>
 
-                        <span id="edit-once-box-${key}" style="display:${parsed.type==='once'?'inline-block':'none'};">
-                            <input type="date" id="edit-sched-date-${key}" class="admin-input" value="${parsed.date}" style="padding: 5px; font-size:12px;">
+                        <span id="edit-once-box-${safeKey}" style="display:${parsed.type==='once'?'inline-block':'none'};">
+                            <input type="date" id="edit-sched-date-${safeKey}" class="admin-input" value="${escapeAttr(parsed.date)}" style="padding: 5px; font-size:12px;">
                         </span>
 
-                        <input type="number" id="edit-sched-hour-${key}" class="admin-input" value="${parsed.hour}" min="0" max="23" style="width: 55px; padding: 5px;">시
-                        <input type="number" id="edit-sched-min-${key}" class="admin-input" value="${parsed.min}" min="0" max="59" style="width: 55px; padding: 5px;">분
-                        <input type="text" id="edit-sched-title-${key}" class="admin-input" value="${parsed.title}" style="flex: 1; min-width: 120px; padding: 5px;">
-                        <input type="number" id="edit-sched-score-${key}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 60px; padding: 5px;" title="배점">점수
-                        <input type="number" id="edit-sched-open-${key}" class="admin-input" value="${parsed.openBeforeMin}" min="1" max="120" style="width: 60px; padding: 5px;" title="오픈 기준(분 전)">분 전 오픈
-                        <button class="btn-sm secondary" style="padding: 5px 10px;" onclick="saveCustomScheduleEdit('${key}')">수정</button>
-                        <button class="btn-sm danger" style="padding: 5px 10px;" onclick="deleteCustomSchedule('${key}')">삭제</button>
+                        <input type="number" id="edit-sched-hour-${safeKey}" class="admin-input" value="${parsed.hour}" min="0" max="23" style="width: 55px; padding: 5px;">시
+                        <input type="number" id="edit-sched-min-${safeKey}" class="admin-input" value="${parsed.min}" min="0" max="59" style="width: 55px; padding: 5px;">분
+                        <input type="text" id="edit-sched-title-${safeKey}" class="admin-input" value="${escapeAttr(parsed.title)}" style="flex: 1; min-width: 120px; padding: 5px;">
+                        <input type="number" id="edit-sched-score-${safeKey}" class="admin-input" value="${parsed.score}" min="1" max="50" style="width: 60px; padding: 5px;" title="배점">점수
+                        <input type="number" id="edit-sched-open-${safeKey}" class="admin-input" value="${parsed.openBeforeMin}" min="1" max="120" style="width: 60px; padding: 5px;" title="오픈 기준(분 전)">분 전 오픈
+                        <button class="btn-sm secondary" style="padding: 5px 10px;" onclick="saveCustomScheduleEdit('${safeKey}')">수정</button>
+                        <button class="btn-sm danger" style="padding: 5px 10px;" onclick="deleteCustomSchedule('${safeKey}')">삭제</button>
                     </div>
                 `;
             });
@@ -5193,7 +5435,7 @@
             const options = buildRecordedSlotOptionsForDate(targetDateStr, monthObj);
             let targetHtml = `<option value="">-- 보스 타임 선택 일괄체크 (${options.length}건) --</option>`;
             options.forEach(opt => {
-                targetHtml += `<option value="${opt.slotKey}">${opt.text}</option>`;
+                targetHtml += `<option value="${escapeAttr(opt.slotKey)}">${escapeHtml(opt.text)}</option>`;
             });
             targetSelect.innerHTML = targetHtml;
         };
@@ -5210,7 +5452,7 @@
             const options = buildRecordedSlotOptionsForDate(targetDateStr, monthObj);
             let html = `<option value="">-- 보스 타임 선택 (${options.length}건) --</option>`;
             options.forEach(opt => {
-                html += `<option value="${opt.slotKey}">${opt.text}</option>`;
+                html += `<option value="${escapeAttr(opt.slotKey)}">${escapeHtml(opt.text)}</option>`;
             });
             select.innerHTML = html;
             previewBonusSlotTargets();
@@ -5271,14 +5513,17 @@
 
             preview.innerHTML = `부여 대상자 (<b style="color:#48bb78;">총 ${activeParticipantUids.size}명</b>)`;
 
+            const safeMonthKey = escapeAttr(monthKey);
+            const safeSlotKey = escapeAttr(slotKey);
+
             let addBoxHtml = `
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:#18122d; padding:10px; border-radius:6px; border:1px solid #44337a; margin-bottom:10px;">
                     <span style="font-size:12px; color:#fbd38d; font-weight:bold;">➕ 미참여 혈원 수동 추가(대리 출석):</span>
                     <select id="manual-add-member-select" class="admin-input" style="padding:5px; min-height:34px; font-size:12px; flex:1; min-width:160px;">
                         <option value="">-- 추가할 혈원 선택 (${nonParticipants.length}명) --</option>
-                        ${nonParticipants.map(np => `<option value="${np.uid}">${np.name} [${np.class}]</option>`).join('')}
+                        ${nonParticipants.map(np => `<option value="${escapeAttr(np.uid)}">${escapeHtml(np.name)} [${escapeHtml(np.class)}]</option>`).join('')}
                     </select>
-                    <button class="btn-sm success" style="padding:5px 12px; font-size:12px; min-height:34px;" onclick="addManualParticipantToSlot('${monthKey}', '${slotKey}')">출석 추가</button>
+                    <button class="btn-sm success" style="padding:5px 12px; font-size:12px; min-height:34px;" onclick="addManualParticipantToSlot('${safeMonthKey}', '${safeSlotKey}')">출석 추가</button>
                 </div>
             `;
 
@@ -5292,13 +5537,15 @@
                 const mem = membersData[uid] || {};
                 const memberName = mem.name ? mem.name : p.name;
                 const memberClass = mem.class || '기사';
+                const safeUid = escapeAttr(uid);
+                const safeMemberNameAttr = escapeAttr(memberName);
                 pHtml += `
                     <tr>
-                        <td><b>${memberName}</b> <span style="font-size:11px; color:#b794f4;">[${memberClass}]</span></td>
-                        <td>${p.startTime || '-'}</td>
-                        <td style="color:${p.optOutLocked ? '#fc8181' : '#48bb78'};">${p.status}</td>
+                        <td><b>${escapeHtml(memberName)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(memberClass)}]</span></td>
+                        <td>${escapeHtml(p.startTime || '-')}</td>
+                        <td style="color:${p.optOutLocked ? '#fc8181' : '#48bb78'};">${escapeHtml(p.status)}</td>
                         <td>
-                            <button class="btn-sm danger" style="padding:3px 8px; font-size:11px;" onclick="deleteSingleParticipant('${monthKey}', '${slotKey}', '${uid}', '${memberName}')">제외</button>
+                            <button class="btn-sm danger" style="padding:3px 8px; font-size:11px;" onclick="deleteSingleParticipant('${safeMonthKey}', '${safeSlotKey}', '${safeUid}', '${safeMemberNameAttr}')">제외</button>
                         </td>
                     </tr>
                 `;
@@ -5387,8 +5634,8 @@
                 if (m && m.approved !== false && m.name !== 'admin' && uid !== 'admin_account') {
                     html += `
                         <label class="chk-label">
-                            <input type="checkbox" class="bonus-user-chk" value="${uid}">
-                            <span>${m.name} [${m.class || '기사'}]</span>
+                            <input type="checkbox" class="bonus-user-chk" value="${escapeAttr(uid)}">
+                            <span>${escapeHtml(m.name)} [${escapeHtml(m.class || '기사')}]</span>
                         </label>
                     `;
                 }
@@ -5470,6 +5717,8 @@
                 const roleVal = m.role || 'member';
                 const classVal = m.class || '기사';
                 const targetLvl = getRoleLevel(roleVal);
+                const safeUid = escapeAttr(uid);
+                const safeNameAttr = escapeAttr(m.name);
                 
                 const isHigherOrEqual = (myLvl >= targetLvl && myRole !== 'master' && currentUser.name !== 'admin');
                 const isSelf = currentUser && currentUser.id === uid;
@@ -5491,22 +5740,22 @@
 
                 html += `
                     <tr>
-                        <td><input type="text" id="edit-name-${uid}" class="admin-input" value="${m.name}" style="width: 120px; padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}></td>
+                        <td><input type="text" id="edit-name-${safeUid}" class="admin-input" value="${safeNameAttr}" style="width: 120px; padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}></td>
                         <td>
-                            <select id="edit-class-${uid}" class="admin-input" style="padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}>
+                            <select id="edit-class-${safeUid}" class="admin-input" style="padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}>
                                 ${classOptions}
                             </select>
                         </td>
-                        <td><input type="text" id="edit-code-${uid}" class="admin-input" value="${m.code || '0000'}" style="width: 85px; padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}></td>
+                        <td><input type="text" id="edit-code-${safeUid}" class="admin-input" value="${escapeAttr(m.code || '0000')}" style="width: 85px; padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}></td>
                         <td>
-                            <select id="edit-role-${uid}" class="admin-input" style="padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}>
+                            <select id="edit-role-${safeUid}" class="admin-input" style="padding: 6px;" ${isHigherOrEqual && !isSelf ? 'disabled' : ''}>
                                 ${roleOptions}
                             </select>
                         </td>
                         <td>
                             ${!isHigherOrEqual || isSelf ? `
-                                <button class="btn-sm secondary" onclick="saveMemberEdit('${uid}', '${m.name}')">수정 저장</button>
-                                ${!isSelf ? `<button class="btn-sm danger" onclick="deleteMember('${uid}', '${m.name}')">추방</button>` : ''}
+                                <button class="btn-sm secondary" onclick="saveMemberEdit('${safeUid}', '${safeNameAttr}')">수정 저장</button>
+                                ${!isSelf ? `<button class="btn-sm danger" onclick="deleteMember('${safeUid}', '${safeNameAttr}')">추방</button>` : ''}
                             ` : `<span style="font-size:11px; color:#718096;">권한 없음</span>`}
                         </td>
                     </tr>
@@ -5525,7 +5774,7 @@
             }
             let html = "<table style='font-size:12px;'><thead><tr><th>변경일시</th><th>UID</th><th>기존 닉네임</th><th>변경된 닉네임</th></tr></thead><tbody>";
             entries.reverse().forEach(([key, log]) => {
-                html += `<tr><td>${log.date}</td><td style='color:#a0aec0;'>${log.uid}</td><td style='color:#e53e3e;'>${log.oldName}</td><td style='color:#48bb78; font-weight:bold;'>${log.newName}</td></tr>`;
+                html += `<tr><td>${escapeHtml(log.date)}</td><td style='color:#a0aec0;'>${escapeHtml(log.uid)}</td><td style='color:#e53e3e;'>${escapeHtml(log.oldName)}</td><td style='color:#48bb78; font-weight:bold;'>${escapeHtml(log.newName)}</td></tr>`;
             });
             html += "</tbody></table>";
             container.innerHTML = html;
@@ -5568,18 +5817,20 @@
             let html = '';
             filteredEntries.forEach(([uid, m]) => {
                 const isProtectedAdmin = uid === 'admin_account' || m.name === 'admin';
-                const statusText = m.approved === false ? '<span style="color:#ecc94b;">승인 대기중</span>' : (m.approved === true ? '<span style="color:#48bb78;">승인됨</span>' : String(m.approved));
+                const statusText = m.approved === false ? '<span style="color:#ecc94b;">승인 대기중</span>' : (m.approved === true ? '<span style="color:#48bb78;">승인됨</span>' : escapeHtml(String(m.approved)));
+                const safeUid = escapeAttr(uid);
+                const safeNameAttr = escapeAttr(m.name || uid);
 
                 html += `
                     <tr>
-                        <td style="font-size: 11px; color: #a0aec0; font-family: monospace;">${uid}</td>
-                        <td style="font-weight: bold; color: #d6bcfa;">${m.name || '-'}</td>
-                        <td style="color: #b794f4;">${m.class || '기사'}</td>
-                        <td style="color: #fbd38d; font-family: monospace; font-weight: bold;">${m.code || '-'}</td>
+                        <td style="font-size: 11px; color: #a0aec0; font-family: monospace;">${escapeHtml(uid)}</td>
+                        <td style="font-weight: bold; color: #d6bcfa;">${escapeHtml(m.name || '-')}</td>
+                        <td style="color: #b794f4;">${escapeHtml(m.class || '기사')}</td>
+                        <td style="color: #fbd38d; font-family: monospace; font-weight: bold;">${escapeHtml(m.code || '-')}</td>
                         <td>${statusText}</td>
-                        <td>${m.role || 'member'}</td>
+                        <td>${escapeHtml(m.role || 'member')}</td>
                         <td>
-                            ${!isProtectedAdmin ? `<button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="hardDeleteRawMember('${uid}', '${m.name || uid}')">DB 영구삭제</button>` : '<span style="font-size: 11px; color: #718096;">시스템 보호</span>'}
+                            ${!isProtectedAdmin ? `<button class="btn-sm danger" style="padding: 4px 8px; font-size: 11px;" onclick="hardDeleteRawMember('${safeUid}', '${safeNameAttr}')">DB 영구삭제</button>` : '<span style="font-size: 11px; color: #718096;">시스템 보호</span>'}
                         </td>
                     </tr>
                 `;
