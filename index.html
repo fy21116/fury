@@ -1183,7 +1183,10 @@
 
                 <div id="admin-sub-score" class="admin-sub-content">
                     <div class="panel-box">
-                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 4px;">보스별 차등 점수 관리</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;">
+                            <span style="font-weight: bold; color: #d6bcfa;">보스별 차등 점수 관리</span>
+                            <button class="btn-sm secondary" style="padding: 4px 10px; font-size: 11px; min-height: 28px;" onclick="restoreDefaultBossScores()">🔄 기본 점수 기준 복구</button>
+                        </div>
                         <div style="font-size: 12px; color: #fbd38d; margin-bottom: 12px;">* 차후 보스부터 수정 점수 적용</div>
                         <div class="admin-form">
                             <input type="text" id="boss-score-key" class="admin-input" placeholder="보스/일정 명칭" style="flex: 1; min-width: 180px;">
@@ -1351,9 +1354,60 @@
             return escapeHtml(str);
         }
 
+        /* Firebase 키 안전 인코딩/디코딩 ('/', '.', '#', '$', '[', ']' 충돌 방지) */
+        function encodeFbKey(rawKey) {
+            return String(rawKey)
+                .replace(/%/g, '%25')
+                .replace(/\//g, '%2F')
+                .replace(/\./g, '%2E')
+                .replace(/#/g, '%23')
+                .replace(/\$/g, '%24')
+                .replace(/\[/g, '%5B')
+                .replace(/\]/g, '%5D');
+        }
+
+        function decodeFbKey(fbKey) {
+            try {
+                return decodeURIComponent(String(fbKey));
+            } catch (e) {
+                return String(fbKey);
+            }
+        }
+
+        function normalizeKeyValueMap(rawObj) {
+            const result = {};
+            if (!rawObj || typeof rawObj !== 'object') return result;
+            Object.entries(rawObj).forEach(([k, v]) => {
+                if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+                    // 예전 비인코딩 '/' 키로 인해 중첩 객체가 생성된 경우 평탄화 복원
+                    Object.entries(v).forEach(([subK, subV]) => {
+                        if (typeof subV === 'number' || typeof subV === 'string') {
+                            result[`${decodeFbKey(k)}/${decodeFbKey(subK)}`] = subV;
+                        }
+                    });
+                } else {
+                    result[decodeFbKey(k)] = v;
+                }
+            });
+            return result;
+        }
+
+        function serializeKeyValueMap(cleanMap) {
+            const out = {};
+            Object.entries(cleanMap || {}).forEach(([k, v]) => {
+                out[encodeFbKey(k)] = v;
+            });
+            return out;
+        }
+
         let serverTimeOffset = 0;
         onValue(ref(db, ".info/serverTimeOffset"), (snap) => {
-            serverTimeOffset = snap.val() || 0;
+            const val = snap.val();
+            if (typeof val === 'number' && Math.abs(val) < 1000 * 60 * 60 * 12) {
+                serverTimeOffset = val;
+            } else {
+                serverTimeOffset = 0;
+            }
         });
 
         function getSyncedCurrentTime() {
@@ -1376,6 +1430,15 @@
             const match = String(slotKey).match(/(\d{2})[:]?(\d{2})/);
             if (match) return `${match[1]}:${match[2]}`;
             return String(slotKey).slice(11, 16);
+        }
+
+        function parseDateTimeSafe(rawStr) {
+            if (!rawStr) return NaN;
+            const normalized = String(rawStr).trim().replace(' ', 'T').replace(/\//g, '-');
+            const dt = new Date(normalized);
+            if (!isNaN(dt.getTime())) return dt.getTime();
+            const fallback = new Date(String(rawStr).replace(/-/g, '/'));
+            return fallback.getTime();
         }
 
         window.shiftDate = function(days) {
@@ -1642,12 +1705,12 @@
 
             onValue(ref(db, 'settings/bossImages'), async (snap) => {
                 if (snap.exists() && snap.val() !== null) {
-                    bossImagesConfig = snap.val();
+                    bossImagesConfig = normalizeKeyValueMap(snap.val());
                 } else {
                     const initSnap = await get(ref(db, 'settings/bossImagesInitialized'));
                     if (!initSnap.exists() || initSnap.val() !== true) {
                         bossImagesConfig = { ...DEFAULT_BOSS_IMAGES };
-                        await set(ref(db, 'settings/bossImages'), bossImagesConfig);
+                        await set(ref(db, 'settings/bossImages'), serializeKeyValueMap(bossImagesConfig));
                         await set(ref(db, 'settings/bossImagesInitialized'), true);
                     } else {
                         bossImagesConfig = {};
@@ -1659,12 +1722,12 @@
 
             onValue(ref(db, 'settings/bossScores'), async (snap) => {
                 if (snap.exists() && snap.val() !== null) {
-                    bossScoresConfig = snap.val();
+                    bossScoresConfig = normalizeKeyValueMap(snap.val());
                 } else {
                     const initSnap = await get(ref(db, 'settings/bossScoresInitialized'));
                     if (!initSnap.exists() || initSnap.val() !== true) {
                         bossScoresConfig = { ...DEFAULT_BOSS_SCORES };
-                        await set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                        await set(ref(db, 'settings/bossScores'), serializeKeyValueMap(bossScoresConfig));
                         await set(ref(db, 'settings/bossScoresInitialized'), true);
                     } else {
                         bossScoresConfig = {};
@@ -1736,8 +1799,8 @@
                 if (mSnap.exists()) membersData = mSnap.val() || {};
                 if (cSnap.exists()) customSchedules = cSnap.val() || {};
                 if (fSnap.exists()) extraFixedSchedules = fSnap.val() || {};
-                if (imgSnap.exists() && imgSnap.val() !== null) bossImagesConfig = imgSnap.val();
-                if (bSnap.exists() && bSnap.val() !== null) bossScoresConfig = bSnap.val();
+                if (imgSnap.exists() && imgSnap.val() !== null) bossImagesConfig = normalizeKeyValueMap(imgSnap.val());
+                if (bSnap.exists() && bSnap.val() !== null) bossScoresConfig = normalizeKeyValueMap(bSnap.val());
                 if (nSnap.exists()) currentNoticeTextHandler(nSnap.val());
                 if (hSnap.exists()) nicknameHistoryData = hSnap.val() || {};
                 if (pSnap.exists()) boardPostsData = pSnap.val() || {};
@@ -1858,7 +1921,7 @@
                 const scoresSnap = await get(ref(db, 'settings/bossScores'));
                 const scoresInitSnap = await get(ref(db, 'settings/bossScoresInitialized'));
                 if ((!scoresSnap.exists() || scoresSnap.val() === null) && (!scoresInitSnap.exists() || scoresInitSnap.val() !== true)) {
-                    await set(ref(db, 'settings/bossScores'), bossScoresConfig);
+                    await set(ref(db, 'settings/bossScores'), serializeKeyValueMap(bossScoresConfig));
                     await set(ref(db, 'settings/bossScoresInitialized'), true);
                 }
             } catch (err) {
@@ -2516,7 +2579,7 @@
             else if (bossName.includes("공성전")) { accent = "#ed8936"; label = "CASTLE SIEGE"; }
             else if (bossName.includes("카스파")) { accent = "#38b2ac"; label = "KASPA"; }
 
-            const svg = `<svg xmlns="http://www.w3.org/200" width="300" height="200" viewBox="0 0 300 200">
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
                 <defs>
                     <radialGradient id="g" cx="40%" cy="50%" r="70%">
                         <stop offset="0%" stop-color="${accent}" stop-opacity="0.55"/>
@@ -2736,15 +2799,17 @@
             const slotObj = getSlotDataObj(sched);
             if (slotObj.isClosed) return true;
 
+            const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
+            if (isAdminReopened) {
+                return false;
+            }
+
             const validP = getValidParticipantsList(sched).filter(p => !p.optOutLocked);
+
             if (validP.length === 0) {
                 if (now.getTime() >= sched.time.getTime() + 30 * 60 * 1000) {
                     return true;
                 }
-                return false;
-            }
-
-            if (slotObj.reopenedManual) {
                 return false;
             }
 
@@ -2867,7 +2932,7 @@
 
             Object.entries(monthObj).forEach(([slotKey, slotData]) => {
                 if (!slotData || !slotData.participants) return;
-                if (slotData.reopenedManual) return;
+                if (slotData.reopenedManual || slotData.reopenedByAdmin) return;
 
                 let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 let totalCount = validParticipants.length;
@@ -2876,6 +2941,8 @@
 
                 if (shouldCloseByMajority || slotData.isClosed) {
                     if (!slotData.isClosed) {
+                        slotData.isClosed = true;
+                        slotData.closedReason = "과반수 참여 완료 마감";
                         update(ref(db, `attendance/${curMonth}/${slotKey}`), {
                             isClosed: true,
                             closedReason: "과반수 참여 완료 마감"
@@ -2885,8 +2952,11 @@
                         if (pData && pData.status === "참여 중") {
                             const endDate = getSyncedCurrentTime();
                             const endStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}:${String(endDate.getSeconds()).padStart(2, '0')}`;
+                            pData.status = shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (마감)";
+                            pData.endTime = endStr;
+                            pData.endTimestamp = endDate.getTime();
                             update(ref(db, `attendance/${curMonth}/${slotKey}/participants/${uid}`), {
-                                status: shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (마감)",
+                                status: pData.status,
                                 endTime: endStr,
                                 endTimestamp: endDate.getTime()
                             });
@@ -2947,8 +3017,8 @@
                     buttonsHtml = `<button class="participate-btn" disabled>완료됨 (참여 마감)</button>`;
                 }
                 if (isOperator(currentUser)) {
-                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감 해제 및 참여 중 복원">🔄 마감 해제</button>`;
-                    buttonsHtml += `<button class="btn-sm danger" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록 초기화">🛠️ 상태 초기화</button>`;
+                    buttonsHtml += `<button class="btn-sm secondary" onclick="reopenBossSlot('${encMonth}','${encSlot}')" title="마감만 해제 (기존 완료 기록 유지)">🔄 마감 해제</button>`;
+                    buttonsHtml += `<button class="btn-sm danger" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록을 참여 중으로 초기화">🛠️ 상태 초기화</button>`;
                 }
             } else if (diffMinutes < -openBeforeMin) {
                 const remainMin = Math.max(1, Math.ceil(Math.abs(diffMinutes) - openBeforeMin));
@@ -3003,7 +3073,7 @@
                 }
                 if (isOperator(currentUser) && pList.length > 0) {
                     buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 강제 마감</button>`;
-                    buttonsHtml += `<button class="btn-sm secondary" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록 초기화">🛠️ 상태 초기화</button>`;
+                    buttonsHtml += `<button class="btn-sm secondary" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록을 참여 중으로 초기화">🛠️ 상태 초기화</button>`;
                 }
             }
 
@@ -3381,7 +3451,8 @@
                 }
                 const validP = Object.values(parts).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
-                if (sData.isClosed || (!sData.reopenedManual && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
+                const isAdminReopened = Boolean(sData.reopenedManual || sData.reopenedByAdmin);
+                if (sData.isClosed || (!isAdminReopened && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2))) {
                     alert("해당 일정은 완료되어 더 이상 참여할 수 없습니다.");
                     return;
                 }
@@ -3506,8 +3577,9 @@
                 const parts = refreshedData.participants || {};
                 const validP = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin' && !p.optOutLocked);
                 const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
+                const isAdminReopened = Boolean(refreshedData.reopenedManual || refreshedData.reopenedByAdmin);
 
-                if (!refreshedData.reopenedManual && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
+                if (!isAdminReopened && validP.length > 0 && compP.length >= Math.ceil(validP.length / 2)) {
                     await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                         isClosed: true,
                         closedReason: "과반수 참여 완료 마감"
@@ -3532,67 +3604,87 @@
 
             const now = getSyncedCurrentTime();
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-            await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
-                isClosed: true,
-                reopenedManual: false,
-                closedReason: `운영진(${currentUser.name}) 강제 마감`
-            });
+            const closeReason = `운영진(${currentUser.name}) 강제 마감`;
+
+            if (!attendanceByMonth[monthKey]) attendanceByMonth[monthKey] = {};
+            if (!attendanceByMonth[monthKey][slotKey]) attendanceByMonth[monthKey][slotKey] = {};
+            attendanceByMonth[monthKey][slotKey].isClosed = true;
+            attendanceByMonth[monthKey][slotKey].reopenedManual = false;
+            attendanceByMonth[monthKey][slotKey].reopenedByAdmin = false;
+            attendanceByMonth[monthKey][slotKey].closedReason = closeReason;
 
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
+            const updates = {
+                [`attendance/${monthKey}/${slotKey}/isClosed`]: true,
+                [`attendance/${monthKey}/${slotKey}/reopenedManual`]: false,
+                [`attendance/${monthKey}/${slotKey}/reopenedByAdmin`]: false,
+                [`attendance/${monthKey}/${slotKey}/closedReason`]: closeReason
+            };
+
             if (slotSnap.exists()) {
                 const parts = slotSnap.val();
                 for (const [uid, pData] of Object.entries(parts)) {
                     if (pData && pData.status === "참여 중") {
-                        await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
-                            status: "참여 완료 (마감)",
-                            endTime: timeStr,
-                            endTimestamp: now.getTime()
-                        });
+                        if (attendanceByMonth[monthKey][slotKey].participants && attendanceByMonth[monthKey][slotKey].participants[uid]) {
+                            attendanceByMonth[monthKey][slotKey].participants[uid].status = "참여 완료 (마감)";
+                            attendanceByMonth[monthKey][slotKey].participants[uid].endTime = timeStr;
+                            attendanceByMonth[monthKey][slotKey].participants[uid].endTimestamp = now.getTime();
+                        }
+                        updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/status`] = "참여 완료 (마감)";
+                        updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/endTime`] = timeStr;
+                        updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/endTimestamp`] = now.getTime();
                     }
                 }
             }
+
+            updateDashboard();
+            await update(ref(db), updates);
             updateDashboard();
         };
 
         window.reopenBossSlot = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("완료 마감된 보스 타임을 다시 오픈하시겠습니까?\n(기존 참여 완료자도 '참여 중' 상태로 함께 해제되어 재마감되지 않습니다.)")) return;
+            if (!confirm("완료 마감된 보스 타임을 다시 오픈하시겠습니까?\n(기존 참여 기록과 완료 상태는 그대로 유지되며, 추가 늦참 참여가 열립니다.)")) return;
+
+            if (!attendanceByMonth[monthKey]) attendanceByMonth[monthKey] = {};
+            if (!attendanceByMonth[monthKey][slotKey]) attendanceByMonth[monthKey][slotKey] = {};
+            attendanceByMonth[monthKey][slotKey].isClosed = false;
+            attendanceByMonth[monthKey][slotKey].reopenedManual = true;
+            attendanceByMonth[monthKey][slotKey].reopenedByAdmin = true;
+            attendanceByMonth[monthKey][slotKey].closedReason = null;
+
+            updateDashboard();
 
             await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                 isClosed: false,
                 reopenedManual: true,
+                reopenedByAdmin: true,
                 closedReason: null
             });
-
-            const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
-            if (slotSnap.exists()) {
-                const parts = slotSnap.val();
-                for (const [uid, pData] of Object.entries(parts)) {
-                    if (pData && !pData.optOutLocked && pData.status && pData.status.includes("참여 완료")) {
-                        await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
-                            status: "참여 중",
-                            endTime: "",
-                            endTimestamp: null
-                        });
-                    }
-                }
-            }
             updateDashboard();
             loadRankingData();
         };
 
         window.resetBossSlotState = async function(monthKey, slotKey) {
             if (!isOperator(currentUser)) return;
-            if (!confirm("🛠️ [슬롯 상태 초기화]\n\n해당 보스 타임의 마감 플래그와 비정상 종료 시각·완료/취소 잠금 상태를 초기화하여 진행 중 상태로 되돌리시겠습니까?\n(참여 시작 시각과 명단은 유지되며, 종료 시각과 완료 상태만 초기화됩니다.)")) return;
+            if (!confirm("🛠️ [슬롯 상태 초기화]\n\n해당 보스 타임의 마감 플래그와 모든 참여자의 종료 시각·완료·취소 잠금 상태를 초기화하여 전원 '참여 중' 상태로 되돌리시겠습니까?\n(참여자 명단과 참여 시작 시각은 유지됩니다.)")) return;
 
             const now = getSyncedCurrentTime();
             const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
-            await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
-                isClosed: false,
-                reopenedManual: true,
-                closedReason: null
-            });
+            if (!attendanceByMonth[monthKey]) attendanceByMonth[monthKey] = {};
+            if (!attendanceByMonth[monthKey][slotKey]) attendanceByMonth[monthKey][slotKey] = {};
+            attendanceByMonth[monthKey][slotKey].isClosed = false;
+            attendanceByMonth[monthKey][slotKey].reopenedManual = true;
+            attendanceByMonth[monthKey][slotKey].reopenedByAdmin = true;
+            attendanceByMonth[monthKey][slotKey].closedReason = null;
+
+            const updates = {
+                [`attendance/${monthKey}/${slotKey}/isClosed`]: false,
+                [`attendance/${monthKey}/${slotKey}/reopenedManual`]: true,
+                [`attendance/${monthKey}/${slotKey}/reopenedByAdmin`]: true,
+                [`attendance/${monthKey}/${slotKey}/closedReason`]: null
+            };
 
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
             if (slotSnap.exists()) {
@@ -3601,17 +3693,26 @@
                     if (!pData || uid === 'admin_account' || pData.name === 'admin') continue;
                     const fixStartTs = (pData.timestamp && Number(pData.timestamp) > now.getTime()) ? now.getTime() : pData.timestamp;
                     const fixStartTime = (pData.timestamp && Number(pData.timestamp) > now.getTime()) ? nowTimeStr : pData.startTime;
-                    await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
-                        status: "참여 중",
-                        startTime: fixStartTime || nowTimeStr,
-                        timestamp: fixStartTs || now.getTime(),
-                        endTime: "",
-                        endTimestamp: null,
-                        optOutLocked: false
-                    });
+                    if (attendanceByMonth[monthKey][slotKey].participants && attendanceByMonth[monthKey][slotKey].participants[uid]) {
+                        attendanceByMonth[monthKey][slotKey].participants[uid].status = "참여 중";
+                        attendanceByMonth[monthKey][slotKey].participants[uid].startTime = fixStartTime || nowTimeStr;
+                        attendanceByMonth[monthKey][slotKey].participants[uid].timestamp = fixStartTs || now.getTime();
+                        attendanceByMonth[monthKey][slotKey].participants[uid].endTime = "";
+                        attendanceByMonth[monthKey][slotKey].participants[uid].endTimestamp = null;
+                        attendanceByMonth[monthKey][slotKey].participants[uid].optOutLocked = false;
+                    }
+                    updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/status`] = "참여 중";
+                    updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/startTime`] = fixStartTime || nowTimeStr;
+                    updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/timestamp`] = fixStartTs || now.getTime();
+                    updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/endTime`] = "";
+                    updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/endTimestamp`] = null;
+                    updates[`attendance/${monthKey}/${slotKey}/participants/${uid}/optOutLocked`] = false;
                 }
             }
-            alert("슬롯 상태 및 비정상 시각 기록이 초기화되었습니다.");
+
+            updateDashboard();
+            await update(ref(db), updates);
+            alert("슬롯 상태 및 종료 시각 기록이 초기화되었습니다.");
             updateDashboard();
             loadRankingData();
         };
@@ -3675,6 +3776,9 @@
             candidates = candidates.filter(item => {
                 const slotObj = getSlotDataObj(item.schedRef);
                 if (slotObj.isClosed) return false;
+                if (slotObj.reopenedManual || slotObj.reopenedByAdmin) {
+                    return now.getTime() <= item.time.getTime() + 6 * 60 * 60 * 1000;
+                }
                 if (now.getTime() > item.time.getTime() + 30 * 60 * 1000) return false;
                 return true;
             });
@@ -3852,18 +3956,21 @@
                 return;
             }
             bossImagesConfig[keyword] = url;
-            await set(ref(db, `settings/bossImages/${keyword}`), url);
+            renderBossImageMappingList();
+            await set(ref(db, `settings/bossImages`), serializeKeyValueMap(bossImagesConfig));
             await set(ref(db, 'settings/bossImagesInitialized'), true);
             document.getElementById('boss-img-keyword').value = '';
             document.getElementById('boss-img-url').value = '';
             alert(`[${keyword}] 보스 일러스트 이미지가 설정되었습니다.`);
         };
 
-        window.deleteBossImageMapping = async function(keyword) {
+        window.deleteBossImageMapping = async function(encodedKw) {
             if (!isOperator(currentUser)) return;
+            const keyword = decodeFbKey(encodedKw);
             delete bossImagesConfig[keyword];
+            renderBossImageMappingList();
             await set(ref(db, 'settings/bossImagesInitialized'), true);
-            await set(ref(db, `settings/bossImages`), bossImagesConfig);
+            await set(ref(db, `settings/bossImages`), serializeKeyValueMap(bossImagesConfig));
         };
 
         function renderBossImageMappingList() {
@@ -3876,7 +3983,7 @@
             }
             let html = "<div class='img-chip-grid'>";
             entries.forEach(([kw, url]) => {
-                const safeKw = escapeAttr(kw);
+                const safeKw = escapeAttr(encodeFbKey(kw));
                 html += `
                     <span class="img-chip" title="${escapeAttr(kw)}: ${escapeAttr(url)}">
                         <span class="img-chip-key">[${escapeHtml(kw)}]</span>
@@ -4056,7 +4163,7 @@
                     const targetDay = (dateFilterInput && dateFilterInput.value) ? dateFilterInput.value : todayStr;
                     if (itemDatePart !== targetDay) return false;
                 } else if (period === 'week') {
-                    const itemTs = new Date(targetDateToCheck.replace(/-/g, '/')).getTime();
+                    const itemTs = parseDateTimeSafe(targetDateToCheck);
                     const weekAgoTs = now.getTime() - (7 * 86400000);
                     if (isNaN(itemTs) || itemTs < weekAgoTs) return false;
                 } else if (period === 'month') {
@@ -4075,8 +4182,8 @@
             });
 
             filtered.sort((a, b) => {
-                const timeA = new Date((b[1].acquiredDate || b[1].date || "").replace(/-/g, '/')).getTime();
-                const timeB = new Date((a[1].acquiredDate || a[1].date || "").replace(/-/g, '/')).getTime();
+                const timeA = parseDateTimeSafe(b[1].acquiredDate || b[1].date || "") || 0;
+                const timeB = parseDateTimeSafe(a[1].acquiredDate || a[1].date || "") || 0;
                 return timeA - timeB;
             });
 
@@ -4435,6 +4542,7 @@
             const selectedMonth = monthSelect.value;
             const selectedWeek = weekSelect.value;
             const targetDateStr = dateInput ? dateInput.value : getKSTDateString(getSyncedCurrentTime());
+            const targetDateMonth = targetDateStr ? targetDateStr.slice(0, 7) : selectedMonth;
             const sortMode = sortModeSelect ? sortModeSelect.value : 'month';
 
             if (rangeBox) {
@@ -4457,10 +4565,12 @@
                 }
             }
             const monthData = attendanceByMonth[selectedMonth] || allAttData[selectedMonth] || {};
+            const dailyMonthData = attendanceByMonth[targetDateMonth] || allAttData[targetDateMonth] || {};
 
             const allBonusSnap = await get(ref(db, `bonus_scores`));
             const allBonusData = allBonusSnap.val() || {};
             const bonusData = allBonusData[selectedMonth] || {};
+            const dailyBonusData = allBonusData[targetDateMonth] || {};
 
             let lifetimeScores = {};
             for (const [mKey, mVal] of Object.entries(allAttData)) {
@@ -4520,32 +4630,44 @@
                 }
             });
 
+            /* 월간 보너스 합계 집계 */
             Object.entries(bonusData).forEach(([uid, bVal]) => {
+                if (!userStats[uid]) return;
+                if (typeof bVal === 'object' && bVal !== null) {
+                    Object.entries(bVal).forEach(([bKey, bObj]) => {
+                        const scoreNum = Number(bObj.score) || 0;
+                        userStats[uid].monthlyTotal += scoreNum;
+                    });
+                } else {
+                    const num = Number(bVal) || 0;
+                    userStats[uid].monthlyTotal += num;
+                }
+            });
+
+            /* 기준일(daily-score-date) 연월 기준 일일 가감점 집계 */
+            Object.entries(dailyBonusData).forEach(([uid, bVal]) => {
                 if (!userStats[uid]) return;
                 if (typeof bVal === 'object' && bVal !== null) {
                     Object.entries(bVal).forEach(([bKey, bObj]) => {
                         const bDate = bKey.split('_')[0];
                         const isTargetDate = targetDateStr ? (bDate === targetDateStr) : true;
                         const scoreNum = Number(bObj.score) || 0;
-                        
-                        userStats[uid].bonusList.push({
-                            logKey: bKey,
-                            uid: uid,
-                            date: bDate,
-                            score: scoreNum,
-                            reason: bObj.reason || '사유 없음',
-                            writer: bObj.writer || '운영진'
-                        });
-                        userStats[uid].monthlyTotal += scoreNum;
                         if (isTargetDate) {
+                            userStats[uid].bonusList.push({
+                                logKey: bKey,
+                                uid: uid,
+                                date: bDate,
+                                score: scoreNum,
+                                reason: bObj.reason || '사유 없음',
+                                writer: bObj.writer || '운영진'
+                            });
                             userStats[uid].dailyTotal += scoreNum;
                         }
                     });
                 } else {
                     const num = Number(bVal) || 0;
-                    userStats[uid].monthlyTotal += num;
                     userStats[uid].dailyTotal += num;
-                    userStats[uid].bonusList.push({ logKey: 'legacy', uid: uid, date: selectedMonth + '-01', score: num, reason: '기타 보너스', writer: '운영진' });
+                    userStats[uid].bonusList.push({ logKey: 'legacy', uid: uid, date: targetDateMonth + '-01', score: num, reason: '기타 보너스', writer: '운영진' });
                 }
             });
 
@@ -4572,10 +4694,10 @@
                 });
             });
 
+            /* 월간 보스 참여 집계 */
             Object.entries(monthData).forEach(([slotKey, slotObj]) => {
                 const parts = (slotObj && slotObj.participants) ? slotObj.participants : {};
                 const bossTitle = slotObj.name || slotKey;
-                const slotDatePart = slotKey.split('_')[0];
 
                 Object.entries(parts).forEach(([uid, pInfo]) => {
                     if (uid === 'admin_account' || !pInfo || pInfo.optOutLocked) return;
@@ -4603,33 +4725,51 @@
                         if (sc === null) sc = getScoreForBossName(bossTitle);
                     }
                     userStats[uid].slotsRecord[slotKey] = { score: sc, time: pInfo.startTime || 'O', title: bossTitle };
-
-                    const isTargetDate = targetDateStr ? (slotDatePart === targetDateStr) : true;
                     userStats[uid].monthlyTotal += sc;
 
                     if (selectedWeek !== 'custom_range') {
                         if (filterSlotByWeek(slotKey, selectedMonth, selectedWeek)) {
                             userStats[uid].weeklyTotal += sc;
                         }
-                        if (isTargetDate) {
-                            if (bossTitle.includes("메인타임")) {
-                                userStats[uid].mainCount += 1;
-                                userStats[uid].mainScore += sc;
-                            } else if (bossTitle.includes("이프리트") || bossTitle.includes("드레이크")) {
-                                userStats[uid].ifritCount += 1;
-                                userStats[uid].ifritScore += sc;
-                            } else if (bossTitle.includes("카스파") || bossTitle.includes("네크")) {
-                                userStats[uid].kaspaCount += 1;
-                                userStats[uid].kaspaScore += sc;
-                            } else {
-                                userStats[uid].specialCount += 1;
-                                userStats[uid].specialScore += sc;
-                            }
-                            userStats[uid].dailyTotal += sc;
-                        }
-                    } else {
-                        if (isTargetDate) {
-                            userStats[uid].dailyTotal += sc;
+                    }
+                });
+            });
+
+            /* 기준일(daily-score-date) 연월 기준 일일 참여 횟수 및 일일 보스 점수 집계 */
+            Object.entries(dailyMonthData).forEach(([slotKey, slotObj]) => {
+                const slotDatePart = slotKey.split('_')[0];
+                const isTargetDate = targetDateStr ? (slotDatePart === targetDateStr) : true;
+                if (!isTargetDate) return;
+
+                const parts = (slotObj && slotObj.participants) ? slotObj.participants : {};
+                const bossTitle = slotObj.name || slotKey;
+
+                Object.entries(parts).forEach(([uid, pInfo]) => {
+                    if (uid === 'admin_account' || !pInfo || pInfo.optOutLocked) return;
+                    const m = membersData[uid];
+                    if (!m || m.approved === false || m.name === 'admin') return;
+                    if (!userStats[uid]) return;
+
+                    let sc = Number(pInfo.score);
+                    if (isNaN(sc)) {
+                        sc = getCustomScheduleScore(slotKey);
+                        if (sc === null) sc = getScoreForBossName(bossTitle);
+                    }
+
+                    userStats[uid].dailyTotal += sc;
+                    if (selectedWeek !== 'custom_range') {
+                        if (bossTitle.includes("메인타임")) {
+                            userStats[uid].mainCount += 1;
+                            userStats[uid].mainScore += sc;
+                        } else if (bossTitle.includes("이프리트") || bossTitle.includes("드레이크")) {
+                            userStats[uid].ifritCount += 1;
+                            userStats[uid].ifritScore += sc;
+                        } else if (bossTitle.includes("카스파") || bossTitle.includes("네크")) {
+                            userStats[uid].kaspaCount += 1;
+                            userStats[uid].kaspaScore += sc;
+                        } else {
+                            userStats[uid].specialCount += 1;
+                            userStats[uid].specialScore += sc;
                         }
                     }
                 });
@@ -4764,8 +4904,9 @@
             const excelTargetDate = excelIndepInput && excelIndepInput.value ? excelIndepInput.value : targetDateStr;
             const excelMonthKey = excelTargetDate.slice(0, 7);
             const excelMonthData = attendanceByMonth[excelMonthKey] || allAttData[excelMonthKey] || {};
+            const excelBonusData = allBonusData[excelMonthKey] || {};
 
-            renderExcelTableForDay(excelTargetDate, rankingArray, excelMonthData, bonusData);
+            renderExcelTableForDay(excelTargetDate, rankingArray, excelMonthData, excelBonusData);
             filterRankingAndExcel();
         };
 
@@ -4865,7 +5006,18 @@
 
             rankingArray.forEach(row => {
                 let dayScore = 0;
-                let dayBonuses = row.bonusList.filter(b => b.date === targetDateStr);
+                const userBonusRaw = (bonusData && bonusData[row.uid]) ? bonusData[row.uid] : {};
+                let dayBonuses = [];
+                if (typeof userBonusRaw === 'object' && userBonusRaw !== null) {
+                    Object.entries(userBonusRaw).forEach(([bKey, bObj]) => {
+                        if (bKey.startsWith(targetDateStr) && bObj) {
+                            dayBonuses.push({
+                                score: Number(bObj.score) || 0,
+                                reason: bObj.reason || '사유 없음'
+                            });
+                        }
+                    });
+                }
                 let bonusSum = dayBonuses.reduce((acc, cur) => acc + cur.score, 0);
                 dayScore += bonusSum;
 
@@ -5160,9 +5312,24 @@
             });
         };
 
-        window.saveBossScoreSetting = async function(key) {
+        window.restoreDefaultBossScores = async function() {
             if (!isOperator(currentUser)) return;
-            const inputEl = document.getElementById(`edit-score-${key}`);
+            if (!confirm("누락된 기본 보스 점수 기준(카스파 / 네크, 이프리트 / 드레이크, 메인타임, 오만, 공성전, 안타레이드)을 복구하시겠습니까?\n(기존에 직접 수정하거나 추가한 항목은 유지됩니다.)")) return;
+
+            bossScoresConfig = { ...DEFAULT_BOSS_SCORES, ...bossScoresConfig };
+            renderBossScoreSettingsList();
+            renderTimetable();
+            updateDashboard();
+
+            await set(ref(db, 'settings/bossScores'), serializeKeyValueMap(bossScoresConfig));
+            await set(ref(db, 'settings/bossScoresInitialized'), true);
+            alert("기본 보스 점수 기준이 복구되었습니다.");
+        };
+
+        window.saveBossScoreSetting = async function(encodedKey) {
+            if (!isOperator(currentUser)) return;
+            const key = decodeFbKey(encodedKey);
+            const inputEl = document.getElementById(`edit-score-${encodedKey}`);
             if (!inputEl) return;
             const newScore = parseInt(inputEl.value, 10);
             if (isNaN(newScore) || newScore < 1) {
@@ -5174,7 +5341,7 @@
             renderTimetable();
             updateDashboard();
 
-            await set(ref(db, `settings/bossScores/${key}`), newScore);
+            await set(ref(db, `settings/bossScores`), serializeKeyValueMap(bossScoresConfig));
             await set(ref(db, 'settings/bossScoresInitialized'), true);
             alert(`[${key}] 배점이 ${newScore}점으로 수정되었습니다.`);
         };
@@ -5193,7 +5360,7 @@
             renderTimetable();
             updateDashboard();
 
-            await set(ref(db, `settings/bossScores/${key}`), val);
+            await set(ref(db, `settings/bossScores`), serializeKeyValueMap(bossScoresConfig));
             await set(ref(db, 'settings/bossScoresInitialized'), true);
             document.getElementById('boss-score-key').value = '';
             document.getElementById('boss-score-val').value = '';
@@ -5210,7 +5377,7 @@
             }
             let html = "<b>[보스별 차등 점수 기준표]</b><br><br>";
             entries.forEach(([key, score]) => {
-                const safeKey = escapeAttr(key);
+                const safeKey = escapeAttr(encodeFbKey(key));
                 html += `
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                         <span style="min-width: 150px; font-weight: bold; color: #b794f4;">${escapeHtml(key)}</span>
@@ -5223,12 +5390,13 @@
             container.innerHTML = html;
         }
 
-        window.deleteBossScore = async function(key) {
+        window.deleteBossScore = async function(encodedKey) {
             if (!isOperator(currentUser)) return;
+            const key = decodeFbKey(encodedKey);
             delete bossScoresConfig[key];
             renderBossScoreSettingsList();
             await set(ref(db, 'settings/bossScoresInitialized'), true);
-            await set(ref(db, `settings/bossScores`), bossScoresConfig);
+            await set(ref(db, `settings/bossScores`), serializeKeyValueMap(bossScoresConfig));
         };
 
         window.approveMember = async function(uid) {
