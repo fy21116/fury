@@ -218,8 +218,8 @@
             padding: 18px;
         }
         .boss-cards-dual-grid .boss-illust-wrap {
-            width: 125px;
-            min-height: 125px;
+            width: 145px;
+            min-height: 150px;
         }
         .boss-cards-dual-grid .boss-banner-center {
             min-width: 150px;
@@ -233,7 +233,8 @@
             font-size: 20px;
         }
         .boss-cards-dual-grid .boss-count-num {
-            font-size: 24px;
+            font-size: 32px;
+            min-height: 56px;
         }
         .boss-cards-dual-grid table {
             min-width: 100%;
@@ -254,13 +255,13 @@
             border-radius: 12px;
             overflow: hidden;
             margin-bottom: 16px;
-            min-height: 135px;
+            min-height: 150px;
             box-shadow: 0 0 18px rgba(128, 90, 213, 0.25);
             flex-wrap: wrap;
         }
         .boss-illust-wrap {
-            width: 170px;
-            min-height: 135px;
+            width: 165px;
+            min-height: 150px;
             position: relative;
             flex-shrink: 0;
             background: #0d0918;
@@ -294,8 +295,8 @@
             background: rgba(18, 13, 34, 0.4);
             flex-shrink: 0;
         }
-        .boss-count-label { font-size: 13px; color: #cbd5e0; margin-top: 4px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: bold; width: 100%; }
-        .boss-count-num { font-size: 28px; font-weight: 900; color: #e9d8fd; text-shadow: 0 0 14px rgba(183, 148, 244, 0.85); letter-spacing: -0.5px; text-align: center; width: 100%; line-height: 1.15; }
+        .boss-count-label { font-size: 13px; color: #cbd5e0; margin-top: 2px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: bold; width: 100%; }
+        .boss-count-num { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: 900; color: #e9d8fd; text-shadow: 0 0 16px rgba(183, 148, 244, 0.9); letter-spacing: -0.5px; text-align: center; width: 100%; line-height: 1.1; min-height: 64px; }
 
         .boss-badge-row {
             display: flex;
@@ -550,6 +551,70 @@
             .excel-table th.sticky-col-1, .excel-table td.sticky-col-1 { width: 90px; min-width: 90px; max-width: 90px; left: 0; }
             .excel-table th.sticky-col-2, .excel-table td.sticky-col-2 { width: 65px; min-width: 65px; max-width: 65px; left: 90px; }
         }
+
+        /* 오만의 탑 층별 탭 & 전리품 1시간 단위 색상 배지 */
+        .oman-floor-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .oman-floor-tab {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 2px;
+            min-width: 56px;
+            background: #120d22;
+            border: 1px solid #44337a;
+            color: #cbd5e0;
+            padding: 5px 9px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1.2;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .oman-floor-tab-count {
+            font-size: 11px;
+            color: #d6bcfa;
+            font-weight: normal;
+        }
+        .oman-floor-tab.active .oman-floor-tab-count {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .oman-floor-tab:hover {
+            border-color: #9f7aea;
+            color: #ffffff;
+        }
+        .oman-floor-tab.active {
+            background: linear-gradient(135deg, #6b46c1, #805ad5);
+            border-color: #d6bcfa;
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(128, 90, 213, 0.45);
+        }
+        .oman-floor-tab.closed-floor {
+            opacity: 0.72;
+            border-color: #742a2a;
+        }
+        .loot-hour-badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .loot-hr-0 { background: rgba(72, 187, 120, 0.18); color: #68d391; border: 1px solid rgba(72, 187, 120, 0.45); }
+        .loot-hr-1 { background: rgba(66, 153, 225, 0.18); color: #63b3ed; border: 1px solid rgba(66, 153, 225, 0.45); }
+        .loot-hr-2 { background: rgba(159, 122, 234, 0.22); color: #d6bcfa; border: 1px solid rgba(159, 122, 234, 0.5); }
+        .loot-hr-3 { background: rgba(237, 137, 54, 0.20); color: #fbd38d; border: 1px solid rgba(237, 137, 54, 0.48); }
+        .loot-hr-4 { background: rgba(237, 100, 166, 0.20); color: #fbb6ce; border: 1px solid rgba(237, 100, 166, 0.48); }
+        .loot-hr-5 { background: rgba(56, 178, 172, 0.20); color: #81e6d9; border: 1px solid rgba(56, 178, 172, 0.48); }
     </style>
 </head>
 <body>
@@ -636,8 +701,8 @@
                 <input type="text" id="edit-loot-owner" class="login-input" list="item-owner-datalist" placeholder="득템자 입력">
             </div>
             <div class="input-group" style="margin-bottom:16px;">
-                <label>획득일시 (KST)</label>
-                <input type="datetime-local" id="edit-loot-acquired" class="login-input">
+                <label>획득일시 / 보탐 (KST)</label>
+                <select id="edit-loot-acquired" class="login-input"></select>
             </div>
             <div style="display:flex; gap:10px;">
                 <button class="login-btn" onclick="submitLootEdit()" style="margin-top:0; background:#2f855a;">수정 저장</button>
@@ -965,15 +1030,14 @@
                     </p>
                     <div id="recent-loot-presets" style="display:none; margin-bottom: 10px; font-size: 12px; color: #cbd5e0;"></div>
                     <div class="admin-form" style="background: #120d22; padding: 15px; border-radius: 8px; border: 1px solid #2a1f4e; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <input type="text" id="item-boss-name" class="admin-input" list="item-boss-datalist" placeholder="보스 이름 (예: 드레이크)" style="flex: 1; min-width: 130px;">
-                        <datalist id="item-boss-datalist"></datalist>
+                        <input type="text" id="item-boss-name" class="admin-input" placeholder="보스 이름 (예: 드레이크)" style="flex: 1; min-width: 130px;">
                         <input type="text" id="item-name" class="admin-input" placeholder="아이템 명" style="flex: 1; min-width: 150px;">
                         <input type="number" id="item-count" class="admin-input" placeholder="수량" value="1" min="1" style="width: 70px;">
                         <input type="text" id="item-owner" class="admin-input" list="item-owner-datalist" placeholder="득템자 캐릭터명" style="flex: 1; min-width: 110px;">
                         <datalist id="item-owner-datalist"></datalist>
                         <div style="display: flex; align-items: center; gap: 4px;">
-                            <span style="font-size: 12px; color: #b794f4; white-space: nowrap;">획득일시(KST):</span>
-                            <input type="datetime-local" id="item-acquired-date" class="admin-input" style="padding: 6px; font-size: 12px;">
+                            <span style="font-size: 12px; color: #b794f4; white-space: nowrap;">획득일시(보탐):</span>
+                            <select id="item-acquired-date" class="admin-input" style="padding: 6px; font-size: 12px; min-width: 170px;"></select>
                         </div>
                         <button class="btn-sm" onclick="registerItem()">아이템 등록</button>
                     </div>
@@ -1150,7 +1214,8 @@
                 </div>
 
                 <div class="admin-sub-tabs">
-                    <button class="sub-tab-btn active" onclick="switchAdminSubTab('schedule', this)">📅 일정 및 이미지 등록</button>
+                    <button class="sub-tab-btn active" onclick="switchAdminSubTab('schedule', this)">📅 정규 보스 일정관리</button>
+                    <button class="sub-tab-btn" onclick="switchAdminSubTab('oman', this)">🏰 오만의탑 일정관리</button>
                     <button class="sub-tab-btn" onclick="switchAdminSubTab('score', this)">⭐ 점수 관리</button>
                     <button class="sub-tab-btn" onclick="switchAdminSubTab('capture_att', this)">📋 출석관리</button>
                     <button class="sub-tab-btn" onclick="switchAdminSubTab('member', this)">👥 혈원 관리</button>
@@ -1244,6 +1309,55 @@
                             <button class="btn-sm" onclick="saveBossImageMapping()">이미지 매칭 등록</button>
                         </div>
                         <div id="boss-image-mapping-list" style="font-size: 12px; color: #cbd5e0;">로딩 중...</div>
+                    </div>
+                </div>
+
+                <div id="admin-sub-oman" class="admin-sub-content">
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #fbd38d; margin-bottom: 6px;">🏰 오만의 탑 일정 및 층별 배점 설정 (별도 예외 관리)</div>
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px; line-height: 1.55;">
+- 오만의 탑은 보스 정각 <b>1시간 전 오픈</b>되며, 한 카드 내 층별 탭 전환으로 각 층 인원 확인 및 순차 참여(이전 층 완료 후 이동)가 적용됩니다.<br>
+- 마감 기준은 층별로 각각 적용되며(+30분 자동 마감 없음), 4명 이상 과반수 완료 / 3명 이하 전원 완료(또는 운영진 강제 마감) 시 마감됩니다.
+                        </p>
+                        <div class="admin-form" style="background: #120d22; padding: 12px; border-radius: 8px; border: 1px solid #2a1f4e;">
+                            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#e9d8fd; font-weight:bold; cursor:pointer;">
+                                <input type="checkbox" id="oman-enabled-chk" checked> 오만의 탑 활성화
+                            </label>
+                            <select id="oman-day-select" class="admin-input">
+                                <option value="ALL">매일</option>
+                                <option value="0">일요일</option>
+                                <option value="1">월요일</option>
+                                <option value="2">화요일</option>
+                                <option value="3">수요일</option>
+                                <option value="4">목요일</option>
+                                <option value="5">금요일</option>
+                                <option value="6">토요일</option>
+                            </select>
+                            <select id="oman-hour-select" class="admin-input">
+                                <option value="0">00시</option><option value="1">01시</option><option value="2">02시</option><option value="3">03시</option>
+                                <option value="4">04시</option><option value="5">05시</option><option value="6">06시</option><option value="7">07시</option>
+                                <option value="8">08시</option><option value="9">09시</option><option value="10">10시</option><option value="11">11시</option>
+                                <option value="12">12시</option><option value="13">13시</option><option value="14">14시</option><option value="15">15시</option>
+                                <option value="16">16시</option><option value="17">17시</option><option value="18">18시</option><option value="19">19시</option>
+                                <option value="20">20시</option><option value="21">21시</option><option value="22">22시</option><option value="23" selected>23시</option>
+                            </select>
+                            <input type="number" id="oman-min-input" class="admin-input" value="0" min="0" max="59" style="width:70px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">분</span>
+                            <input type="number" id="oman-open-before-input" class="admin-input" value="60" min="1" max="180" style="width:75px;"> <span style="font-size:12px; color:#68d391; font-weight:bold;">분 전 오픈</span>
+                            <button class="btn-sm success" onclick="saveOmanScheduleConfig()">오만의 탑 기본 설정 저장</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-box">
+                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 6px;">🪜 오만의 탑 층별 목록 및 차등 배점 관리 (100층까지 자유 확장 가능)</div>
+                        <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 12px;">
+- 층 이름(예: 10층, 20층, 30층, 40층, 50층...)과 층별 획득 점수를 추가·수정·삭제할 수 있습니다.
+                        </p>
+                        <div class="admin-form">
+                            <input type="text" id="oman-new-floor-name" class="admin-input" placeholder="층 명칭 (예: 50층)" style="width: 160px;">
+                            <input type="number" id="oman-new-floor-score" class="admin-input" placeholder="배점" value="4" min="1" max="50" style="width: 85px;"> <span style="font-size:13px; color:#b794f4; font-weight:bold;">점</span>
+                            <button class="btn-sm" onclick="addOmanFloorItem()">층 추가</button>
+                        </div>
+                        <div id="oman-floors-list" style="font-size: 13px; color: #cbd5e0; margin-top: 10px;">층별 설정을 불러오는 중...</div>
                     </div>
                 </div>
 
@@ -1720,6 +1834,24 @@
 
         let customSchedules = {};
         let extraFixedSchedules = {};
+        let showHiddenOnceSchedules = false;
+
+        const DEFAULT_OMAN_CONFIG = {
+            enabled: true,
+            day: 'ALL',
+            hour: 23,
+            min: 0,
+            openBeforeMin: 60,
+            floors: [
+                { id: 'f10', name: '10층', score: 2 },
+                { id: 'f20', name: '20층', score: 3 },
+                { id: 'f30', name: '30층', score: 4 },
+                { id: 'f40', name: '40층', score: 5 }
+            ]
+        };
+        let omanConfig = JSON.parse(JSON.stringify(DEFAULT_OMAN_CONFIG));
+        let selectedOmanFloorByCard = {};
+        let lastDashboardRenderHash = "";
 
         const DEFAULT_BOSS_SCORES = {
             "카스파 / 네크": 1,
@@ -1962,6 +2094,29 @@
                 updateDashboard();
             });
 
+            onValue(ref(db, 'settings/omanConfig'), async (snap) => {
+                if (snap.exists() && snap.val() !== null) {
+                    const raw = snap.val();
+                    omanConfig = {
+                        enabled: raw.enabled !== false,
+                        day: String(raw.day ?? 'ALL'),
+                        hour: parseInt(raw.hour ?? 23, 10),
+                        min: parseInt(raw.min ?? 0, 10),
+                        openBeforeMin: parseInt(raw.openBeforeMin ?? 60, 10),
+                        floors: Array.isArray(raw.floors) && raw.floors.length > 0
+                            ? raw.floors
+                            : (raw.floors && typeof raw.floors === 'object' ? Object.values(raw.floors) : DEFAULT_OMAN_CONFIG.floors)
+                    };
+                } else {
+                    omanConfig = JSON.parse(JSON.stringify(DEFAULT_OMAN_CONFIG));
+                    await set(ref(db, 'settings/omanConfig'), omanConfig);
+                }
+                renderOmanAdminPanel();
+                populateRetroSlotOptions();
+                renderTimetable();
+                updateDashboard(true);
+            });
+
             onValue(ref(db, 'settings/fixedSchedules'), async (snap) => {
                 let rawVal = snap.val() || {};
                 const initFlagSnap = await get(ref(db, 'settings/fixedSchedulesInitialized'));
@@ -2102,6 +2257,21 @@
                 renderAdminMemberList();
                 renderRawMembersViewer();
                 renderPendingSidebarList();
+                const omanSnap = await get(ref(db, 'settings/omanConfig'));
+                if (omanSnap.exists() && omanSnap.val() !== null) {
+                    const raw = omanSnap.val();
+                    omanConfig = {
+                        enabled: raw.enabled !== false,
+                        day: String(raw.day ?? 'ALL'),
+                        hour: parseInt(raw.hour ?? 23, 10),
+                        min: parseInt(raw.min ?? 0, 10),
+                        openBeforeMin: parseInt(raw.openBeforeMin ?? 60, 10),
+                        floors: Array.isArray(raw.floors) && raw.floors.length > 0
+                            ? raw.floors
+                            : (raw.floors && typeof raw.floors === 'object' ? Object.values(raw.floors) : DEFAULT_OMAN_CONFIG.floors)
+                    };
+                }
+                renderOmanAdminPanel();
                 renderCustomScheduleList();
                 renderFixedScheduleList();
                 renderBossImageMappingList();
@@ -2165,10 +2335,7 @@
             const retroAttDate = document.getElementById('retro-att-date');
             if (retroAttDate) retroAttDate.value = todayStr;
 
-            const itemAcquiredDateInput = document.getElementById('item-acquired-date');
-            if (itemAcquiredDateInput && !itemAcquiredDateInput.value) {
-                itemAcquiredDateInput.value = nowDateTimeStr;
-            }
+            populateLootBotamDropdown();
 
             if (Object.keys(extraFixedSchedules).length === 0) {
                 extraFixedSchedules = createInitialFixedSchedules();
@@ -2178,6 +2345,7 @@
 
             updateLootQuickDatalists();
             renderBossScoreSettingsList();
+            renderOmanAdminPanel();
             renderCustomScheduleList();
             renderFixedScheduleList();
             renderBossImageMappingList();
@@ -2187,8 +2355,16 @@
             renderBoardTab();
             renderSystemGuide();
             attachRealtimeListeners();
-            updateDashboard();
-            setInterval(updateDashboard, 1000);
+            updateDashboard(true);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    updateDashboard(true);
+                }
+            });
+            setInterval(() => {
+                if (document.visibilityState === 'hidden') return;
+                updateDashboard(false);
+            }, 1000);
 
             try {
                 const [membersSnap, allAttSnap] = await Promise.all([
@@ -2208,12 +2384,26 @@
 
                 const savedSession = localStorage.getItem('fury_session');
                 if (savedSession) {
-                    const parsed = JSON.parse(savedSession);
-                    const latestSnap = await get(ref(db, `members/${parsed.id}`));
-                    if (latestSnap.exists() && latestSnap.val().code === parsed.code && latestSnap.val().approved !== false) {
-                        loginSuccess({ id: parsed.id, ...latestSnap.val() });
-                    } else if (parsed.name === 'admin') {
-                        loginSuccess({ id: 'admin_account', name: 'admin', code: '0004', role: 'master', approved: true, class: '군주' });
+                    try {
+                        const parsed = JSON.parse(savedSession);
+                        const normSavedName = normalizeNickname(parsed.name || '');
+                        let matchedEntry = null;
+                        if (parsed.id && membersData[parsed.id]) {
+                            matchedEntry = [parsed.id, membersData[parsed.id]];
+                        } else if (parsed.id) {
+                            const latestSnap = await get(ref(db, `members/${parsed.id}`));
+                            if (latestSnap.exists()) matchedEntry = [parsed.id, latestSnap.val()];
+                        }
+                        if (!matchedEntry && normSavedName) {
+                            matchedEntry = Object.entries(membersData).find(([, m]) => m && normalizeNickname(m.name) === normSavedName) || null;
+                        }
+                        if (matchedEntry && String(matchedEntry[1].code) === String(parsed.code) && matchedEntry[1].approved !== false) {
+                            loginSuccess({ id: matchedEntry[0], ...matchedEntry[1] });
+                        } else if (parsed.name === 'admin' && String(parsed.code) === '0004') {
+                            loginSuccess({ id: 'admin_account', name: 'admin', code: '0004', role: 'master', approved: true, class: '군주' });
+                        }
+                    } catch (sessionErr) {
+                        console.error("자동 로그인 세션 복원 오류:", sessionErr);
                     }
                 }
 
@@ -3123,6 +3313,204 @@
             return list;
         }
 
+        function buildOmanCandidatesForDate(baseDate) {
+            if (!omanConfig || omanConfig.enabled === false) return [];
+            const kp = getKSTParts(baseDate.getTime());
+            const y = kp.year;
+            const m = kp.month;
+            const d = kp.day;
+            const dow = kp.dow;
+            const oDay = String(omanConfig.day ?? 'ALL');
+            if (oDay !== 'ALL' && parseInt(oDay, 10) !== dow) return [];
+
+            const dateStr = formatKSTDateStr(y, m, d);
+            const monthKey = `${y}-${String(m).padStart(2, '0')}`;
+            const oHour = parseInt(omanConfig.hour ?? 23, 10);
+            const oMin = parseInt(omanConfig.min ?? 0, 10);
+            const hh = String(oHour).padStart(2, '0');
+            const mm = String(oMin).padStart(2, '0');
+            const openBeforeMin = Number(omanConfig.openBeforeMin ?? 60);
+            const targetEpoch = createKSTEpoch(y, m, d, oHour, oMin, 0);
+
+            const floors = (omanConfig.floors && omanConfig.floors.length > 0)
+                ? omanConfig.floors
+                : DEFAULT_OMAN_CONFIG.floors;
+
+            const floorSlots = floors.map((fl, idx) => {
+                const flId = fl.id || `f_${idx}`;
+                const flName = fl.name || `${(idx + 1) * 10}층`;
+                const flScore = Number(fl.score) || 3;
+                const sKey = `${dateStr}_${hh}${mm}_oman_${flId}`;
+                return {
+                    id: flId,
+                    name: flName,
+                    score: flScore,
+                    slotKey: sKey,
+                    fullName: `${hh}:${mm} 오만의 탑 ${flName}`
+                };
+            });
+
+            const baseCardSlotKey = `${dateStr}_${hh}${mm}_oman_card`;
+            return [{
+                isCustom: false,
+                isOman: true,
+                fixedKey: 'oman_tower_card',
+                time: { getTime: () => targetEpoch },
+                monthKey: monthKey,
+                dateStr: dateStr,
+                hhmm: `${hh}:${mm}`,
+                pureTitle: '오만의 탑',
+                slotKey: baseCardSlotKey,
+                omanFloorSlots: floorSlots,
+                name: `${hh}:${mm} 오만의 탑`,
+                openBeforeMin: openBeforeMin
+            }];
+        }
+
+        function isOmanFloorClosed(monthKey, floorSlotKey) {
+            const monthObj = attendanceByMonth[monthKey] || {};
+            const slotObj = monthObj[floorSlotKey] || {};
+            if (slotObj.isClosed === true) return true;
+            const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
+            if (isAdminReopened) return false;
+
+            const participants = slotObj.participants || {};
+            const validP = Object.entries(participants)
+                .filter(([uid, p]) => {
+                    if (uid === 'admin_account' || !p || p.name === 'admin' || p.optOutLocked) return false;
+                    const m = membersData[uid];
+                    return !m || m.approved !== false;
+                })
+                .map(([uid, data]) => ({ uid, ...data }));
+
+            if (validP.length === 0) return false;
+            const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
+            if (validP.length <= 3) {
+                return compP.length === validP.length;
+            }
+            return compP.length >= Math.ceil(validP.length / 2);
+        }
+
+        window.selectOmanFloorTab = function(cardSlotKey, floorId) {
+            selectedOmanFloorByCard[cardSlotKey] = floorId;
+            updateDashboard(true);
+        };
+
+        window.saveOmanScheduleConfig = async function() {
+            if (!isOperator(currentUser)) return;
+            const enabled = document.getElementById('oman-enabled-chk').checked;
+            const day = document.getElementById('oman-day-select').value;
+            const hour = parseInt(document.getElementById('oman-hour-select').value, 10);
+            const min = parseInt(document.getElementById('oman-min-input').value || '0', 10);
+            const openBeforeMin = parseInt(document.getElementById('oman-open-before-input').value || '60', 10);
+
+            if (isNaN(hour) || isNaN(min) || min < 0 || min > 59 || isNaN(openBeforeMin) || openBeforeMin < 1) {
+                alert("시간과 오픈 기준(분 전)을 올바르게 입력해 주세요.");
+                return;
+            }
+            omanConfig.enabled = enabled;
+            omanConfig.day = day;
+            omanConfig.hour = hour;
+            omanConfig.min = min;
+            omanConfig.openBeforeMin = openBeforeMin;
+
+            await set(ref(db, 'settings/omanConfig'), omanConfig);
+            renderTimetable();
+            updateDashboard(true);
+            alert("오만의 탑 기본 일정 설정이 저장되었습니다.");
+        };
+
+        window.addOmanFloorItem = async function() {
+            if (!isOperator(currentUser)) return;
+            const nameInput = document.getElementById('oman-new-floor-name');
+            const scoreInput = document.getElementById('oman-new-floor-score');
+            const name = nameInput ? nameInput.value.trim() : '';
+            const score = parseInt(scoreInput ? scoreInput.value : '3', 10);
+
+            if (!name || isNaN(score) || score < 1) {
+                alert("층 명칭과 배점을 올바르게 입력해 주세요.");
+                return;
+            }
+            if (!Array.isArray(omanConfig.floors)) omanConfig.floors = [];
+            const newId = 'fl_' + getSyncedEpochMs();
+            omanConfig.floors.push({ id: newId, name, score });
+            await set(ref(db, 'settings/omanConfig'), omanConfig);
+            if (nameInput) nameInput.value = '';
+            renderOmanAdminPanel();
+            updateDashboard(true);
+            alert(`[${name}] (${score}점) 층이 추가되었습니다.`);
+        };
+
+        window.saveOmanFloorEdit = async function(idx) {
+            if (!isOperator(currentUser)) return;
+            const nameEl = document.getElementById(`edit-oman-fl-name-${idx}`);
+            const scoreEl = document.getElementById(`edit-oman-fl-score-${idx}`);
+            if (!nameEl || !scoreEl || !omanConfig.floors[idx]) return;
+            const newName = nameEl.value.trim();
+            const newScore = parseInt(scoreEl.value, 10);
+            if (!newName || isNaN(newScore) || newScore < 1) {
+                alert("층 명칭과 배점을 올바르게 입력해 주세요.");
+                return;
+            }
+            omanConfig.floors[idx].name = newName;
+            omanConfig.floors[idx].score = newScore;
+            await set(ref(db, 'settings/omanConfig'), omanConfig);
+            renderOmanAdminPanel();
+            updateDashboard(true);
+            alert(`[${newName}] 배점이 ${newScore}점으로 수정되었습니다.`);
+        };
+
+        window.deleteOmanFloorItem = async function(idx) {
+            if (!isOperator(currentUser)) return;
+            if (!omanConfig.floors || omanConfig.floors.length <= 1) {
+                alert("최소 1개 이상의 층은 유지되어야 합니다.");
+                return;
+            }
+            const target = omanConfig.floors[idx];
+            if (!confirm(`[${target ? target.name : ''}] 층을 삭제하시겠습니까?`)) return;
+            omanConfig.floors.splice(idx, 1);
+            await set(ref(db, 'settings/omanConfig'), omanConfig);
+            renderOmanAdminPanel();
+            updateDashboard(true);
+        };
+
+        function renderOmanAdminPanel() {
+            const enChk = document.getElementById('oman-enabled-chk');
+            const daySel = document.getElementById('oman-day-select');
+            const hrSel = document.getElementById('oman-hour-select');
+            const minIn = document.getElementById('oman-min-input');
+            const openIn = document.getElementById('oman-open-before-input');
+            const listEl = document.getElementById('oman-floors-list');
+            if (!listEl) return;
+
+            if (enChk) enChk.checked = omanConfig.enabled !== false;
+            if (daySel) daySel.value = String(omanConfig.day ?? 'ALL');
+            if (hrSel) hrSel.value = String(omanConfig.hour ?? 23);
+            if (minIn) minIn.value = String(omanConfig.min ?? 0);
+            if (openIn) openIn.value = String(omanConfig.openBeforeMin ?? 60);
+
+            const floors = omanConfig.floors || [];
+            if (floors.length === 0) {
+                listEl.innerHTML = "등록된 층이 없습니다.";
+                return;
+            }
+
+            let html = "<div style='display:flex; flex-direction:column; gap:6px;'>";
+            floors.forEach((fl, idx) => {
+                html += `
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:#120d22; padding:8px 10px; border-radius:6px; border:1px solid #2a1f4e;">
+                        <span style="color:#a0aec0; font-size:12px; min-width:32px;">#${idx + 1}</span>
+                        <input type="text" id="edit-oman-fl-name-${idx}" class="admin-input" value="${escapeAttr(fl.name)}" style="width:140px; padding:5px; min-height:34px; font-size:12px;">
+                        <input type="number" id="edit-oman-fl-score-${idx}" class="admin-input" value="${Number(fl.score) || 3}" min="1" max="50" style="width:70px; padding:5px; min-height:34px; font-size:12px;"> <span style="font-size:12px; color:#b794f4; font-weight:bold;">점</span>
+                        <button class="btn-sm secondary" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="saveOmanFloorEdit(${idx})">수정</button>
+                        <button class="btn-sm danger" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="deleteOmanFloorItem(${idx})">삭제</button>
+                    </div>
+                `;
+            });
+            html += "</div>";
+            listEl.innerHTML = html;
+        }
+
         function buildCustomCandidatesForRange(now) {
             let list = [];
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
@@ -3202,6 +3590,10 @@
 
         function isSlotCompletedState(sched, nowArg) {
             const now = nowArg || getSyncedCurrentTime();
+            if (sched && sched.isOman && Array.isArray(sched.omanFloorSlots)) {
+                return sched.omanFloorSlots.every(fl => isOmanFloorClosed(sched.monthKey, fl.slotKey));
+            }
+
             const slotObj = getSlotDataObj(sched);
             if (slotObj.isClosed === true) return true;
 
@@ -3212,19 +3604,45 @@
 
             const validP = getValidParticipantsList(sched).filter(p => !p.optOutLocked);
 
-            if (validP.length === 0) {
+            // 일반 보스: 참여 인원 3명 이하(0~3명)는 보스 정각 +30분 경과 시 자동 마감
+            if (validP.length <= 3) {
                 if (now.getTime() >= sched.time.getTime() + 30 * 60 * 1000) {
                     return true;
                 }
                 return false;
             }
 
-            if (validP.length <= 3) {
-                return false;
-            }
-
+            // 4명 이상은 과반수 완료 마감 또는 운영진 강제 마감
             const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
             return compP.length >= Math.ceil(validP.length / 2);
+        }
+
+        function isUserOngoingInSlot(sched, uid) {
+            if (!uid) return false;
+            if (sched && sched.isOman && Array.isArray(sched.omanFloorSlots)) {
+                const monthObj = attendanceByMonth[sched.monthKey] || {};
+                return sched.omanFloorSlots.some(fl => {
+                    const p = ((monthObj[fl.slotKey] || {}).participants || {})[uid];
+                    return p && !p.optOutLocked && p.status === '참여 중';
+                });
+            }
+            const slotObj = getSlotDataObj(sched);
+            const p = (slotObj.participants || {})[uid];
+            return Boolean(p && !p.optOutLocked && p.status === '참여 중');
+        }
+
+        function isUserCompletedInSlot(sched, uid) {
+            if (!uid) return false;
+            if (sched && sched.isOman && Array.isArray(sched.omanFloorSlots)) {
+                const monthObj = attendanceByMonth[sched.monthKey] || {};
+                return sched.omanFloorSlots.some(fl => {
+                    const p = ((monthObj[fl.slotKey] || {}).participants || {})[uid];
+                    return p && !p.optOutLocked && p.status && p.status.includes('참여 완료');
+                });
+            }
+            const slotObj = getSlotDataObj(sched);
+            const p = (slotObj.participants || {})[uid];
+            return Boolean(p && !p.optOutLocked && p.status && p.status.includes('참여 완료'));
         }
 
         function getAllSortedCandidatesForNow(now) {
@@ -3236,14 +3654,35 @@
             const today = { getTime: () => createKSTEpoch(kp.year, kp.month, kp.day, 0, 0, 0) };
             const tomorrow = { getTime: () => createKSTEpoch(tomYmd.year, tomYmd.month, tomYmd.day, 0, 0, 0) };
 
-            const allCandidates = [
+            const rawCandidates = [
                 ...buildFixedCandidatesForDate(yesterday),
                 ...buildFixedCandidatesForDate(today),
                 ...buildFixedCandidatesForDate(tomorrow),
+                ...buildOmanCandidatesForDate(yesterday),
+                ...buildOmanCandidatesForDate(today),
+                ...buildOmanCandidatesForDate(tomorrow),
                 ...buildCustomCandidatesForRange(now)
             ];
 
-            allCandidates.sort((a, b) => a.time.getTime() - b.time.getTime() || String(a.fixedKey || a.customId || a.slotKey).localeCompare(String(b.fixedKey || b.customId || b.slotKey)));
+            const seenCardKeys = new Set();
+            const allCandidates = [];
+            for (const cand of rawCandidates) {
+                const normTitle = normalizeNickname(cand.pureTitle || cand.name || '');
+                const contentKey = cand.isOman
+                    ? `${cand.dateStr}_${cand.hhmm}_oman_single`
+                    : `${cand.dateStr}_${cand.hhmm}_${normTitle}`;
+                const uniqueKey = cand.slotKey || contentKey;
+                if (seenCardKeys.has(uniqueKey) || seenCardKeys.has(contentKey)) continue;
+                seenCardKeys.add(uniqueKey);
+                seenCardKeys.add(contentKey);
+                allCandidates.push(cand);
+            }
+
+            allCandidates.sort((a, b) => {
+                if (a.time.getTime() !== b.time.getTime()) return a.time.getTime() - b.time.getTime();
+                if (Boolean(a.isOman) !== Boolean(b.isOman)) return a.isOman ? 1 : -1;
+                return String(a.fixedKey || a.customId || a.slotKey).localeCompare(String(b.fixedKey || b.customId || b.slotKey));
+            });
             return allCandidates;
         }
 
@@ -3263,79 +3702,86 @@
             return false;
         }
 
-        /* 동일 시각(YYYY-MM-DD HH:mm) 보스 묶음 기준: 한쪽이 완료되어도 다음 보스 오픈 전까지 두 카드 모두 유지 후 동시 전환 */
         function getPrimaryAndNextSchedules(now) {
             const allCandidates = getAllSortedCandidatesForNow(now);
+            const myUid = currentUser ? currentUser.id : null;
 
-            const groupsMap = new Map();
+            const openOngoingList = [];
+            const completedPastList = [];
+            const upcomingWaitingList = [];
+
             for (const c of allCandidates) {
                 const ts = c.time.getTime();
-                if (!groupsMap.has(ts)) {
-                    groupsMap.set(ts, []);
-                }
-                groupsMap.get(ts).push(c);
-            }
-
-            const sortedGroups = Array.from(groupsMap.entries())
-                .sort((a, b) => a[0] - b[0])
-                .map(([ts, items]) => {
-                    const minOpenBefore = Math.max(...items.map(it => Number(it.openBeforeMin ?? 30)));
-                    const openTs = ts - minOpenBefore * 60 * 1000;
-                    const anyActive = items.some(it => !isSlotCompletedState(it, now));
-                    const allCompleted = items.every(it => isSlotCompletedState(it, now));
-                    return {
-                        ts,
-                        openTs,
-                        items,
-                        anyActive,
-                        allCompleted
-                    };
-                });
-
-            let openOngoingGroups = [];
-            let completedPastGroups = [];
-            let upcomingWaitingGroups = [];
-
-            for (const g of sortedGroups) {
-                if (now.getTime() < g.openTs) {
-                    upcomingWaitingGroups.push(g);
+                const openTs = ts - Number(c.openBeforeMin ?? 30) * 60 * 1000;
+                if (now.getTime() < openTs) {
+                    upcomingWaitingList.push(c);
+                } else if (!isSlotCompletedState(c, now)) {
+                    openOngoingList.push(c);
                 } else {
-                    if (g.anyActive) {
-                        openOngoingGroups.push(g);
-                    } else {
-                        completedPastGroups.push(g);
-                    }
+                    completedPastList.push(c);
                 }
             }
 
-            openOngoingGroups.sort((a, b) => Math.abs(now.getTime() - a.ts) - Math.abs(now.getTime() - b.ts));
+            // 각 보스/컨텐츠 카드(예: 카스파/네크 카드, 오만의 탑 카드)를 개별 카드로 유지
+            openOngoingList.sort((a, b) => {
+                if (a.time.getTime() !== b.time.getTime()) return b.time.getTime() - a.time.getTime();
+                if (Boolean(a.isOman) !== Boolean(b.isOman)) return a.isOman ? 1 : -1;
+                return String(a.fixedKey || a.customId || a.slotKey).localeCompare(String(b.fixedKey || b.customId || b.slotKey));
+            });
+
+            completedPastList.sort((a, b) => {
+                if (a.time.getTime() !== b.time.getTime()) return a.time.getTime() - b.time.getTime();
+                if (Boolean(a.isOman) !== Boolean(b.isOman)) return a.isOman ? 1 : -1;
+                return String(a.fixedKey || a.customId || a.slotKey).localeCompare(String(b.fixedKey || b.customId || b.slotKey));
+            });
+
+            upcomingWaitingList.sort((a, b) => {
+                if (a.time.getTime() !== b.time.getTime()) return a.time.getTime() - b.time.getTime();
+                if (Boolean(a.isOman) !== Boolean(b.isOman)) return a.isOman ? 1 : -1;
+                return String(a.fixedKey || a.customId || a.slotKey).localeCompare(String(b.fixedKey || b.customId || b.slotKey));
+            });
 
             let primaryCards = [];
             let nextScheduled = null;
 
-            if (openOngoingGroups.length > 0) {
-                primaryCards = openOngoingGroups[0].items.slice(0, 2);
-                nextScheduled = upcomingWaitingGroups.length > 0 ? upcomingWaitingGroups[0].items[0] : null;
-            } else {
-                const lastCompletedGroup = completedPastGroups.length > 0 ? completedPastGroups[completedPastGroups.length - 1] : null;
-                const nextUpGroup = upcomingWaitingGroups.length > 0 ? upcomingWaitingGroups[0] : null;
+            if (openOngoingList.length > 0) {
+                const latestOpenTs = openOngoingList[0].time.getTime();
+                const currentOpenCards = openOngoingList.filter(it => it.time.getTime() === latestOpenTs);
+                const olderUnfinishedCards = openOngoingList.filter(it => {
+                    if (it.time.getTime() >= latestOpenTs) return false;
+                    return !(myUid && isUserCompletedInSlot(it, myUid));
+                });
 
-                if (lastCompletedGroup && nextUpGroup) {
-                    primaryCards = lastCompletedGroup.items.slice(0, 2);
-                    nextScheduled = nextUpGroup.items[0];
-                } else if (nextUpGroup) {
-                    primaryCards = nextUpGroup.items.slice(0, 2);
-                    nextScheduled = upcomingWaitingGroups.length > 1 ? upcomingWaitingGroups[1].items[0] : null;
-                } else if (lastCompletedGroup) {
-                    primaryCards = lastCompletedGroup.items.slice(0, 2);
+                if (olderUnfinishedCards.length > 0) {
+                    primaryCards = [...olderUnfinishedCards.slice(0, 1), ...currentOpenCards].slice(0, 2);
+                } else {
+                    primaryCards = currentOpenCards.slice(0, 2);
                 }
+                nextScheduled = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
+            } else {
+                // 진행 중인 슬롯이 없을 때는 완료된 직전 카드만 유지하고, 아직 오픈 전인 다음 슬롯은 카드가 아니라 하단 '다음 보스' 안내로만 표시
+                const lastDone = completedPastList.length > 0 ? completedPastList[completedPastList.length - 1] : null;
+                if (lastDone) {
+                    primaryCards = [lastDone];
+                }
+                nextScheduled = upcomingWaitingList.length > 0 ? upcomingWaitingList[0] : null;
             }
 
-            const openOngoingList = openOngoingGroups.flatMap(g => g.items);
-            const completedPastList = completedPastGroups.flatMap(g => g.items);
-            const upcomingWaitingList = upcomingWaitingGroups.flatMap(g => g.items);
+            const dedupPrimary = [];
+            const seenPrimaryKeys = new Set();
+            for (const pc of primaryCards) {
+                const normTitle = normalizeNickname(pc.pureTitle || pc.name || '');
+                const contentPk = pc.isOman
+                    ? `${pc.dateStr}_${pc.hhmm}_oman_single`
+                    : `${pc.dateStr}_${pc.hhmm}_${normTitle}`;
+                const pk = pc.slotKey || contentPk;
+                if (seenPrimaryKeys.has(pk) || seenPrimaryKeys.has(contentPk)) continue;
+                seenPrimaryKeys.add(pk);
+                seenPrimaryKeys.add(contentPk);
+                dedupPrimary.push(pc);
+            }
 
-            return { primaryCards, nextScheduled, openOngoingList, completedPastList, upcomingWaitingList };
+            return { primaryCards: dedupPrimary, nextScheduled, openOngoingList, completedPastList, upcomingWaitingList };
         }
 
         function getCustomScheduleScore(slotKey) {
@@ -3366,31 +3812,56 @@
                 if (!slotData || !slotData.participants) return;
                 if (slotData.reopenedManual || slotData.reopenedByAdmin) return;
 
+                const isOmanSlot = slotKey.includes('_oman_');
                 let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 let totalCount = validParticipants.length;
                 let completedCount = validParticipants.filter(p => p.status && p.status.includes("참여 완료")).length;
+
+                let targetTs = Number(slotData.targetTimestamp || 0);
+                if (!targetTs) {
+                    const dPart = slotKey.split('_')[0];
+                    const tPart = extractTimeFromSlotKey(slotKey);
+                    if (dPart && tPart) {
+                        const [dy, dm, dd] = dPart.split('-').map(Number);
+                        const [th, tm] = tPart.split(':').map(Number);
+                        if (dy && dm && dd) targetTs = createKSTEpoch(dy, dm, dd, th || 0, tm || 0, 0);
+                    }
+                }
+                const plus30Ts = targetTs > 0 ? (targetTs + 30 * 60 * 1000) : 0;
+
+                // 오만의 탑: +30분 자동 마감 없음, 4명 이상 과반수 완료 / 3명 이하 전원 완료 시 마감
+                // 일반 보스: 3명 이하 정각 +30분 경과 시 자동 마감(종료 시각 = 정각 +30분), 4명 이상 과반수 완료 시 마감
+                let shouldCloseBySmallAuto = (!isOmanSlot && totalCount <= 3 && plus30Ts > 0 && now.getTime() >= plus30Ts);
+                let shouldCloseByOmanAll = (isOmanSlot && totalCount > 0 && totalCount <= 3 && completedCount === totalCount);
                 let shouldCloseByMajority = (totalCount >= 4 && completedCount >= Math.ceil(totalCount / 2));
 
-                if (shouldCloseByMajority || slotData.isClosed) {
+                if (shouldCloseBySmallAuto || shouldCloseByOmanAll || shouldCloseByMajority || slotData.isClosed) {
+                    const reasonText = shouldCloseBySmallAuto
+                        ? "3명 이하 +30분 자동 마감"
+                        : (shouldCloseByOmanAll ? "전원 참여 완료 마감" : "과반수 참여 완료 마감");
+
                     if (!slotData.isClosed) {
                         slotData.isClosed = true;
-                        slotData.closedReason = "과반수 참여 완료 마감";
+                        slotData.closedReason = reasonText;
                         update(ref(db, `attendance/${curMonth}/${slotKey}`), {
                             isClosed: true,
-                            closedReason: "과반수 참여 완료 마감"
+                            closedReason: reasonText
                         });
                     }
                     Object.entries(slotData.participants).forEach(([uid, pData]) => {
                         if (pData && pData.status === "참여 중") {
-                            const kp = getKSTParts();
+                            const endEpoch = shouldCloseBySmallAuto ? plus30Ts : getSyncedEpochMs();
+                            const kp = getKSTParts(endEpoch);
                             const endStr = `${String(kp.hour).padStart(2, '0')}:${String(kp.minute).padStart(2, '0')}:${String(kp.second).padStart(2, '0')}`;
-                            pData.status = shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (마감)";
+                            pData.status = shouldCloseBySmallAuto
+                                ? "참여 완료 (자동마감)"
+                                : (shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (마감)");
                             pData.endTime = endStr;
-                            pData.endTimestamp = kp.epochMs;
+                            pData.endTimestamp = endEpoch;
                             update(ref(db, `attendance/${curMonth}/${slotKey}/participants/${uid}`), {
                                 status: pData.status,
                                 endTime: endStr,
-                                endTimestamp: kp.epochMs
+                                endTimestamp: endEpoch
                             });
                         }
                     });
@@ -3400,16 +3871,73 @@
 
         function buildBossCardHTML(sched, now) {
             ensureMonthSubscribed(sched.monthKey);
-            const slotObj = getSlotDataObj(sched);
+
+            // 오만의 탑 전용: 층별 탭 전환, 층별 참여 명단/인원수, 층별 순차 이동(이전 층 완료 후 이동), 층별 마감(+30분 자동 마감 없음)
+            let activeSched = sched;
+            let omanFloorTabsHtml = '';
+            let omanTotalCount = 0;
+
+            if (sched.isOman && Array.isArray(sched.omanFloorSlots) && sched.omanFloorSlots.length > 0) {
+                const monthObj = attendanceByMonth[sched.monthKey] || {};
+                const floors = sched.omanFloorSlots;
+
+                floors.forEach(fl => {
+                    const flParts = ((monthObj[fl.slotKey] || {}).participants) || {};
+                    const cnt = Object.entries(flParts).filter(([uid, p]) => {
+                        if (uid === 'admin_account' || !p || p.name === 'admin' || p.optOutLocked) return false;
+                        const m = membersData[uid];
+                        return !m || m.approved !== false;
+                    }).length;
+                    omanTotalCount += cnt;
+                });
+
+                let chosenFloorId = selectedOmanFloorByCard[sched.slotKey];
+                if (!chosenFloorId && currentUser) {
+                    const ongoingFl = floors.find(fl => {
+                        const p = (((monthObj[fl.slotKey] || {}).participants) || {})[currentUser.id];
+                        return p && !p.optOutLocked && p.status === '참여 중';
+                    });
+                    if (ongoingFl) chosenFloorId = ongoingFl.id;
+                }
+                const activeFloor = floors.find(fl => fl.id === chosenFloorId) || floors[0];
+                selectedOmanFloorByCard[sched.slotKey] = activeFloor.id;
+
+                const encCardKey = escapeAttr(sched.slotKey);
+                omanFloorTabsHtml = `<div class="oman-floor-tabs">` + floors.map(fl => {
+                    const flParts = ((monthObj[fl.slotKey] || {}).participants) || {};
+                    const cnt = Object.entries(flParts).filter(([uid, p]) => {
+                        if (uid === 'admin_account' || !p || p.name === 'admin' || p.optOutLocked) return false;
+                        const m = membersData[uid];
+                        return !m || m.approved !== false;
+                    }).length;
+                    const flClosed = isOmanFloorClosed(sched.monthKey, fl.slotKey);
+                    const isAct = fl.id === activeFloor.id;
+                    return `<button type="button" class="oman-floor-tab ${isAct ? 'active' : ''} ${flClosed ? 'closed-floor' : ''}" onclick="selectOmanFloorTab('${encCardKey}', '${escapeAttr(fl.id)}')"><span>${escapeHtml(fl.name)}</span><span class="oman-floor-tab-count">(${cnt}명)${flClosed ? '·마감' : ''}</span></button>`;
+                }).join('') + `</div>`;
+
+                activeSched = {
+                    ...sched,
+                    slotKey: activeFloor.slotKey,
+                    name: activeFloor.fullName,
+                    pureTitle: `오만의 탑 ${activeFloor.name}`,
+                    customScore: activeFloor.score,
+                    activeFloorName: activeFloor.name,
+                    activeFloorId: activeFloor.id
+                };
+            }
+
+            const slotObj = getSlotDataObj(activeSched);
             const participants = slotObj.participants || {};
-            const pList = getValidParticipantsList(sched);
+            const pList = getValidParticipantsList(activeSched);
             pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-            const isSlotClosed = isSlotCompletedState(sched, now);
+            const isSlotClosed = sched.isOman
+                ? isOmanFloorClosed(activeSched.monthKey, activeSched.slotKey)
+                : isSlotCompletedState(activeSched, now);
             const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
-            const nextSlotOpened = isNextSlotOpenedForUser(sched, now);
+            const nextSlotOpened = isNextSlotOpenedForUser(activeSched, now);
 
-            const preSignups = getPreSignups(sched);
+            const preSignups = getPreSignups(activeSched);
             const preList = Object.entries(preSignups)
                 .filter(([uid]) => {
                     if (uid === 'admin_account') return false;
@@ -3418,9 +3946,9 @@
                 })
                 .map(([uid, data]) => ({ uid, ...data }));
 
-            const openBeforeMin = Number(sched.openBeforeMin ?? 30);
-            const diffMinutes = (now.getTime() - sched.time.getTime()) / (1000 * 60);
-            const assignedScore = sched.customScore !== undefined ? sched.customScore : getScoreForBossName(sched.name);
+            const openBeforeMin = Number(activeSched.openBeforeMin ?? 30);
+            const diffMinutes = (now.getTime() - activeSched.time.getTime()) / (1000 * 60);
+            const assignedScore = activeSched.customScore !== undefined ? activeSched.customScore : getScoreForBossName(activeSched.name);
             const myRecord = currentUser ? participants[currentUser.id] : null;
             const myPre = currentUser ? preSignups[currentUser.id] : null;
             const isOptOutLocked = Boolean(myRecord && myRecord.optOutLocked);
@@ -3430,12 +3958,12 @@
             let statusDesc = "";
             let statusColor = "#ecc94b";
             let buttonsHtml = "";
-            let cardStateClass = sched.name.includes("메인타임") ? "main-card" : "ongoing-card";
+            let cardStateClass = activeSched.name.includes("메인타임") ? "main-card" : "ongoing-card";
 
-            const encMonth = escapeAttr(sched.monthKey);
-            const encSlot = escapeAttr(sched.slotKey);
-            const encName = escapeAttr(sched.name);
-            const targetTs = sched.time.getTime();
+            const encMonth = escapeAttr(activeSched.monthKey);
+            const encSlot = escapeAttr(activeSched.slotKey);
+            const encName = escapeAttr(activeSched.name);
+            const targetTs = activeSched.time.getTime();
             const isBeforeExactTime = now.getTime() < targetTs;
 
             if (isSlotClosed) {
@@ -3454,12 +3982,12 @@
                 }
             } else if (diffMinutes < -openBeforeMin) {
                 const remainMin = Math.max(1, Math.ceil(Math.abs(diffMinutes) - openBeforeMin));
-                badgeText = sched.isCustom ? "오픈 대기 (사전 신청 가능)" : "오픈 대기";
+                badgeText = activeSched.isCustom ? "오픈 대기 (사전 신청 가능)" : "오픈 대기";
                 badgeClass = "badge-status waiting";
                 statusDesc = `보스타임 ${openBeforeMin}분 전 [참여버튼]이 활성화 됩니다 (약 ${remainMin}분 후 오픈)`;
                 statusColor = "#ecc94b";
                 
-                if (sched.isCustom) {
+                if (activeSched.isCustom) {
                     const preBtnText = myPre ? "✋ 참여 예정 취소" : "✋ 참여 예정 체크";
                     const preBtnClass = myPre ? "participate-btn cancel" : "participate-btn pre-btn";
                     buttonsHtml = `
@@ -3475,9 +4003,7 @@
                 if (!myRecord) {
                     statusDesc = isAdminReopened
                         ? "운영진이 상태 초기화로 재오픈한 보스입니다! 자동 마감 없이 참여 및 수정이 가능합니다."
-                        : (diffMinutes > 0
-                            ? "보스가 진행 중입니다! 완료(과반수/마감) 전까지 늦참 참여가 가능합니다."
-                            : "보스가 진행 중입니다! [▶ 참여하기]를 눌러 참여하세요.");
+                        : "보스가 진행 중입니다! 현재 참여가 가능합니다."
                     statusColor = "#ffffff";
                     buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
                 } else if (myRecord.status === "참여 중") {
@@ -3519,8 +4045,9 @@
                     statusColor = "#68d391";
                     buttonsHtml = `<button class="participate-btn cancel" onclick="revertCompletedToOngoing('${encMonth}','${encSlot}')">완료 취소</button>`;
                 }
-                if (isOperator(currentUser) && (pList.length > 0 || isAdminReopened)) {
-                    buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="전원 참여 완료 및 즉시 마감">🔒 강제 마감</button>`;
+                if (isOperator(currentUser)) {
+                    const closeTitle = sched.isOman ? `${activeSched.name} 해당 층만 개별 마감` : "전원 참여 완료 및 즉시 마감";
+                    buttonsHtml += `<button class="btn-sm danger" onclick="forceCloseBossSlot('${encMonth}','${encSlot}')" title="${escapeAttr(closeTitle)}">🔒 강제 마감</button>`;
                     buttonsHtml += `<button class="btn-sm secondary" onclick="resetBossSlotState('${encMonth}','${encSlot}')" title="종료 시각·완료 상태 및 꼬인 기록을 참여 중으로 초기화">🛠️ 상태 초기화</button>`;
                 }
             }
@@ -3540,12 +4067,18 @@
                     const latestClass = mem ? (mem.class || '기사') : '기사';
                     const isMe = currentUser && item.uid === currentUser.id;
                     const startTs = Number(item.timestamp) || now.getTime();
-                    const rawEndTs = item.endTimestamp ? Number(item.endTimestamp) : now.getTime();
-                    const safeEndTs = rawEndTs > now.getTime() + 60000 ? now.getTime() : rawEndTs;
-                    const elapsedSec = Math.max(0, Math.floor((safeEndTs - startTs) / 1000));
-                    const elMin = Math.floor(elapsedSec / 60);
-                    const elSec = elapsedSec % 60;
-                    const durationStr = item.endTime ? `${elMin}분 ${elSec}초 (${escapeHtml(item.endTime)} 종료)` : `${elMin}분 ${elSec}초 경과`;
+
+                    // 참여 시간은 실시간으로 측정하지 않고, 참여가 끝난 뒤(종료 시점 확정 후)에만 계산·표시
+                    let durationStr = `<span style="color:#a0aec0;">-</span>`;
+                    if (item.endTime && item.endTimestamp) {
+                        const rawEndTs = Number(item.endTimestamp);
+                        const elapsedSec = Math.max(0, Math.floor((rawEndTs - startTs) / 1000));
+                        const elMin = Math.floor(elapsedSec / 60);
+                        const elSec = elapsedSec % 60;
+                        durationStr = `${elMin}분 ${elSec}초 (${escapeHtml(item.endTime)} 종료)`;
+                    } else if (item.optOutLocked) {
+                        durationStr = `-`;
+                    }
 
                     const statusChipHtml = item.status === '참여 중'
                         ? `<span class="status-chip active">● ${escapeHtml(item.status)}</span>`
@@ -3565,34 +4098,42 @@
                 });
             }
 
-            const cardTypeLabel = sched.isCustom
+            const cardTypeLabel = activeSched.isCustom
                 ? `<span class="badge-type-chip custom">운영진 추가 유동 일정</span>`
                 : `<span class="badge-type-chip fixed">정규 고정 일정</span>`;
 
-            const bossImgSrc = escapeAttr(getBossImageForName(sched.name));
-            const fallbackSvg = getFallbackBossSvg(sched.name);
+            const bossImgSrc = escapeAttr(getBossImageForName(activeSched.name));
+            const fallbackSvg = getFallbackBossSvg(activeSched.name);
 
-            const rightCountHtml = sched.isCustom ? `
+            const rightCountHtml = activeSched.isCustom ? `
                 <div class="boss-count-label">👥 예정 / 참여</div>
                 <div class="boss-count-num"><span style="color:#fbd38d;">${preList.length}</span> <span style="font-size:18px; color:#718096;">/</span> ${pList.length}명</div>
+            ` : (sched.isOman ? `
+                <div class="boss-count-label">👥 총 참여인원</div>
+                <div class="boss-count-num">${omanTotalCount}명</div>
             ` : `
                 <div class="boss-count-label">👥 참여 인원</div>
                 <div class="boss-count-num">${pList.length}명</div>
-            `;
+            `);
 
-            const bottomGuideHtml = sched.isCustom
+            const bottomGuideHtml = activeSched.isCustom
                 ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다.<br>참여 종료는 참여 3분 후 가능 합니다."
-                : "+30분 자동 마감되며 4명 이상일경우 과반수 완료 마감됩니다.<br>참여 종료는 참여 3분 후 가능 합니다.";
+                : (sched.isOman
+                    ? "층별 개별 마감이며, 4명 이상 과반수 완료 / 3명 이하 전원 완료 시 마감됩니다.<br>참여 종료는 참여 3분 후 가능 합니다."
+                    : "3명 이하 정각 +30분 자동 마감, 4명 이상 과반수 완료 또는 운영진 마감 시 완료됩니다.<br>참여 종료는 참여 3분 후 가능 합니다.");
+
+            const bannerTitleText = sched.isOman ? sched.name : activeSched.name;
 
             return `
-                <div class="boss-card ${cardStateClass} ${sched.isCustom ? 'custom-card' : ''}">
+                <div class="boss-card ${cardStateClass} ${activeSched.isCustom ? 'custom-card' : ''}">
                     <div class="boss-banner">
                         <div class="boss-illust-wrap">
                             <img src="${bossImgSrc}" alt="Boss Illustration" class="boss-illust-img" onerror="this.onerror=null; this.src='${fallbackSvg}';">
                         </div>
                         <div class="boss-banner-center">
                             <div class="boss-badge-row">${cardTypeLabel}<span class="${badgeClass}">${badgeText}</span></div>
-                            <div class="boss-time-text">${escapeHtml(sched.name)}</div>
+                            <div class="boss-time-text">${escapeHtml(bannerTitleText)}</div>
+                            ${omanFloorTabsHtml}
                             <div style="color: #cbd5e0; font-size: 13px; margin-top: 6px;">
                                 👥 보스타임 <b>${openBeforeMin}분 전</b> 오픈 ~ 완료(과반수/마감) 전까지 참여 가능 | 배점: <b style="color:#b794f4;">${assignedScore}점</b>
                             </div>
@@ -3609,12 +4150,12 @@
                         </div>
                         <div class="btn-group">${buttonsHtml}</div>
                     </div>
-                    ${sched.isCustom ? `
+                    ${activeSched.isCustom ? `
                     <div style="background: rgba(214, 158, 46, 0.08); border: 1px dashed #d69e2e; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; color: #fbd38d;">
                         <b>[✋ 참여 예정자 명단 (${preList.length}명)]</b>: ${preList.length > 0 ? preNames.join(', ') : '아직 사전 신청한 인원이 없습니다.'}
                     </div>` : ''}
                     <div class="card-party-box">
-                        <div style="font-weight: bold; margin-bottom: 8px; color: #d6bcfa; font-size: 13px;">실시간 참여 명단 (${escapeHtml(sched.name)})</div>
+                        <div style="font-weight: bold; margin-bottom: 8px; color: #d6bcfa; font-size: 13px;">실시간 참여 명단 (${escapeHtml(activeSched.name)})</div>
                         <table>
                             <thead>
                                 <tr>
@@ -3808,8 +4349,7 @@
             timelineContainer.innerHTML = rowsHtml || `<div style="color: #a0aec0; font-size: 12px; text-align: center; padding: 14px 0;">표시할 보스 일정이 없습니다.</div>`;
         }
 
-        let flashToggle = false;
-        function updateDashboard() {
+        function updateDashboard(forceRender = false) {
             const now = getSyncedCurrentTime();
             const kp = getKSTParts(now.getTime());
             ensureBoundaryMonthsSubscribed(now);
@@ -3829,26 +4369,26 @@
 
             checkAndAutoCompletePastSlots(now);
 
-            const schedState = getPrimaryAndNextSchedules(now);
-            const { primaryCards, nextScheduled } = schedState;
-
-            let isUrgent = primaryCards.some(c => {
-                const openBeforeMin = Number(c.openBeforeMin ?? 30);
-                const diffMin = (now.getTime() - c.time.getTime()) / (1000 * 60);
-                return diffMin >= -openBeforeMin && !isSlotCompletedState(c, now);
-            });
-
-            if (isUrgent) {
-                flashToggle = !flashToggle;
-                document.title = flashToggle ? "🚨 [보스 진행 중] 퓨리 혈맹 시스템" : "퓨리 혈맹 통합 관리 시스템";
-            } else {
+            // 크롬 탭 빨간색 경광등 깜빡임 제거: 고정 제목 유지
+            if (document.title !== "퓨리 혈맹 통합 관리 시스템") {
                 document.title = "퓨리 혈맹 통합 관리 시스템";
             }
+
+            const schedState = getPrimaryAndNextSchedules(now);
+            const { primaryCards, nextScheduled } = schedState;
 
             const container = document.getElementById('boss-cards-container');
             if (container) {
                 let html = '';
-                if (primaryCards.length >= 2) {
+                // 2열 그리드는 이미 오픈된 오만의 탑(isOman) 및 정규 고정 보스(!isCustom && !isOman) 조합에만 적용
+                const canUseDualGrid = primaryCards.length >= 2 && primaryCards.every(cardSched => {
+                    const openMin = Number(cardSched.openBeforeMin ?? 30);
+                    const openTs = cardSched.time.getTime() - openMin * 60 * 1000;
+                    const isOpened = now.getTime() >= openTs;
+                    const isAllowedType = Boolean(cardSched.isOman) || !cardSched.isCustom;
+                    return isOpened && isAllowedType;
+                });
+                if (canUseDualGrid) {
                     html += `<div class="boss-cards-dual-grid">`;
                     primaryCards.forEach(cardSched => {
                         html += buildBossCardHTML(cardSched, now);
@@ -3862,7 +4402,10 @@
                 if (nextScheduled) {
                     html += buildNextBossStripHTML(nextScheduled, now);
                 }
-                container.innerHTML = html;
+                if (forceRender || lastDashboardRenderHash !== html) {
+                    container.innerHTML = html;
+                    lastDashboardRenderHash = html;
+                }
             }
 
             renderMyTodayRightPanel(now, schedState);
@@ -3884,6 +4427,14 @@
             }
         };
 
+        function getOmanFloorScoreFromSlotKey(slotKey) {
+            if (!slotKey || !slotKey.includes('_oman_')) return null;
+            const flId = slotKey.split('_oman_')[1];
+            const floors = (omanConfig && Array.isArray(omanConfig.floors)) ? omanConfig.floors : DEFAULT_OMAN_CONFIG.floors;
+            const found = floors.find(f => f.id === flId);
+            return found ? (Number(found.score) || 3) : null;
+        }
+
         window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs, openBeforeMin) {
             if (!currentUser) return;
             const now = getSyncedCurrentTime();
@@ -3892,6 +4443,47 @@
             if (diffMin < -openMin) {
                 alert(`보스타임 ${openMin}분 전 [참여버튼]이 활성화 됩니다`);
                 return;
+            }
+
+            // 오만의 탑 동시 참여 불가: 이미 다른 층에 '참여 중'이라면 이전 층 참여 완료 후 이동 안내
+            if (slotKey.includes('_oman_')) {
+                const datePrefix = slotKey.split('_oman_')[0] + '_oman_';
+                const monthObj = attendanceByMonth[monthKey] || {};
+                for (const [otherKey, otherData] of Object.entries(monthObj)) {
+                    if (otherKey.startsWith(datePrefix) && otherKey !== slotKey && otherData && otherData.participants) {
+                        const myOtherP = otherData.participants[currentUser.id];
+                        if (myOtherP && !myOtherP.optOutLocked && myOtherP.status === '참여 중') {
+                            alert(`현재 [${otherData.name || '이전 층'}]에 참여 중입니다. 이전 층에서 [참여 종료 (완료)]를 누른 뒤 다른 층으로 이동해 신청해 주세요.`);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // 전체 미마감 슬롯의 미종료 인원이 새 보스 참여 시 차단 대신 안내 메시지 표출
+            const allCandidates = getAllSortedCandidatesForNow(now);
+            for (const cand of allCandidates) {
+                if (cand.slotKey === slotKey) continue;
+                if (cand.isOman && Array.isArray(cand.omanFloorSlots)) {
+                    for (const fl of cand.omanFloorSlots) {
+                        if (fl.slotKey === slotKey) continue;
+                        if (!isOmanFloorClosed(cand.monthKey, fl.slotKey)) {
+                            const fObj = ((attendanceByMonth[cand.monthKey] || {})[fl.slotKey]) || {};
+                            const myP = (fObj.participants || {})[currentUser.id];
+                            if (myP && !myP.optOutLocked && myP.status === '참여 중') {
+                                alert(`이전 보스(${fl.fullName})가 아직 마감되지 않았으며 참여 종료가 누르지 않은 상태입니다. 필요 시 이전 보스의 참여 종료 버튼을 눌러 주세요.`);
+                                break;
+                            }
+                        }
+                    }
+                } else if (!isSlotCompletedState(cand, now)) {
+                    const sObj = getSlotDataObj(cand);
+                    const myP = (sObj.participants || {})[currentUser.id];
+                    if (myP && !myP.optOutLocked && myP.status === '참여 중') {
+                        alert(`이전 보스(${cand.name})가 아직 마감되지 않았으며 참여 종료가 누르지 않은 상태입니다. 필요 시 이전 보스의 참여 종료 버튼을 눌러 주세요.`);
+                        break;
+                    }
+                }
             }
 
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
@@ -3915,7 +4507,10 @@
             const kp = getKSTParts(now.getTime());
             const timeStr = `${String(kp.hour).padStart(2, '0')}:${String(kp.minute).padStart(2, '0')}:${String(kp.second).padStart(2, '0')}`;
             
-            let score = getCustomScheduleScore(slotKey);
+            let score = getOmanFloorScoreFromSlotKey(slotKey);
+            if (score === null) {
+                score = getCustomScheduleScore(slotKey);
+            }
             if (score === null) {
                 score = getScoreForBossName(bossName);
             }
@@ -3932,6 +4527,7 @@
             });
             populateBonusCheckSlotSelect();
             populateRetroSlotOptions();
+            updateDashboard(true);
             loadRankingData();
         };
 
@@ -4049,15 +4645,19 @@
                 const compP = validP.filter(([uid, p]) => p.status && p.status.includes("참여 완료"));
                 const isAdminReopened = Boolean(refreshedData.reopenedManual || refreshedData.reopenedByAdmin);
 
-                if (!isAdminReopened && validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2)) {
+                const isOmanSlot = slotKey.includes('_oman_');
+                const shouldCloseOmanSmall = (!isAdminReopened && isOmanSlot && validP.length > 0 && validP.length <= 3 && compP.length === validP.length);
+                const shouldCloseMajority = (!isAdminReopened && validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2));
+
+                if (shouldCloseOmanSmall || shouldCloseMajority) {
                     await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                         isClosed: true,
-                        closedReason: "과반수 참여 완료 마감"
+                        closedReason: shouldCloseOmanSmall ? "전원 참여 완료 마감" : "과반수 참여 완료 마감"
                     });
                     for (const [uid, pData] of validP) {
                         if (pData.status === "참여 중") {
                             await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
-                                status: "참여 완료 (과반수)",
+                                status: shouldCloseOmanSmall ? "참여 완료 (전원)" : "참여 완료 (과반수)",
                                 endTime: timeStr,
                                 endTimestamp: kp.epochMs
                             });
@@ -4204,6 +4804,30 @@
                 });
             }
 
+            for (let offset = -1; offset <= 2; offset++) {
+                const dYmd = shiftKSTYMD(kp.year, kp.month, kp.day, offset);
+                const targetDate = { getTime: () => createKSTEpoch(dYmd.year, dYmd.month, dYmd.day, 0, 0, 0) };
+                const dailyOman = buildOmanCandidatesForDate(targetDate);
+                dailyOman.forEach(oc => {
+                    const oKp = getKSTParts(oc.time.getTime());
+                    const hh = String(oKp.hour).padStart(2, '0');
+                    const mm = String(oKp.minute).padStart(2, '0');
+                    const openMin = Number(oc.openBeforeMin ?? 60);
+                    const scores = (oc.omanFloorSlots || []).map(f => f.score);
+                    const scoreRange = scores.length > 0 ? `${Math.min(...scores)}~${Math.max(...scores)}` : '4';
+                    candidates.push({
+                        schedRef: oc,
+                        time: oc.time,
+                        timeStr: `${hh}:${mm}`,
+                        title: '오만의 탑 (층별 선택)',
+                        score: scoreRange,
+                        typeHtml: `<span class="tag-fixed" style="background:#553c9a; color:#e9d8fd;">오만의 탑</span>`,
+                        note: `보스타임 ${openMin}분 전 오픈 · 층별 탭 순차 참여`,
+                        rowClass: ""
+                    });
+                });
+            }
+
             const customList = buildCustomCandidatesForRange(now);
             customList.forEach(cc => {
                 if (cc.time.getTime() < now.getTime() - 12 * 60 * 60 * 1000) return;
@@ -4227,25 +4851,21 @@
 
             candidates.sort((a, b) => a.time.getTime() - b.time.getTime() || String(a.title).localeCompare(String(b.title)));
 
-            const uniqueTimes = Array.from(new Set(candidates.map(c => c.time.getTime()))).sort((a, b) => a - b);
-            let latestOpenedTimeTs = null;
-            for (const ts of uniqueTimes) {
-                const sameTimeItems = candidates.filter(c => c.time.getTime() === ts);
-                const maxOpenMin = Math.max(...sameTimeItems.map(it => Number(it.schedRef.openBeforeMin ?? 30)));
-                const openTs = ts - maxOpenMin * 60 * 1000;
-                if (now.getTime() >= openTs) {
-                    latestOpenedTimeTs = ts;
-                }
-            }
+            const openedItems = candidates.filter(item => {
+                const openMin = Number(item.schedRef.openBeforeMin ?? 30);
+                const openTs = item.time.getTime() - openMin * 60 * 1000;
+                return now.getTime() >= openTs;
+            });
+            const latestOpenedItemTs = openedItems.length > 0
+                ? Math.max(...openedItems.map(it => it.time.getTime()))
+                : null;
 
             const filteredCandidates = candidates.filter(item => {
-                const itemTs = item.time.getTime();
-                if (latestOpenedTimeTs !== null && itemTs === latestOpenedTimeTs) {
-                    return true;
-                }
                 const openMin = Number(item.schedRef.openBeforeMin ?? 30);
-                const openTs = itemTs - openMin * 60 * 1000;
-                return now.getTime() < openTs;
+                const openTs = item.time.getTime() - openMin * 60 * 1000;
+                if (now.getTime() < openTs) return true;
+                // 가장 최근 오픈 시각의 개별 보스/컨텐츠 슬롯은 각각 독립적으로 유지
+                return latestOpenedItemTs !== null && item.time.getTime() === latestOpenedItemTs;
             });
 
             const upcoming4 = filteredCandidates.slice(0, 4);
@@ -4547,13 +5167,126 @@
             }).join('');
         }
 
+        function getActiveLootTargetDateStr() {
+            const periodEl = document.getElementById('loot-period-select');
+            const dateFilterInput = document.getElementById('loot-date-filter');
+            const kp = getKSTParts();
+            const todayStr = formatKSTDateStr(kp.year, kp.month, kp.day);
+            if (periodEl && periodEl.value === 'day' && dateFilterInput && dateFilterInput.value) {
+                return dateFilterInput.value;
+            }
+            return todayStr;
+        }
+
+        function buildBotamOptionsForDate(targetDateStr, currentSelectedVal = '') {
+            const kp = getKSTParts();
+            const todayStr = formatKSTDateStr(kp.year, kp.month, kp.day);
+            const [, mmStr, ddStr] = targetDateStr.split('-');
+            const shortDate = `${mmStr}/${ddStr}`;
+
+            const daySlots = getDaySlotsList(targetDateStr);
+            const hourMap = new Map();
+
+            const rawHourMap = new Map();
+            daySlots.forEach(ds => {
+                const tStr = extractTimeFromSlotKey(ds.slotKey) || '00:00';
+                const hh = tStr.split(':')[0].padStart(2, '0');
+                let pureTitle = ds.title.replace(/^\d{2}:\d{2}\s*/, '').trim();
+                if (ds.slotKey.includes('_oman_') || pureTitle.startsWith('오만의 탑')) {
+                    pureTitle = '오만의 탑';
+                }
+                if (!rawHourMap.has(hh)) {
+                    rawHourMap.set(hh, []);
+                }
+                const tokens = pureTitle.split('/').map(s => s.trim()).filter(Boolean);
+                tokens.forEach(tok => {
+                    if (!rawHourMap.get(hh).includes(tok)) {
+                        rawHourMap.get(hh).push(tok);
+                    }
+                });
+            });
+            rawHourMap.forEach((toks, hh) => {
+                const hasOmanTower = toks.includes('오만의 탑');
+                const cleaned = hasOmanTower ? toks.filter(t => t !== '오만') : toks;
+                hourMap.set(hh, cleaned);
+            });
+
+            // 해당 날짜의 모든 보탐(또는 시간대) 옵션 생성
+            const options = [];
+            for (let h = 23; h >= 0; h--) {
+                const hh = String(h).padStart(2, '0');
+                if (targetDateStr === todayStr && h > kp.hour + 1) continue;
+                const valStr = `${targetDateStr} ${hh}:00`;
+                const bosses = hourMap.get(hh);
+                const labelText = bosses && bosses.length > 0
+                    ? `${shortDate} ${hh}시 (${bosses.join(' / ')})`
+                    : `${shortDate} ${hh}시 보탐`;
+                options.push({ value: valStr, label: labelText, hasBoss: Boolean(bosses && bosses.length > 0) });
+            }
+
+            // 보탐 등록된 시간대를 우선 표시하고, 나머지 시간대도 선택 가능하게 유지
+            const bossOptions = options.filter(o => o.hasBoss);
+            const finalOptions = bossOptions.length > 0 ? bossOptions : options;
+
+            let defaultVal = currentSelectedVal;
+            if (!defaultVal || !defaultVal.startsWith(targetDateStr)) {
+                const curHourVal = `${targetDateStr} ${String(kp.hour).padStart(2, '0')}:00`;
+                const matchedCur = finalOptions.find(o => o.value === curHourVal);
+                defaultVal = matchedCur ? matchedCur.value : (finalOptions[0] ? finalOptions[0].value : `${targetDateStr} ${String(kp.hour).padStart(2, '0')}:00`);
+            }
+
+            let html = '';
+            finalOptions.forEach(opt => {
+                html += `<option value="${escapeAttr(opt.value)}" ${opt.value === defaultVal ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`;
+            });
+            if (defaultVal && !finalOptions.some(o => o.value === defaultVal)) {
+                const dHh = (defaultVal.split(' ')[1] || '00:00').slice(0, 2);
+                html = `<option value="${escapeAttr(defaultVal)}" selected>${escapeHtml(shortDate)} ${escapeHtml(dHh)}시</option>` + html;
+            }
+            return html;
+        }
+
+        function populateLootBotamDropdown() {
+            const sel = document.getElementById('item-acquired-date');
+            if (!sel) return;
+            const targetDateStr = getActiveLootTargetDateStr();
+            const prevVal = sel.value || '';
+            sel.innerHTML = buildBotamOptionsForDate(targetDateStr, prevVal);
+        }
+
+        function formatLootAcquiredDisplay(rawStr) {
+            if (!rawStr || rawStr === '-') return { text: '-', colorClass: 'loot-hr-0', sortKey: 0 };
+            const clean = String(rawStr).trim().replace('T', ' ');
+            const [dPart, tPart] = clean.split(' ');
+            if (!dPart) return { text: clean, colorClass: 'loot-hr-0', sortKey: 0 };
+
+            const dSegs = dPart.split('-');
+            const mm = dSegs.length >= 3 ? dSegs[1] : (dSegs[0] || '01');
+            const dd = dSegs.length >= 3 ? dSegs[2] : (dSegs[1] || '01');
+            const hourNum = tPart ? parseInt(tPart.split(':')[0] || '0', 10) : 0;
+            const hh = String(isNaN(hourNum) ? 0 : hourNum).padStart(2, '0');
+
+            // 1시간 단위(21~22시, 22~23시, 23~00시 등)마다 색상이 명확히 달라지도록 시간 기반 클래스 배정
+            const dayNum = parseInt(dd, 10) || 0;
+            const colorIdx = ((dayNum * 7) + (isNaN(hourNum) ? 0 : hourNum)) % 6;
+            const yearNum = dSegs.length >= 3 ? parseInt(dSegs[0], 10) : getKSTParts().year;
+            const sortEpoch = createKSTEpoch(yearNum, parseInt(mm, 10) || 1, dayNum || 1, isNaN(hourNum) ? 0 : hourNum, 0, 0);
+
+            return {
+                text: `${mm}/${dd} ${hh}시`,
+                colorClass: `loot-hr-${colorIdx}`,
+                sortKey: sortEpoch
+            };
+        }
+
         window.registerItem = async function() {
             if (!currentUser) return;
             const bossName = document.getElementById('item-boss-name').value.trim();
             const itemName = document.getElementById('item-name').value.trim();
             const itemCount = document.getElementById('item-count').value.trim();
             const owner = document.getElementById('item-owner').value.trim();
-            const acquiredInput = document.getElementById('item-acquired-date').value;
+            const acquiredSelect = document.getElementById('item-acquired-date');
+            const acquiredInput = acquiredSelect ? acquiredSelect.value : '';
 
             if (!bossName || !itemName || !owner) {
                 alert("보스명, 아이템명, 득템자를 모두 입력해 주세요.");
@@ -4562,11 +5295,8 @@
 
             const kp = getKSTParts();
             const regDateStr = `${kp.year}-${String(kp.month).padStart(2,'0')}-${String(kp.day).padStart(2,'0')} ${String(kp.hour).padStart(2,'0')}:${String(kp.minute).padStart(2,'0')}`;
-            
-            let acquiredStr = regDateStr;
-            if (acquiredInput) {
-                acquiredStr = acquiredInput.replace('T', ' ');
-            }
+            const targetDateStr = getActiveLootTargetDateStr();
+            const acquiredStr = acquiredInput || `${targetDateStr} ${String(kp.hour).padStart(2,'0')}:00`;
 
             await push(ref(db, 'items'), {
                 date: regDateStr,
@@ -4575,14 +5305,15 @@
                 item: itemName,
                 count: itemCount || "1",
                 owner: owner,
-                writer: currentUser.name
+                writer: currentUser.name,
+                createdAt: kp.epochMs
             });
 
             document.getElementById('item-boss-name').value = '';
             document.getElementById('item-name').value = '';
             document.getElementById('item-count').value = '1';
             document.getElementById('item-owner').value = '';
-            document.getElementById('item-acquired-date').value = `${formatKSTDateStr(kp.year, kp.month, kp.day)}T${String(kp.hour).padStart(2, '0')}:${String(kp.minute).padStart(2, '0')}`;
+            populateLootBotamDropdown();
             alert("보스 전리품 내역이 등록되었습니다.");
         };
 
@@ -4598,12 +5329,14 @@
             document.getElementById('edit-loot-count').value = item.count || '1';
             document.getElementById('edit-loot-owner').value = item.owner || '';
 
-            const rawDate = item.acquiredDate || item.date || '';
-            if (rawDate && rawDate.includes(' ')) {
-                const [dPart, tPart] = rawDate.split(' ');
-                document.getElementById('edit-loot-acquired').value = `${dPart}T${tPart.slice(0, 5)}`;
-            } else {
-                document.getElementById('edit-loot-acquired').value = '';
+            const rawDate = (item.acquiredDate || item.date || '').replace('T', ' ');
+            const dPart = rawDate.split(' ')[0] || getActiveLootTargetDateStr();
+            const tPart = rawDate.split(' ')[1] || '00:00';
+            const hh = tPart.slice(0, 2);
+            const normalizedVal = `${dPart} ${hh}:00`;
+            const editSel = document.getElementById('edit-loot-acquired');
+            if (editSel) {
+                editSel.innerHTML = buildBotamOptionsForDate(dPart, normalizedVal);
             }
 
             document.getElementById('loot-edit-modal').style.display = 'flex';
@@ -4671,6 +5404,9 @@
                 if (dateFilterInput) dateFilterInput.style.display = 'none';
             }
 
+            // 날짜 필터 변경 시 획득일시(보탐) 드롭다운도 해당 날짜 보탐으로 자동 연동
+            populateLootBotamDropdown();
+
             const list = Object.entries(itemsObj);
             const canEdit = isOperator(currentUser);
             if (actionTh) actionTh.style.display = canEdit ? "table-cell" : "none";
@@ -4701,19 +5437,27 @@
                 return true;
             });
 
+            // 획득일시(보탐 시간대) 기준 최신순 정렬(최근 시간이 위, 지나간 시간 아래) + 동일 보탐 내 최신 등록 우선
             filtered.sort((a, b) => {
-                const timeA = parseDateTimeSafe(b[1].acquiredDate || b[1].date || "") || 0;
-                const timeB = parseDateTimeSafe(a[1].acquiredDate || a[1].date || "") || 0;
-                return timeA - timeB;
+                const infoA = formatLootAcquiredDisplay(a[1].acquiredDate || a[1].date || "");
+                const infoB = formatLootAcquiredDisplay(b[1].acquiredDate || b[1].date || "");
+                if (infoB.sortKey !== infoA.sortKey) return infoB.sortKey - infoA.sortKey;
+                const regB = Number(b[1].createdAt) || parseDateTimeSafe(b[1].date || "") || 0;
+                const regA = Number(a[1].createdAt) || parseDateTimeSafe(a[1].date || "") || 0;
+                if (regB !== regA) return regB - regA;
+                return b[0].localeCompare(a[0]);
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${canEdit ? 8 : 7}" style="text-align: center; color: #a0aec0; padding: 20px;">검색 및 기간 조건에 해당하는 전리품 내역이 없습니다.</td></tr>`;
+                const emptyMsg = list.length === 0
+                    ? "등록된 전리품 내역이 없습니다."
+                    : "선택한 날짜/검색 조건에 해당하는 전리품 내역이 없습니다. (상단 기간을 '전체 기간 보기'로 변경하면 전체 기록을 확인할 수 있습니다.)";
+                tbody.innerHTML = `<tr><td colspan="${canEdit ? 8 : 7}" style="text-align: center; color: #a0aec0; padding: 20px;">${emptyMsg}</td></tr>`;
                 return;
             }
             let html = '';
             filtered.forEach(([key, item]) => {
-                const acquiredDisplay = item.acquiredDate || item.date || '-';
+                const acqFmt = formatLootAcquiredDisplay(item.acquiredDate || item.date || '-');
                 const safeKey = escapeAttr(key);
                 html += `
                     <tr>
@@ -4722,7 +5466,7 @@
                         <td>${escapeHtml(item.count || 1)}개</td>
                         <td>${escapeHtml(item.owner)}</td>
                         <td style="color: #ecc94b;">${escapeHtml(item.writer || '-')}</td>
-                        <td style="color: #68d391; font-weight: bold;">${escapeHtml(acquiredDisplay)}</td>
+                        <td><span class="loot-hour-badge ${acqFmt.colorClass}">${escapeHtml(acqFmt.text)}</span></td>
                         <td style="color: #a0aec0; font-size: 12px;">${escapeHtml(item.date)}</td>
                         ${canEdit ? `<td style="white-space:nowrap;">
                             <button class="btn-sm secondary" style="padding: 4px 8px; font-size: 11px; margin-right: 4px;" onclick="openLootEditModal('${safeKey}')">수정</button>
@@ -4860,12 +5604,15 @@
 
                         let durationText = "-";
                         if (!isCanceled && myPart.timestamp) {
-                            const rawEndTs = myPart.endTimestamp ? Number(myPart.endTimestamp) : kp.epochMs;
-                            const endTs = rawEndTs > kp.epochMs + 60000 ? kp.epochMs : rawEndTs;
-                            const diffSec = Math.max(0, Math.floor((endTs - Number(myPart.timestamp)) / 1000));
-                            const dMin = Math.floor(diffSec / 60);
-                            const dSec = diffSec % 60;
-                            durationText = myPart.endTime ? `${dMin}분 ${dSec}초` : `${dMin}분 ${dSec}초 (진행 중)`;
+                            if (myPart.endTime && myPart.endTimestamp) {
+                                const rawEndTs = Number(myPart.endTimestamp);
+                                const diffSec = Math.max(0, Math.floor((rawEndTs - Number(myPart.timestamp)) / 1000));
+                                const dMin = Math.floor(diffSec / 60);
+                                const dSec = diffSec % 60;
+                                durationText = `${dMin}분 ${dSec}초`;
+                            } else {
+                                durationText = "-";
+                            }
                         }
 
                         bossRecords.push({
@@ -5478,6 +6225,19 @@
                 daySlotsMap[sKey] = `${item.hh}:${item.mm} ${item.fullTitle}`;
             });
 
+            if (omanConfig && omanConfig.enabled !== false) {
+                const oDay = String(omanConfig.day ?? 'ALL');
+                if (oDay === 'ALL' || parseInt(oDay, 10) === dow) {
+                    const hh = String(parseInt(omanConfig.hour ?? 23, 10)).padStart(2, '0');
+                    const mm = String(parseInt(omanConfig.min ?? 0, 10)).padStart(2, '0');
+                    const floors = omanConfig.floors || DEFAULT_OMAN_CONFIG.floors;
+                    floors.forEach(fl => {
+                        const sKey = `${targetDateStr}_${hh}${mm}_oman_${fl.id}`;
+                        daySlotsMap[sKey] = `${hh}:${mm} 오만의 탑 ${fl.name}`;
+                    });
+                }
+            }
+
             Object.entries(customSchedules).forEach(([key, val]) => {
                 const parsed = parseCustomEntry(key, val);
                 if (!parsed) return;
@@ -6018,6 +6778,34 @@
             }
         };
 
+        window.toggleHiddenOnceSchedules = function() {
+            showHiddenOnceSchedules = !showHiddenOnceSchedules;
+            renderCustomScheduleList();
+        };
+
+        function isOnceSchedulePastAndClosed(key, parsed, now) {
+            if (!parsed || parsed.type !== 'once' || !parsed.date) return false;
+            const parts = parsed.date.split('-').map(Number);
+            if (parts.length < 3) return false;
+            const targetEpoch = createKSTEpoch(parts[0], parts[1], parts[2], parsed.hour, parsed.min, 0);
+            if (now.getTime() < targetEpoch) return false;
+
+            const monthKey = `${parts[0]}-${String(parts[1]).padStart(2, '0')}`;
+            const hh = String(parsed.hour).padStart(2, '0');
+            const mm = String(parsed.min).padStart(2, '0');
+            const slotKey = `${parsed.date}_${hh}${mm}_custom_${key}`;
+            const mockSched = {
+                isCustom: true,
+                customId: key,
+                time: { getTime: () => targetEpoch },
+                monthKey,
+                dateStr: parsed.date,
+                slotKey,
+                name: `${hh}:${mm} ${parsed.title}`
+            };
+            return isSlotCompletedState(mockSched, now);
+        }
+
         function renderCustomScheduleList() {
             const adminContainer = document.getElementById('custom-schedule-list');
             if (!adminContainer) return;
@@ -6028,10 +6816,33 @@
                 return;
             }
 
-            let adminHtml = "<b>[등록된 추가 유동 일정 목록]</b><br><br>";
+            const now = getSyncedCurrentTime();
+            let hiddenCount = 0;
+            const visibleEntries = [];
+
             entries.forEach(([key, val]) => {
                 const parsed = parseCustomEntry(key, val);
                 if (!parsed) return;
+                const isHidden = isOnceSchedulePastAndClosed(key, parsed, now);
+                if (isHidden) {
+                    hiddenCount++;
+                    if (!showHiddenOnceSchedules) return;
+                }
+                visibleEntries.push({ key, parsed, isHidden });
+            });
+
+            const toggleBtnHtml = hiddenCount > 0
+                ? `<button type="button" class="btn-sm secondary" style="padding: 4px 10px; font-size: 11px; min-height: 28px;" onclick="toggleHiddenOnceSchedules()">${showHiddenOnceSchedules ? `숨겨진 지난 일정 접기 (${hiddenCount}건)` : `숨겨진 지난 일정 보기 (${hiddenCount}건)`}</button>`
+                : '';
+
+            let adminHtml = `<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;"><b>[등록된 추가 유동 일정 목록]</b>${toggleBtnHtml}</div>`;
+            if (visibleEntries.length === 0) {
+                adminHtml += `<div style="color:#a0aec0; font-size:12px; padding:6px 0;">현재 표시할 유동 일정이 없습니다. (마감된 지난 1회성 일정 ${hiddenCount}건 숨김 처리됨)</div>`;
+                adminContainer.innerHTML = adminHtml;
+                return;
+            }
+
+            visibleEntries.forEach(({ key, parsed, isHidden }) => {
                 const safeKey = escapeAttr(key);
 
                 adminHtml += `
