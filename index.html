@@ -3668,10 +3668,11 @@
             const allCandidates = [];
             for (const cand of rawCandidates) {
                 const normTitle = normalizeNickname(cand.pureTitle || cand.name || '');
-                const contentKey = cand.isOman
-                    ? `${cand.dateStr}_${cand.hhmm}_oman_single`
+                const isOmanCard = Boolean(cand.isOman || normTitle.includes('오만의탑'));
+                const contentKey = isOmanCard
+                    ? `${cand.dateStr}_${cand.hhmm}_oman_card_singleton`
                     : `${cand.dateStr}_${cand.hhmm}_${normTitle}`;
-                const uniqueKey = cand.slotKey || contentKey;
+                const uniqueKey = isOmanCard ? contentKey : (cand.slotKey || contentKey);
                 if (seenCardKeys.has(uniqueKey) || seenCardKeys.has(contentKey)) continue;
                 seenCardKeys.add(uniqueKey);
                 seenCardKeys.add(contentKey);
@@ -3769,12 +3770,18 @@
 
             const dedupPrimary = [];
             const seenPrimaryKeys = new Set();
+            let omanCardIncluded = false;
             for (const pc of primaryCards) {
                 const normTitle = normalizeNickname(pc.pureTitle || pc.name || '');
-                const contentPk = pc.isOman
-                    ? `${pc.dateStr}_${pc.hhmm}_oman_single`
+                const isOmanCard = Boolean(pc.isOman || normTitle.includes('오만의탑'));
+                if (isOmanCard) {
+                    if (omanCardIncluded) continue;
+                    omanCardIncluded = true;
+                }
+                const contentPk = isOmanCard
+                    ? `${pc.dateStr}_${pc.hhmm}_oman_card_singleton`
                     : `${pc.dateStr}_${pc.hhmm}_${normTitle}`;
-                const pk = pc.slotKey || contentPk;
+                const pk = isOmanCard ? contentPk : (pc.slotKey || contentPk);
                 if (seenPrimaryKeys.has(pk) || seenPrimaryKeys.has(contentPk)) continue;
                 seenPrimaryKeys.add(pk);
                 seenPrimaryKeys.add(contentPk);
