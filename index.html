@@ -244,6 +244,55 @@
         .boss-card.ongoing-card { border-color: #805ad5; box-shadow: 0 6px 26px rgba(128, 90, 213, 0.22); }
         .boss-card.main-card { border-color: #e53e3e; box-shadow: 0 6px 26px rgba(229, 62, 62, 0.22); }
         .boss-card.completed-card { border-color: #4a3b73; background: linear-gradient(180deg, #151026 0%, #110c1f 100%); opacity: 0.96; }
+        .close-reason-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(254, 178, 178, 0.12);
+            border: 1px solid rgba(252, 129, 129, 0.45);
+            color: #feb2b2;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 7px;
+            margin-top: 8px;
+        }
+        .slot-db-diag-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            background: rgba(18, 13, 34, 0.85);
+            border: 1px solid #2a1f4e;
+            border-radius: 8px;
+            padding: 7px 11px;
+            margin-bottom: 12px;
+            font-size: 11.5px;
+            color: #a0aec0;
+        }
+        .slot-db-diag-pill {
+            background: #1b1433;
+            border: 1px solid #44337a;
+            color: #d6bcfa;
+            border-radius: 5px;
+            padding: 2px 7px;
+            font-weight: bold;
+        }
+        .slot-db-wipe-btn {
+            background: rgba(197, 48, 48, 0.25);
+            color: #feb2b2;
+            border: 1px solid rgba(252, 129, 129, 0.5);
+            border-radius: 5px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .slot-db-wipe-btn:hover {
+            background: #c53030;
+            color: #ffffff;
+        }
         .boss-card.custom-card { border: 2px solid #d69e2e; }
 
         .boss-banner {
@@ -1877,7 +1926,7 @@
         const DEFAULT_SYSTEM_GUIDE = `✓ 보스타임 15분~30분 전부터 [▶ 참여버튼]이 활성화됩니다.
 ✓ 보스 정각 이후 및 참여 후 3분 경과 시 [참여 종료 (완료)]를 눌러주세요.
 ✓ 실수로 종료를 누른 경우, 해당 타임 마감 전까지 [완료 취소]가 가능합니다.
-✓ 참여자 0명 시 정각 +30분 자동 마감되며, 4명 이상일 경우 과반수 완료 또는 운영진 마감 시 완료 처리됩니다.`;
+✓ 참여자 0명 시 정각 +30분 자동 마감되며, 4명 이상일 경우 과반수 완료 또는 운영진 마감 시 완료 처리됩니다. (오만의 탑 층별 탭은 3명 이하 자동 마감 없이 운영)`;
         let systemGuideText = DEFAULT_SYSTEM_GUIDE;
         let systemGuideImage = "";
         let pendingSystemGuideImage = "";
@@ -1898,6 +1947,9 @@
         let isBoardWriteFormExpanded = false;
         let lastOcrRecognizedText = "";
         let lastOcrMatchResults = {};
+        const pendingJoinSlots = new Set();
+        const pendingEndSlots = new Set();
+        let isDashboardRendering = false;
 
         function isOperator(user) {
             if (!user) return false;
@@ -3370,9 +3422,9 @@
         function isOmanFloorClosed(monthKey, floorSlotKey) {
             const monthObj = attendanceByMonth[monthKey] || {};
             const slotObj = monthObj[floorSlotKey] || {};
-            if (slotObj.isClosed === true) return true;
             const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
             if (isAdminReopened) return false;
+            if (slotObj.isClosed === true) return true;
 
             const participants = slotObj.participants || {};
             const validP = Object.entries(participants)
@@ -3385,10 +3437,46 @@
 
             if (validP.length === 0) return false;
             const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
+            // 오만의 탑 층별 탭은 3명 이하 자동 마감 없이 4명 이상 과반수 완료 또는 운영진 강제/DB 마감 시 마감
             if (validP.length <= 3) {
-                return compP.length === validP.length;
+                return false;
             }
             return compP.length >= Math.ceil(validP.length / 2);
+        }
+
+        function getSlotCloseReasonLabel(sched, nowArg) {
+            const now = nowArg || getSyncedCurrentTime();
+            const slotObj = getSlotDataObj(sched);
+            if (slotObj.closedReason) {
+                return String(slotObj.closedReason);
+            }
+            const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
+            if (isAdminReopened) return "";
+
+            const validP = getValidParticipantsList(sched).filter(p => !p.optOutLocked);
+            const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
+
+            if (sched && sched.isOman) {
+                if (slotObj.isClosed === true) return "층별 마감 처리됨";
+                if (validP.length > 0 && validP.length <= 3 && compP.length === validP.length) {
+                    return "3명 이하 전원 완료 마감";
+                }
+                if (validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2)) {
+                    return "과반수 참여 완료 마감";
+                }
+                return "";
+            }
+
+            if (validP.length <= 3 && now.getTime() >= sched.time.getTime() + 30 * 60 * 1000) {
+                return "3명 이하 +30분 자동 마감";
+            }
+            if (validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2)) {
+                return "과반수 참여 완료 마감";
+            }
+            if (slotObj.isClosed === true) {
+                return "마감 완료";
+            }
+            return "";
         }
 
         window.selectOmanFloorTab = function(cardSlotKey, floorId) {
@@ -3839,7 +3927,7 @@
                 // 오만의 탑: +30분 자동 마감 없음, 4명 이상 과반수 완료 / 3명 이하 전원 완료 시 마감
                 // 일반 보스: 3명 이하 정각 +30분 경과 시 자동 마감(종료 시각 = 정각 +30분), 4명 이상 과반수 완료 시 마감
                 let shouldCloseBySmallAuto = (!isOmanSlot && totalCount <= 3 && plus30Ts > 0 && now.getTime() >= plus30Ts);
-                let shouldCloseByOmanAll = (isOmanSlot && totalCount > 0 && totalCount <= 3 && completedCount === totalCount);
+                let shouldCloseByOmanAll = false;
                 let shouldCloseByMajority = (totalCount >= 4 && completedCount >= Math.ceil(totalCount / 2));
 
                 if (shouldCloseBySmallAuto || shouldCloseByOmanAll || shouldCloseByMajority || slotData.isClosed) {
@@ -3973,11 +4061,20 @@
             const targetTs = activeSched.time.getTime();
             const isBeforeExactTime = now.getTime() < targetTs;
 
+            const closeReasonText = isSlotClosed ? getSlotCloseReasonLabel(activeSched, now) : "";
+            const closeReasonBannerHtml = isSlotClosed
+                ? `<div class="close-reason-banner">🔒 마감 사유: ${escapeHtml(closeReasonText || "마감 완료")}</div>`
+                : "";
+            const isJoinPending = pendingJoinSlots.has(`${activeSched.monthKey}::${activeSched.slotKey}`);
+            const isEndPending = pendingEndSlots.has(`${activeSched.monthKey}::${activeSched.slotKey}`);
+
             if (isSlotClosed) {
                 badgeText = "완료 (마감)";
                 badgeClass = "badge-status closed";
                 cardStateClass = "completed-card";
-                statusDesc = "해당 일정은 완료되어 더 이상 참여할 수 없습니다.";
+                statusDesc = closeReasonText
+                    ? `해당 일정은 완료되었습니다 (${escapeHtml(closeReasonText)}).`
+                    : "해당 일정은 완료되어 더 이상 참여할 수 없습니다.";
                 statusColor = "#feb2b2";
                 if (myRecord && myRecord.status && myRecord.status.includes("참여 완료") && !nextSlotOpened) {
                     buttonsHtml = `<button class="participate-btn cancel" onclick="cancelCompletedBossSlot('${encMonth}','${encSlot}')">참여 취소</button>`;
@@ -4008,11 +4105,17 @@
                 badgeText = isAdminReopened ? "진행 중 (운영진 재오픈)" : "진행 중";
                 badgeClass = "badge-status ongoing";
                 if (!myRecord) {
-                    statusDesc = isAdminReopened
-                        ? "운영진이 상태 초기화로 재오픈한 보스입니다! 자동 마감 없이 참여 및 수정이 가능합니다."
-                        : "보스가 진행 중입니다! 현재 참여가 가능합니다."
-                    statusColor = "#ffffff";
-                    buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
+                    if (isJoinPending) {
+                        statusDesc = "참여 요청을 처리 중입니다. 잠시만 기다려 주세요...";
+                        statusColor = "#fbd38d";
+                        buttonsHtml = `<button class="participate-btn" disabled>⏳ 참여 처리 중...</button>`;
+                    } else {
+                        statusDesc = isAdminReopened
+                            ? "운영진이 상태 초기화로 재오픈한 보스입니다! 자동 마감 없이 참여 및 수정이 가능합니다."
+                            : "보스가 진행 중입니다! 현재 참여가 가능합니다."
+                        statusColor = "#ffffff";
+                        buttonsHtml = `<button class="participate-btn" onclick="joinBossSlot('${encMonth}','${encSlot}','${encName}',${targetTs},${openBeforeMin})">▶ 참여하기</button>`;
+                    }
                 } else if (myRecord.status === "참여 중") {
                     const joinedTs = Number(myRecord.timestamp) || now.getTime();
                     const elapsedSinceJoinSec = Math.max(0, Math.floor((now.getTime() - joinedTs) / 1000));
@@ -4038,7 +4141,9 @@
                     } else {
                         statusDesc = `[${escapeHtml(currentUser.name)}]님 현재 참여 중 (${escapeHtml(myRecord.startTime)} 시작) — 보스 처치 후 [참여 종료 (완료)]를 눌러주세요.`;
                         statusColor = "#48bb78";
-                        buttonsHtml = `
+                        buttonsHtml = isEndPending
+                            ? `<button class="participate-btn end-btn" disabled>⏳ 종료 처리 중...</button>`
+                            : `
                             <button class="participate-btn end-btn" onclick="endBossSlot('${encMonth}','${encSlot}',${targetTs})">참여 종료 (완료)</button>
                             <button class="participate-btn cancel" onclick="cancelBossSlot('${encMonth}','${encSlot}')">참여 취소하기</button>
                         `;
@@ -4154,12 +4259,21 @@
                         <div>
                             <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px; color: ${statusColor};">${statusDesc}</div>
                             <div style="font-size: 12px; color: #a0aec0; line-height: 1.5;">${bottomGuideHtml}</div>
+                            ${closeReasonBannerHtml}
                         </div>
                         <div class="btn-group">${buttonsHtml}</div>
                     </div>
                     ${activeSched.isCustom ? `
                     <div style="background: rgba(214, 158, 46, 0.08); border: 1px dashed #d69e2e; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; color: #fbd38d;">
                         <b>[✋ 참여 예정자 명단 (${preList.length}명)]</b>: ${preList.length > 0 ? preNames.join(', ') : '아직 사전 신청한 인원이 없습니다.'}
+                    </div>` : ''}
+                    ${isOperator(currentUser) ? `
+                    <div class="slot-db-diag-strip">
+                        <span class="slot-db-diag-pill">DB 진단</span>
+                        <span>slotKey: <code>${escapeHtml(activeSched.slotKey)}</code></span>
+                        <span>isClosed: <b>${slotObj.isClosed === true ? 'true' : 'false'}</b></span>
+                        <span>closedReason: <b>${escapeHtml(slotObj.closedReason || '없음')}</b></span>
+                        <button type="button" class="slot-db-wipe-btn" onclick="wipeBossSlotRawNode('${encMonth}','${encSlot}')">🗑️ 슬롯 DB 비우기</button>
                     </div>` : ''}
                     <div class="card-party-box">
                         <div style="font-weight: bold; margin-bottom: 8px; color: #d6bcfa; font-size: 13px;">실시간 참여 명단 (${escapeHtml(activeSched.name)})</div>
@@ -4357,6 +4471,9 @@
         }
 
         function updateDashboard(forceRender = false) {
+            if (isDashboardRendering) return;
+            isDashboardRendering = true;
+            try {
             const now = getSyncedCurrentTime();
             const kp = getKSTParts(now.getTime());
             ensureBoundaryMonthsSubscribed(now);
@@ -4417,6 +4534,9 @@
 
             renderMyTodayRightPanel(now, schedState);
             renderTimetable();
+            } finally {
+                isDashboardRendering = false;
+            }
         }
 
         window.togglePreSignup = async function(monthKey, slotKey) {
@@ -4444,6 +4564,11 @@
 
         window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs, openBeforeMin) {
             if (!currentUser) return;
+            const pendingKey = `${monthKey}::${slotKey}`;
+            if (pendingJoinSlots.has(pendingKey)) return;
+            pendingJoinSlots.add(pendingKey);
+            updateDashboard(true);
+            try {
             const now = getSyncedCurrentTime();
             const openMin = Number(openBeforeMin ?? 30);
             const diffMin = (now.getTime() - targetTs) / (1000 * 60);
@@ -4494,6 +4619,17 @@
             }
 
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
+            if (slotSnap.exists() && slotKey.includes('_oman_')) {
+                const curSlotVal = slotSnap.val() || {};
+                const isExplicitAdminClose = Boolean(curSlotVal.closedReason && String(curSlotVal.closedReason).includes('강제 마감'));
+                const isStaleAutoReason = Boolean(curSlotVal.closedReason && String(curSlotVal.closedReason).includes('자동 마감'));
+                if ((curSlotVal.isClosed === true || isStaleAutoReason) && !isExplicitAdminClose && !curSlotVal.reopenedManual && !curSlotVal.reopenedByAdmin) {
+                    await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
+                        isClosed: false,
+                        closedReason: null
+                    });
+                }
+            }
             if (slotSnap.exists()) {
                 const sData = slotSnap.val();
                 const parts = sData.participants || {};
@@ -4532,10 +4668,29 @@
                 optOutLocked: false,
                 timestamp: kp.epochMs
             });
+            if (!attendanceByMonth[monthKey]) attendanceByMonth[monthKey] = {};
+            if (!attendanceByMonth[monthKey][slotKey]) attendanceByMonth[monthKey][slotKey] = {};
+            if (!attendanceByMonth[monthKey][slotKey].participants) attendanceByMonth[monthKey][slotKey].participants = {};
+            attendanceByMonth[monthKey][slotKey].name = bossName;
+            attendanceByMonth[monthKey][slotKey].targetTimestamp = targetTs;
+            attendanceByMonth[monthKey][slotKey].participants[currentUser.id] = {
+                name: currentUser.name,
+                status: "참여 중",
+                startTime: timeStr,
+                endTime: "",
+                score: score,
+                optOutLocked: false,
+                timestamp: kp.epochMs
+            };
+
             populateBonusCheckSlotSelect();
             populateRetroSlotOptions();
             updateDashboard(true);
             loadRankingData();
+            } finally {
+                pendingJoinSlots.delete(pendingKey);
+                updateDashboard(true);
+            }
         };
 
         window.cancelBossSlot = async function(monthKey, slotKey) {
@@ -4611,6 +4766,11 @@
 
         window.endBossSlot = async function(monthKey, slotKey, targetTsParam) {
             if (!currentUser) return;
+            const pendingKey = `${monthKey}::${slotKey}`;
+            if (pendingEndSlots.has(pendingKey)) return;
+            pendingEndSlots.add(pendingKey);
+            updateDashboard(true);
+            try {
             const now = getSyncedCurrentTime();
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
             const sData = slotSnap.exists() ? slotSnap.val() : {};
@@ -4653,7 +4813,7 @@
                 const isAdminReopened = Boolean(refreshedData.reopenedManual || refreshedData.reopenedByAdmin);
 
                 const isOmanSlot = slotKey.includes('_oman_');
-                const shouldCloseOmanSmall = (!isAdminReopened && isOmanSlot && validP.length > 0 && validP.length <= 3 && compP.length === validP.length);
+                const shouldCloseOmanSmall = false;
                 const shouldCloseMajority = (!isAdminReopened && validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2));
 
                 if (shouldCloseOmanSmall || shouldCloseMajority) {
@@ -4673,6 +4833,10 @@
                 }
             }
             loadRankingData();
+            } finally {
+                pendingEndSlots.delete(pendingKey);
+                updateDashboard(true);
+            }
         };
 
         window.forceCloseBossSlot = async function(monthKey, slotKey) {
@@ -4714,9 +4878,30 @@
                 }
             }
 
-            updateDashboard();
+            updateDashboard(true);
             await update(ref(db), updates);
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}/closedReason`));
             updateDashboard();
+        };
+
+
+        window.wipeBossSlotRawNode = async function(monthKey, slotKey) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm(`🗑️ [슬롯 DB 노드 비우기]\n\n슬롯: ${slotKey}\n해당 슬롯의 DB 데이터(참여자·마감 여부·사유)를 완전히 삭제하여 깨끗한 상태로 초기화하시겠습니까?`)) return;
+
+            if (attendanceByMonth[monthKey] && attendanceByMonth[monthKey][slotKey]) {
+                delete attendanceByMonth[monthKey][slotKey];
+            }
+            if (allAttendanceCache[monthKey] && allAttendanceCache[monthKey][slotKey]) {
+                delete allAttendanceCache[monthKey][slotKey];
+            }
+            updateDashboard(true);
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}`));
+            populateBonusCheckSlotSelect();
+            populateRetroSlotOptions();
+            loadRankingData();
+            updateDashboard(true);
+            alert("해당 슬롯의 DB 노드가 초기화되었습니다.");
         };
 
         window.resetBossSlotState = async function(monthKey, slotKey) {
@@ -4731,13 +4916,13 @@
             attendanceByMonth[monthKey][slotKey].isClosed = false;
             attendanceByMonth[monthKey][slotKey].reopenedManual = true;
             attendanceByMonth[monthKey][slotKey].reopenedByAdmin = true;
-            attendanceByMonth[monthKey][slotKey].closedReason = null;
+            attendanceByMonth[monthKey][slotKey].closedReason = "";
 
             const updates = {
                 [`attendance/${monthKey}/${slotKey}/isClosed`]: false,
                 [`attendance/${monthKey}/${slotKey}/reopenedManual`]: true,
                 [`attendance/${monthKey}/${slotKey}/reopenedByAdmin`]: true,
-                [`attendance/${monthKey}/${slotKey}/closedReason`]: null
+                [`attendance/${monthKey}/${slotKey}/closedReason`]: ""
             };
 
             const slotSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}/participants`));
@@ -7561,7 +7746,7 @@
                 const safeUid = escapeAttr(uid);
                 const safeNameAttr = escapeAttr(m.name);
                 
-                const isHigherOrEqual = (myLvl >= targetLvl && myRole !== 'master' && currentUser.name !== 'admin');
+                const isHigherOrEqual = (myLvl >= targetLvl && myRole !== 'master' && (!currentUser || currentUser.name !== 'admin'));
                 const isSelf = currentUser && currentUser.id === uid;
 
                 let roleOptions = `
