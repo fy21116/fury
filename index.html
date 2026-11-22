@@ -188,6 +188,24 @@
         .admin-sub-content { display: none; }
         .admin-sub-content.active { display: block; }
 
+        .paste-drop-zone {
+            border: 2px dashed #6b46c1;
+            background: rgba(128, 90, 213, 0.08);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            color: #d6bcfa;
+            font-size: 13px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .paste-drop-zone:hover, .paste-drop-zone:focus {
+            border-color: #fbd38d;
+            background: rgba(214, 158, 46, 0.12);
+            outline: none;
+        }
+
         /* 동일 시각 보스 2개 좌우 2열 카드 배치 그리드 */
         .boss-cards-dual-grid {
             display: grid;
@@ -1134,7 +1152,7 @@
                 <div class="admin-sub-tabs">
                     <button class="sub-tab-btn active" onclick="switchAdminSubTab('schedule', this)">📅 일정 및 이미지 등록</button>
                     <button class="sub-tab-btn" onclick="switchAdminSubTab('score', this)">⭐ 점수 관리</button>
-                    <button class="sub-tab-btn" onclick="switchAdminSubTab('capture_att', this)">📷 캡처 / 소급 출석</button>
+                    <button class="sub-tab-btn" onclick="switchAdminSubTab('capture_att', this)">📋 출석관리</button>
                     <button class="sub-tab-btn" onclick="switchAdminSubTab('member', this)">👥 혈원 관리</button>
                     <button class="sub-tab-btn" onclick="switchAdminSubTab('notice', this)">📢 긴급 공지 관리</button>
                 </div>
@@ -1281,45 +1299,33 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="panel-box">
-                        <div style="font-weight: bold; color: #d6bcfa; margin-bottom: 10px;">보스 타임 인원 및 출석 관리 (날짜별 조회 / 대리 출석 추가)</div>
-                        <div class="sub-box" style="margin-bottom: 0;">
-                            <div class="admin-form" style="margin-bottom: 8px;">
-                                <input type="date" id="attendance-manage-date" class="admin-input" style="padding: 6px; font-size: 13px;" onchange="populateAttendanceManageSlotSelect()">
-                                <select id="bonus-slot-select" class="admin-input" style="flex: 1; min-width: 220px;" onchange="previewBonusSlotTargets()">
-                                    <option value="">-- 보스 타임 선택 (0건) --</option>
-                                </select>
-                                <button class="btn-sm danger" onclick="deleteSelectedAttendanceSlot()">전체 출석 삭제</button>
-                            </div>
-                            <div id="bonus-slot-preview" style="font-size: 12px; color: #a0aec0; margin-bottom: 10px;">보스 타임을 선택하면 참여했던 혈원 명단과 개별 관리 버튼이 여기에 표시됩니다.</div>
-                            <div id="slot-participants-edit-list"></div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- 운영진 관리: 캡처 이미지 OCR 인식 및 과거 날짜/시간 소급 출석 등록 전용 탭 -->
+                <!-- 운영진 관리: 통합 출석관리 탭 (날짜별 출석 조회 + 디스코드 캡처 붙여넣기/업로드 OCR 유사매칭 + 수동 추가/개별 제외/전체 삭제) -->
                 <div id="admin-sub-capture_att" class="admin-sub-content">
                     <div class="panel-box">
-                        <div style="font-weight: bold; color: #fbd38d; margin-bottom: 6px;">📷 디스코드 참여 캡처 자동 인식 & 과거 날짜/시간 소급 출석 체크</div>
+                        <div style="font-weight: bold; color: #fbd38d; margin-bottom: 6px;">📋 출석관리 (날짜별 보스 출석 조회 · 디스코드 캡처 자동 인식 · 수동 추가/제외)</div>
                         <p style="font-size: 12px; color: #a0aec0; margin-top: 0; margin-bottom: 14px; line-height: 1.55;">
-- 지나간 날짜와 보스 시간대를 선택한 뒤 디스코드 음성채널 참여자 캡처 이미지를 올리면, 닉네임을 자동 인식해 체크합니다.<br>
-- 오인식 방지를 위해 자동 체크된 혈원 목록을 먼저 확인·수정하신 뒤 <b>[선택 인원 출석 일괄 반영]</b> 버튼을 눌러 저장해 주세요.
+- 날짜와 보스 시간대를 선택하면 기존 출석 명단 조회·개별 제외·전체 삭제가 가능하며, 디스코드 캡처 이미지를 <b>Ctrl+V 붙여넣기</b> 또는 파일로 넣으면 자동 인식(유사 매칭 포함)으로 일괄 출석 추가가 가능합니다.
                         </p>
 
                         <div class="sub-box">
-                            <div style="font-weight: bold; color: #d6bcfa; font-size: 13px; margin-bottom: 8px;">1단계. 대상 날짜 및 보스 시간대 선택 (지난 날짜 소급 가능)</div>
+                            <div style="font-weight: bold; color: #d6bcfa; font-size: 13px; margin-bottom: 8px;">1단계. 대상 날짜 및 보스 시간대 선택</div>
                             <div class="admin-form" style="margin-bottom: 6px;">
                                 <input type="date" id="retro-att-date" class="admin-input" onchange="populateRetroSlotOptions()" style="padding: 7px; font-size: 13px;">
                                 <select id="retro-att-slot-select" class="admin-input" onchange="onRetroSlotChange()" style="flex: 1; min-width: 240px;">
                                     <option value="">-- 해당 날짜의 보스 시간대 선택 --</option>
                                 </select>
+                                <button type="button" class="btn-sm danger" onclick="deleteSelectedRetroAttendanceSlot()">전체 출석 삭제</button>
                             </div>
                             <div id="retro-slot-status-info" style="font-size: 12px; color: #68d391;">날짜와 보스 시간대를 선택하면 현재 등록된 인원이 표시됩니다.</div>
                         </div>
 
                         <div class="sub-box">
-                            <div style="font-weight: bold; color: #d6bcfa; font-size: 13px; margin-bottom: 8px;">2단계. 디스코드 캡처 이미지 업로드 (자동 닉네임 인식)</div>
+                            <div style="font-weight: bold; color: #d6bcfa; font-size: 13px; margin-bottom: 8px;">2단계. 디스코드 캡처 이미지 붙여넣기 (Ctrl+V) 또는 파일 선택</div>
+                            <div id="discord-paste-zone" class="paste-drop-zone" tabindex="0" onclick="this.focus()">
+                                📋 여기를 클릭한 뒤 <b>Ctrl + V</b> 로 복사한 디스코드 캡처 이미지를 바로 붙여넣으세요! (탭이 열려 있으면 어디서든 Ctrl+V 가능)
+                            </div>
                             <div class="admin-form" style="margin-bottom: 8px;">
                                 <input type="file" id="discord-ocr-file" accept="image/*" class="admin-input" style="flex: 1; min-width: 220px; padding: 7px;" onchange="runDiscordCaptureOCR(this)">
                                 <button type="button" class="btn-sm secondary" onclick="rerunDiscordOCR()">🔄 이미지 다시 인식</button>
@@ -1334,9 +1340,9 @@
                             </div>
                         </div>
 
-                        <div class="sub-box" style="margin-bottom: 0;">
+                        <div class="sub-box">
                             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
-                                <span style="font-size: 13px; font-weight: bold; color: #d6bcfa;">3단계. 자동 매칭 및 수동 체크 확인 (<span id="retro-checked-count" style="color: #68d391;">0</span>명 선택됨)</span>
+                                <span style="font-size: 13px; font-weight: bold; color: #d6bcfa;">3단계. 추가 출석 대상 선택 (<span id="retro-checked-count" style="color: #68d391;">0</span>명 선택됨)</span>
                                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                     <input type="text" id="retro-member-filter" class="admin-input" placeholder="🔍 혈원 검색..." oninput="filterRetroMemberCheckboxes()" style="width: 130px; padding: 4px 8px; font-size: 12px; min-height: 30px;">
                                     <button type="button" class="btn-sm secondary" style="padding: 4px 9px; font-size: 11px; min-height: 30px;" onclick="toggleAllRetroCheckboxes(true)">전체 선택</button>
@@ -1344,7 +1350,12 @@
                                 </div>
                             </div>
                             <div id="retro-checkbox-list" class="chk-grid" style="max-height: 230px;"></div>
-                            <button type="button" class="btn-sm success" style="width: 100%; margin-top: 10px; min-height: 44px; font-size: 14px;" onclick="applyRetroactiveAttendance()">✅ 선택 인원 출석 일괄 반영 (소급 저장)</button>
+                            <button type="button" class="btn-sm success" style="width: 100%; margin-top: 10px; min-height: 44px; font-size: 14px;" onclick="applyRetroactiveAttendance()">✅ 선택 인원 출석 일괄 추가</button>
+                        </div>
+
+                        <div class="sub-box" style="margin-bottom: 0;">
+                            <div style="font-size: 13px; font-weight: bold; color: #d6bcfa; margin-bottom: 8px;">4단계. 현재 선택된 보스 타임 참여자 명단 및 개별 제외</div>
+                            <div id="retro-existing-participants-list" style="font-size: 12px; color: #a0aec0;">보스 시간대를 선택하면 현재 참여 중인 혈원 명단과 제외 버튼이 표시됩니다.</div>
                         </div>
                     </div>
                 </div>
@@ -1754,6 +1765,7 @@
         let isBoardArchiveCollapsed = false;
         let isBoardWriteFormExpanded = false;
         let lastOcrRecognizedText = "";
+        let lastOcrMatchResults = {};
 
         function isOperator(user) {
             if (!user) return false;
@@ -1775,7 +1787,7 @@
                 attendanceByMonth[monthKey] = snap.val() || {};
                 allAttendanceCache[monthKey] = attendanceByMonth[monthKey];
                 populateBonusCheckSlotSelect();
-                populateAttendanceManageSlotSelect();
+                populateRetroSlotOptions();
                 updateDashboard();
                 loadRankingData();
             });
@@ -1936,7 +1948,7 @@
                 renderRawMembersViewer();
                 renderPendingSidebarList();
                 populateBonusUserCheckboxes();
-                populateRetroMemberCheckboxes();
+                onRetroSlotChange();
                 updateDashboard();
                 loadRankingData();
             });
@@ -2095,10 +2107,8 @@
                 renderBossImageMappingList();
                 renderBossScoreSettingsList();
                 populateBonusCheckSlotSelect();
-                populateAttendanceManageSlotSelect();
                 populateBonusUserCheckboxes();
                 populateRetroSlotOptions();
-                populateRetroMemberCheckboxes();
                 renderRecentBonusLogs();
                 renderTimetable();
                 renderNicknameHistoryList();
@@ -2150,8 +2160,6 @@
             if (schedDateInput) schedDateInput.value = todayStr;
             const bonusFilterDate = document.getElementById('bonus-filter-date');
             if (bonusFilterDate) bonusFilterDate.value = todayStr;
-            const attManageDate = document.getElementById('attendance-manage-date');
-            if (attManageDate) attManageDate.value = todayStr;
             const bonusLogViewDate = document.getElementById('bonus-log-view-date');
             if (bonusLogViewDate) bonusLogViewDate.value = todayStr;
             const retroAttDate = document.getElementById('retro-att-date');
@@ -2166,13 +2174,14 @@
                 extraFixedSchedules = createInitialFixedSchedules();
             }
 
+            setupClipboardPasteListener();
+
             updateLootQuickDatalists();
             renderBossScoreSettingsList();
             renderCustomScheduleList();
             renderFixedScheduleList();
             renderBossImageMappingList();
             populateBonusCheckSlotSelect();
-            populateAttendanceManageSlotSelect();
             populateRetroSlotOptions();
             renderTimetable();
             renderBoardTab();
@@ -2223,6 +2232,31 @@
             } catch (err) {
                 console.error("초기화 백그라운드 점검:", err);
             }
+        }
+
+        function setupClipboardPasteListener() {
+            document.addEventListener('paste', async (e) => {
+                const adminTab = document.getElementById('tab-admin');
+                const captureSub = document.getElementById('admin-sub-capture_att');
+                if (!adminTab || !adminTab.classList.contains('active')) return;
+                if (!captureSub || !captureSub.classList.contains('active')) return;
+                if (!isOperator(currentUser)) return;
+
+                const clipboardData = e.clipboardData || window.clipboardData;
+                if (!clipboardData || !clipboardData.items) return;
+
+                for (let i = 0; i < clipboardData.items.length; i++) {
+                    const item = clipboardData.items[i];
+                    if (item.type && item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            await processDiscordImageFileForOCR(file);
+                        }
+                        break;
+                    }
+                }
+            });
         }
 
         window.toggleAuthMode = function() {
@@ -2337,10 +2371,8 @@
             renderRawMembersViewer();
             renderPendingSidebarList();
             populateBonusCheckSlotSelect();
-            populateAttendanceManageSlotSelect();
             populateBonusUserCheckboxes();
             populateRetroSlotOptions();
-            populateRetroMemberCheckboxes();
             renderRecentBonusLogs();
             updateBoardNewBadge();
             renderBoardTab();
@@ -2920,7 +2952,6 @@
             btnEl.classList.add('active');
             if (subName === 'capture_att') {
                 populateRetroSlotOptions();
-                populateRetroMemberCheckboxes();
             }
         };
 
@@ -3900,7 +3931,7 @@
                 timestamp: kp.epochMs
             });
             populateBonusCheckSlotSelect();
-            populateAttendanceManageSlotSelect();
+            populateRetroSlotOptions();
             loadRankingData();
         };
 
@@ -3970,7 +4001,7 @@
             });
 
             populateBonusCheckSlotSelect();
-            populateAttendanceManageSlotSelect();
+            populateRetroSlotOptions();
             loadRankingData();
             updateDashboard();
         };
@@ -6098,24 +6129,6 @@
             targetSelect.innerHTML = targetHtml;
         };
 
-        window.populateAttendanceManageSlotSelect = async function() {
-            const attManageDateInput = document.getElementById('attendance-manage-date');
-            const select = document.getElementById('bonus-slot-select');
-            if (!select) return;
-
-            const targetDateStr = attManageDateInput ? attManageDateInput.value : "";
-            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
-            const monthObj = await getMonthAttendanceMap(monthKey);
-
-            const options = buildRecordedSlotOptionsForDate(targetDateStr, monthObj);
-            let html = `<option value="">-- 보스 타임 선택 (${options.length}건) --</option>`;
-            options.forEach(opt => {
-                html += `<option value="${escapeAttr(opt.slotKey)}">${escapeHtml(opt.text)}</option>`;
-            });
-            select.innerHTML = html;
-            previewBonusSlotTargets();
-        };
-
         window.checkSlotParticipantsForBonus = async function() {
             const filterDateInput = document.getElementById('bonus-filter-date');
             const targetSelect = document.getElementById('bonus-select-slot-target');
@@ -6135,159 +6148,6 @@
                     chk.checked = true;
                 }
             });
-        };
-
-        window.previewBonusSlotTargets = async function() {
-            const attManageDateInput = document.getElementById('attendance-manage-date');
-            const select = document.getElementById('bonus-slot-select');
-            const preview = document.getElementById('bonus-slot-preview');
-            const listContainer = document.getElementById('slot-participants-edit-list');
-            if (!select || !preview || !listContainer) return;
-
-            const slotKey = select.value;
-            if (!slotKey) {
-                preview.innerHTML = "보스 타임을 선택하면 참여했던 혈원 명단과 개별 관리 버튼이 여기에 표시됩니다.";
-                listContainer.innerHTML = "";
-                return;
-            }
-
-            const targetDateStr = attManageDateInput && attManageDateInput.value ? attManageDateInput.value : slotKey.split('_')[0];
-            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
-            const monthObj = await getMonthAttendanceMap(monthKey);
-            const slotObj = monthObj[slotKey] || {};
-            const parts = slotObj.participants || {};
-            
-            let validParts = Object.entries(parts).filter(([uid, p]) => {
-                if (uid === 'admin_account' || !p || p.name === 'admin') return false;
-                const m = membersData[uid];
-                return !m || m.approved !== false;
-            });
-
-            const activeParticipantUids = new Set(validParts.filter(([, p]) => !p.optOutLocked).map(([uid]) => uid));
-            const unclosedParts = validParts.filter(([, p]) => !p.optOutLocked && p.status === '참여 중');
-            const nonParticipants = Object.entries(membersData)
-                .filter(([uid, m]) => m && m.approved !== false && m.name !== 'admin' && uid !== 'admin_account' && !activeParticipantUids.has(uid))
-                .map(([uid, m]) => ({ uid, name: m.name, class: m.class || '기사' }))
-                .sort((a, b) => a.name.localeCompare(b.name));
-
-            const unclosedWarn = unclosedParts.length > 0
-                ? ` · <span style="color:#fbd38d;">⚠️ 미종료(참여 중 유지): ${unclosedParts.length}명</span>`
-                : '';
-
-            preview.innerHTML = `부여 대상자 (<b style="color:#48bb78;">총 ${activeParticipantUids.size}명</b>)${unclosedWarn}`;
-
-            const safeMonthKey = escapeAttr(monthKey);
-            const safeSlotKey = escapeAttr(slotKey);
-
-            let addBoxHtml = `
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:#18122d; padding:10px; border-radius:6px; border:1px solid #44337a; margin-bottom:10px;">
-                    <span style="font-size:12px; color:#fbd38d; font-weight:bold;">➕ 미참여 혈원 수동 추가(대리 출석):</span>
-                    <select id="manual-add-member-select" class="admin-input" style="padding:5px; min-height:34px; font-size:12px; flex:1; min-width:160px;">
-                        <option value="">-- 추가할 혈원 선택 (${nonParticipants.length}명) --</option>
-                        ${nonParticipants.map(np => `<option value="${escapeAttr(np.uid)}">${escapeHtml(np.name)} [${escapeHtml(np.class)}]</option>`).join('')}
-                    </select>
-                    <button class="btn-sm success" style="padding:5px 12px; font-size:12px; min-height:34px;" onclick="addManualParticipantToSlot('${safeMonthKey}', '${safeSlotKey}')">출석 추가</button>
-                </div>
-            `;
-
-            if (validParts.length === 0) {
-                listContainer.innerHTML = addBoxHtml + `<div style="color:#a0aec0; font-size:12px; padding:8px;">참여한 혈원이 없습니다.</div>`;
-                return;
-            }
-
-            let pHtml = addBoxHtml + `<table style="font-size:12px; margin-top:5px;"><thead><tr><th>캐릭터명</th><th>참여시각</th><th>상태</th><th>관리</th></tr></thead><tbody>`;
-            validParts.forEach(([uid, p]) => {
-                const mem = membersData[uid] || {};
-                const memberName = mem.name ? mem.name : p.name;
-                const memberClass = mem.class || '기사';
-                const safeUid = escapeAttr(uid);
-                const safeMemberNameAttr = escapeAttr(memberName);
-                const statusColor = p.optOutLocked ? '#fc8181' : (p.status === '참여 중' ? '#fbd38d' : '#48bb78');
-                pHtml += `
-                    <tr>
-                        <td><b>${escapeHtml(memberName)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(memberClass)}]</span></td>
-                        <td>${escapeHtml(p.startTime || '-')}</td>
-                        <td style="color:${statusColor}; font-weight:bold;">${escapeHtml(p.status)}</td>
-                        <td>
-                            <button class="btn-sm danger" style="padding:3px 8px; font-size:11px;" onclick="deleteSingleParticipant('${safeMonthKey}', '${safeSlotKey}', '${safeUid}', '${safeMemberNameAttr}')">제외</button>
-                        </td>
-                    </tr>
-                `;
-            });
-            pHtml += `</tbody></table>`;
-            listContainer.innerHTML = pHtml;
-        };
-
-        window.addManualParticipantToSlot = async function(monthKey, slotKey) {
-            if (!isOperator(currentUser)) return;
-            const sel = document.getElementById('manual-add-member-select');
-            if (!sel || !sel.value) {
-                alert("출석 추가할 혈원을 선택해 주세요.");
-                return;
-            }
-            const uid = sel.value;
-            const mem = membersData[uid];
-            if (!mem) return;
-
-            const monthObj = await getMonthAttendanceMap(monthKey);
-            const slotObj = monthObj[slotKey] || {};
-            const bossName = slotObj.name || slotKey;
-
-            let score = getCustomScheduleScore(slotKey);
-            if (score === null) {
-                score = getScoreForBossName(bossName);
-            }
-
-            const kp = getKSTParts();
-            const timeStr = `${String(kp.hour).padStart(2, '0')}:${String(kp.minute).padStart(2, '0')}:${String(kp.second).padStart(2, '0')}`;
-
-            await set(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
-                name: mem.name,
-                status: "참여 완료 (운영진 추가)",
-                startTime: timeStr,
-                endTime: timeStr,
-                score: score,
-                optOutLocked: false,
-                timestamp: kp.epochMs,
-                endTimestamp: kp.epochMs
-            });
-
-            alert(`[${mem.name}]님의 출석이 추가되었습니다. (+${score}점)`);
-            previewBonusSlotTargets();
-            loadRankingData();
-            updateDashboard();
-        };
-
-        window.deleteSingleParticipant = async function(monthKey, slotKey, uid, name) {
-            if (!isOperator(currentUser)) return;
-            if (!confirm(`[${name}]님의 해당 보스 타임 출석 기록을 제외하시겠습니까?`)) return;
-
-            await remove(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`));
-            alert(`[${name}]님의 출석 기록이 제외되었습니다.`);
-            previewBonusSlotTargets();
-            loadRankingData();
-            updateDashboard();
-        };
-
-        window.deleteSelectedAttendanceSlot = async function() {
-            if (!isOperator(currentUser)) return;
-            const attManageDateInput = document.getElementById('attendance-manage-date');
-            const slotKey = document.getElementById('bonus-slot-select').value;
-            if (!slotKey) {
-                alert("삭제할 보스 타임 기록을 선택해 주세요.");
-                return;
-            }
-            const targetDateStr = attManageDateInput && attManageDateInput.value ? attManageDateInput.value : slotKey.split('_')[0];
-            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
-            if (!confirm("선택한 보스 타임의 전체 출석 기록을 삭제하시겠습니까?")) return;
-
-            await remove(ref(db, `attendance/${monthKey}/${slotKey}`));
-            alert("선택한 출석 기록이 삭제되었습니다.");
-            populateAttendanceManageSlotSelect();
-            populateBonusCheckSlotSelect();
-            document.getElementById('slot-participants-edit-list').innerHTML = "";
-            loadRankingData();
-            updateDashboard();
         };
 
         function populateBonusUserCheckboxes() {
@@ -6351,13 +6211,14 @@
         };
 
         /* =========================================================================
-           운영진 관리: 디스코드 캡처 OCR 인식 및 과거 날짜/시간 소급 출석 체크 로직
+           운영진 관리: 통합 출석관리 탭 (날짜별 출석 조회 + 클립보드/파일 OCR 유사매칭 + 수동 추가/개별 제외/전체 삭제)
            ========================================================================= */
         window.populateRetroSlotOptions = async function() {
             const dateInput = document.getElementById('retro-att-date');
             const slotSelect = document.getElementById('retro-att-slot-select');
             if (!dateInput || !slotSelect) return;
 
+            const prevSelectedValue = slotSelect.value;
             const targetDateStr = dateInput.value || getKSTDateString();
             const monthKey = targetDateStr.slice(0, 7);
             const monthObj = await getMonthAttendanceMap(monthKey);
@@ -6369,7 +6230,7 @@
                 const parts = existingObj.participants || {};
                 const activeCount = Object.entries(parts).filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin' && !p.optOutLocked).length;
                 const badgeStr = activeCount > 0 ? ` (현재 ${activeCount}명 등록됨)` : ` (미등록)`;
-                html += `<option value="${escapeAttr(ds.slotKey)}" data-title="${escapeAttr(ds.title)}">${escapeHtml(ds.title)}${badgeStr}</option>`;
+                html += `<option value="${escapeAttr(ds.slotKey)}" data-title="${escapeAttr(ds.title)}" ${ds.slotKey === prevSelectedValue ? 'selected' : ''}>${escapeHtml(ds.title)}${badgeStr}</option>`;
             });
             slotSelect.innerHTML = html;
             onRetroSlotChange();
@@ -6379,11 +6240,15 @@
             const dateInput = document.getElementById('retro-att-date');
             const slotSelect = document.getElementById('retro-att-slot-select');
             const infoEl = document.getElementById('retro-slot-status-info');
+            const existingListEl = document.getElementById('retro-existing-participants-list');
             if (!slotSelect || !infoEl) return;
 
             const slotKey = slotSelect.value;
             if (!slotKey) {
                 infoEl.innerHTML = "날짜와 보스 시간대를 선택하면 현재 등록된 인원이 표시됩니다.";
+                if (existingListEl) {
+                    existingListEl.innerHTML = "보스 시간대를 선택하면 현재 참여 중인 혈원 명단과 제외 버튼이 표시됩니다.";
+                }
                 populateRetroMemberCheckboxes(new Set());
                 return;
             }
@@ -6393,17 +6258,91 @@
             const monthObj = await getMonthAttendanceMap(monthKey);
             const slotObj = monthObj[slotKey] || {};
             const parts = slotObj.participants || {};
-            const existingUids = new Set(
-                Object.entries(parts)
-                    .filter(([uid, p]) => uid !== 'admin_account' && p && p.name !== 'admin' && !p.optOutLocked)
-                    .map(([uid]) => uid)
-            );
 
-            infoEl.innerHTML = `선택된 타임: <b style="color:#e9d8fd;">${escapeHtml(slotObj.name || slotSelect.options[slotSelect.selectedIndex]?.getAttribute('data-title') || slotKey)}</b> · 기존 등록 인원: <b style="color:#68d391;">${existingUids.size}명</b>`;
+            const validParts = Object.entries(parts).filter(([uid, p]) => {
+                if (uid === 'admin_account' || !p || p.name === 'admin') return false;
+                const m = membersData[uid];
+                return !m || m.approved !== false;
+            });
+
+            const existingUids = new Set(
+                validParts.filter(([, p]) => !p.optOutLocked).map(([uid]) => uid)
+            );
+            const unclosedParts = validParts.filter(([, p]) => !p.optOutLocked && p.status === '참여 중');
+            const unclosedWarn = unclosedParts.length > 0
+                ? ` · <span style="color:#fbd38d;">⚠️ 미종료(참여 중 유지): ${unclosedParts.length}명</span>`
+                : '';
+
+            const slotDisplayTitle = slotObj.name || slotSelect.options[slotSelect.selectedIndex]?.getAttribute('data-title') || slotKey;
+            infoEl.innerHTML = `선택된 타임: <b style="color:#e9d8fd;">${escapeHtml(slotDisplayTitle)}</b> · 기존 등록 인원: <b style="color:#68d391;">${existingUids.size}명</b>${unclosedWarn}`;
+
             populateRetroMemberCheckboxes(existingUids);
             if (lastOcrRecognizedText) {
                 autoCheckMembersFromOCRText(lastOcrRecognizedText, existingUids);
             }
+
+            if (existingListEl) {
+                if (validParts.length === 0) {
+                    existingListEl.innerHTML = `<div style="color:#a0aec0; padding:6px;">현재 등록된 참여자가 없습니다.</div>`;
+                } else {
+                    const safeMonthKey = escapeAttr(monthKey);
+                    const safeSlotKey = escapeAttr(slotKey);
+                    let tblHtml = `<table style="font-size:12px; margin-top:4px;"><thead><tr><th>캐릭터명</th><th>참여시각</th><th>상태</th><th>관리</th></tr></thead><tbody>`;
+                    validParts.forEach(([uid, p]) => {
+                        const mem = membersData[uid] || {};
+                        const memberName = mem.name ? mem.name : p.name;
+                        const memberClass = mem.class || '기사';
+                        const safeUid = escapeAttr(uid);
+                        const safeMemberNameAttr = escapeAttr(memberName);
+                        const statusColor = p.optOutLocked ? '#fc8181' : (p.status === '참여 중' ? '#fbd38d' : '#48bb78');
+                        tblHtml += `
+                            <tr>
+                                <td><b>${escapeHtml(memberName)}</b> <span style="font-size:11px; color:#b794f4;">[${escapeHtml(memberClass)}]</span></td>
+                                <td>${escapeHtml(p.startTime || '-')}</td>
+                                <td style="color:${statusColor}; font-weight:bold;">${escapeHtml(p.status)}</td>
+                                <td>
+                                    <button type="button" class="btn-sm danger" style="padding:3px 8px; font-size:11px; min-height:28px;" onclick="deleteRetroSingleParticipant('${safeMonthKey}', '${safeSlotKey}', '${safeUid}', '${safeMemberNameAttr}')">제외</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tblHtml += `</tbody></table>`;
+                    existingListEl.innerHTML = tblHtml;
+                }
+            }
+        };
+
+        window.deleteRetroSingleParticipant = async function(monthKey, slotKey, uid, name) {
+            if (!isOperator(currentUser)) return;
+            if (!confirm(`[${name}]님의 해당 보스 타임 출석 기록을 제외하시겠습니까?`)) return;
+
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`));
+            alert(`[${name}]님의 출석 기록이 제외되었습니다.`);
+            onRetroSlotChange();
+            populateBonusCheckSlotSelect();
+            loadRankingData();
+            updateDashboard();
+        };
+
+        window.deleteSelectedRetroAttendanceSlot = async function() {
+            if (!isOperator(currentUser)) return;
+            const dateInput = document.getElementById('retro-att-date');
+            const slotSelect = document.getElementById('retro-att-slot-select');
+            const slotKey = slotSelect ? slotSelect.value : '';
+            if (!slotKey) {
+                alert("삭제할 보스 시간대를 먼저 선택해 주세요.");
+                return;
+            }
+            const targetDateStr = (dateInput && dateInput.value) ? dateInput.value : slotKey.split('_')[0];
+            const monthKey = targetDateStr ? targetDateStr.slice(0, 7) : getCurrentMonthKey();
+            if (!confirm("선택한 보스 타임의 전체 출석 기록을 삭제하시겠습니까?")) return;
+
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}`));
+            alert("선택한 보스 타임의 전체 출석 기록이 삭제되었습니다.");
+            populateRetroSlotOptions();
+            populateBonusCheckSlotSelect();
+            loadRankingData();
+            updateDashboard();
         };
 
         function populateRetroMemberCheckboxes(existingUids = new Set()) {
@@ -6421,13 +6360,20 @@
 
             container.innerHTML = sortedMembers.map(([uid, m]) => {
                 const already = existingUids.has(uid);
+                const matchType = lastOcrMatchResults[uid] || '';
+                const fuzzyBadge = matchType === 'fuzzy'
+                    ? ` <span style="background:rgba(214,158,46,0.22); color:#fbd38d; border:1px solid #d69e2e; font-size:10px; padding:1px 5px; border-radius:4px;">유사 매칭</span>`
+                    : (matchType === 'exact'
+                        ? ` <span style="background:rgba(72,187,120,0.2); color:#68d391; font-size:10px; padding:1px 5px; border-radius:4px;">일치</span>`
+                        : '');
                 return `
                     <label class="chk-label retro-member-item" data-name="${escapeAttr(normalizeNickname(m.name))}" style="${already ? 'border-color:#48bb78; background:rgba(72,187,120,0.12);' : ''}">
                         <input type="checkbox" class="retro-user-chk" value="${escapeAttr(uid)}" onchange="updateRetroCheckedCount()">
-                        <span>${escapeHtml(m.name)} [${escapeHtml(m.class || '기사')}]${already ? ' <b style="color:#68d391; font-size:11px;">(기등록)</b>' : ''}</span>
+                        <span>${escapeHtml(m.name)} [${escapeHtml(m.class || '기사')}]${already ? ' <b style="color:#68d391; font-size:11px;">(기등록)</b>' : ''}${fuzzyBadge}</span>
                     </label>
                 `;
             }).join('');
+            filterRetroMemberCheckboxes();
             updateRetroCheckedCount();
         }
 
@@ -6453,30 +6399,155 @@
             updateRetroCheckedCount();
         };
 
-        function autoCheckMembersFromOCRText(rawText, existingUids = new Set()) {
-            const normText = normalizeNickname(rawText);
-            if (!normText) return 0;
+        /* Levenshtein 편집 거리 계산 (유사 매칭용) */
+        function calcLevenshteinDistance(a, b) {
+            const m = a.length;
+            const n = b.length;
+            if (m === 0) return n;
+            if (n === 0) return m;
+            const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+            for (let i = 0; i <= m; i++) dp[i][0] = i;
+            for (let j = 0; j <= n; j++) dp[0][j] = j;
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    dp[i][j] = Math.min(
+                        dp[i - 1][j] + 1,
+                        dp[i][j - 1] + 1,
+                        dp[i - 1][j - 1] + cost
+                    );
+                }
+            }
+            return dp[m][n];
+        }
 
-            let matchedCount = 0;
+        /* 디스코드 참여자 줄 텍스트([퓨리]기사/부처씨/72(방장) 등)에서 캐릭터명 후보 토큰 추출 */
+        function extractCandidateNameTokensFromOcr(rawText) {
+            const tokens = new Set();
+            const lines = String(rawText || '').split(/\r?\n/);
+            const stopWords = new Set(['퓨리', '기사', '요정', '법사', '군주', '다엘', '용기사', '환술사', '전사', '검사', '방장', '관리자', '운영진']);
+
+            lines.forEach(line => {
+                const cleaned = line
+                    .replace(/\[[^\]]*\]/g, ' ')
+                    .replace(/\([^\)]*\)/g, ' ')
+                    .replace(/[0-9]+/g, ' ');
+                const parts = cleaned.split(/[\/\\|,·•:\s\-_]+/);
+                parts.forEach(p => {
+                    const norm = normalizeNickname(p).replace(/[^가-힣a-z0-9]/g, '');
+                    if (norm.length >= 2 && !stopWords.has(norm)) {
+                        tokens.add(norm);
+                    }
+                });
+            });
+
+            return Array.from(tokens);
+        }
+
+        /* OCR 매칭: 완전 일치 우선 + 3글자 이상 닉네임에 한해 편집 거리 1 이하 유사 매칭 허용 (2글자 이하는 오매칭 방지를 위해 완전 일치만 허용) */
+        function autoCheckMembersFromOCRText(rawText, existingUids = new Set()) {
+            const normFullText = normalizeNickname(rawText).replace(/[^가-힣a-z0-9]/g, '');
+            const candidateTokens = extractCandidateNameTokensFromOcr(rawText);
+            lastOcrMatchResults = {};
+
+            if (!normFullText && candidateTokens.length === 0) return { exactCount: 0, fuzzyCount: 0 };
+
+            let exactCount = 0;
+            let fuzzyCount = 0;
+
+            Object.entries(membersData).forEach(([uid, mem]) => {
+                if (!mem || mem.approved === false || !mem.name || mem.name === 'admin' || uid === 'admin_account') return;
+                const normMemberName = normalizeNickname(mem.name).replace(/[^가-힣a-z0-9]/g, '');
+                if (normMemberName.length < 2) return;
+
+                if (normFullText.includes(normMemberName) || candidateTokens.includes(normMemberName)) {
+                    lastOcrMatchResults[uid] = 'exact';
+                    exactCount++;
+                    return;
+                }
+
+                if (normMemberName.length >= 3) {
+                    let isFuzzyMatched = false;
+                    for (const tok of candidateTokens) {
+                        if (Math.abs(tok.length - normMemberName.length) > 1) continue;
+                        if (calcLevenshteinDistance(tok, normMemberName) <= 1) {
+                            isFuzzyMatched = true;
+                            break;
+                        }
+                    }
+                    if (!isFuzzyMatched && normFullText.length >= normMemberName.length) {
+                        for (let i = 0; i <= normFullText.length - normMemberName.length; i++) {
+                            const sub = normFullText.slice(i, i + normMemberName.length);
+                            if (calcLevenshteinDistance(sub, normMemberName) <= 1) {
+                                isFuzzyMatched = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (isFuzzyMatched) {
+                        lastOcrMatchResults[uid] = 'fuzzy';
+                        fuzzyCount++;
+                    }
+                }
+            });
+
+            populateRetroMemberCheckboxes(existingUids);
+
             document.querySelectorAll('.retro-user-chk').forEach(chk => {
                 const uid = chk.value;
-                const mem = membersData[uid];
-                if (!mem || !mem.name) return;
-                const normMemberName = normalizeNickname(mem.name);
-                if (normMemberName.length >= 2 && normText.includes(normMemberName)) {
-                    if (!existingUids.has(uid)) {
-                        chk.checked = true;
-                    }
-                    matchedCount++;
+                if (lastOcrMatchResults[uid] && !existingUids.has(uid)) {
+                    chk.checked = true;
                 }
             });
             updateRetroCheckedCount();
-            return matchedCount;
+            return { exactCount, fuzzyCount };
         }
 
-        window.runDiscordCaptureOCR = async function(inputEl) {
-            if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
-            const file = inputEl.files[0];
+        /* 캔버스 전처리 (2.5배 확대 + 어두운 배경 반전 및 고대비 이진화)로 OCR 한글 인식률 향상 */
+        function preprocessImageForDiscordOCR(imgDataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const scale = img.width < 900 ? 2.5 : 1.8;
+                    const w = Math.round(img.width * scale);
+                    const h = Math.round(img.height * scale);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    const imgData = ctx.getImageData(0, 0, w, h);
+                    const d = imgData.data;
+                    let totalLum = 0;
+                    for (let i = 0; i < d.length; i += 4) {
+                        totalLum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+                    }
+                    const avgLum = totalLum / (d.length / 4);
+                    const isDarkBg = avgLum < 128;
+
+                    for (let i = 0; i < d.length; i += 4) {
+                        let lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+                        if (isDarkBg) {
+                            lum = 255 - lum;
+                        }
+                        const enhanced = lum < 165 ? Math.max(0, lum * 0.65) : 255;
+                        d[i] = enhanced;
+                        d[i + 1] = enhanced;
+                        d[i + 2] = enhanced;
+                        d[i + 3] = 255;
+                    }
+                    ctx.putImageData(imgData, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = () => resolve(imgDataUrl);
+                img.src = imgDataUrl;
+            });
+        }
+
+        async function processDiscordImageFileForOCR(file) {
             const statusEl = document.getElementById('ocr-progress-status');
             const previewWrap = document.getElementById('ocr-preview-wrap');
             const previewImg = document.getElementById('ocr-image-preview');
@@ -6490,14 +6561,19 @@
                 await executeOcrOnImageDataUrl(imgDataUrl, statusEl, rawTextBox);
             };
             reader.readAsDataURL(file);
+        }
+
+        window.runDiscordCaptureOCR = async function(inputEl) {
+            if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
+            await processDiscordImageFileForOCR(inputEl.files[0]);
         };
 
         window.rerunDiscordOCR = async function() {
             const previewImg = document.getElementById('ocr-image-preview');
             const statusEl = document.getElementById('ocr-progress-status');
             const rawTextBox = document.getElementById('ocr-raw-text-box');
-            if (!previewImg || !previewImg.src || previewImg.src.startsWith('http') === false && previewImg.src.startsWith('data:') === false) {
-                alert("먼저 디스코드 캡처 이미지를 업로드해 주세요.");
+            if (!previewImg || !previewImg.src || (!previewImg.src.startsWith('http') && !previewImg.src.startsWith('data:'))) {
+                alert("먼저 디스코드 캡처 이미지를 붙여넣기(Ctrl+V)하거나 파일로 업로드해 주세요.");
                 return;
             }
             await executeOcrOnImageDataUrl(previewImg.src, statusEl, rawTextBox);
@@ -6509,9 +6585,10 @@
                 return;
             }
 
-            if (statusEl) statusEl.innerText = "⏳ 이미지에서 한글/영문 닉네임을 인식하는 중입니다... (약 3~8초 소요)";
+            if (statusEl) statusEl.innerText = "⏳ 이미지 화질 보정(확대/고대비 변환) 및 한글 닉네임 인식 중...";
             try {
-                const result = await Tesseract.recognize(imgDataUrl, 'kor+eng', {
+                const processedDataUrl = await preprocessImageForDiscordOCR(imgDataUrl);
+                const result = await Tesseract.recognize(processedDataUrl, 'kor+eng', {
                     logger: m => {
                         if (m.status === 'recognizing text' && statusEl) {
                             const pct = Math.round((m.progress || 0) * 100);
@@ -6523,9 +6600,19 @@
                 lastOcrRecognizedText = text;
                 if (rawTextBox) rawTextBox.innerText = text || "(인식된 텍스트 없음)";
 
-                const matchedCnt = autoCheckMembersFromOCRText(text, new Set());
+                const dateInput = document.getElementById('retro-att-date');
+                const slotSelect = document.getElementById('retro-att-slot-select');
+                let existingUids = new Set();
+                if (slotSelect && slotSelect.value) {
+                    const targetDateStr = (dateInput && dateInput.value) ? dateInput.value : slotSelect.value.split('_')[0];
+                    const monthObj = await getMonthAttendanceMap(targetDateStr.slice(0, 7));
+                    const parts = (monthObj[slotSelect.value] || {}).participants || {};
+                    existingUids = new Set(Object.keys(parts).filter(uid => parts[uid] && !parts[uid].optOutLocked));
+                }
+
+                const { exactCount, fuzzyCount } = autoCheckMembersFromOCRText(text, existingUids);
                 if (statusEl) {
-                    statusEl.innerText = `✅ 인식 완료! 등록된 혈원 중 ${matchedCnt}명이 자동 체크되었습니다. 아래 목록을 검수한 뒤 반영해 주세요.`;
+                    statusEl.innerText = `✅ 인식 완료! 완전 일치 ${exactCount}명 + 유사 매칭(1글자 보정) ${fuzzyCount}명 확인됨. 아래 체크박스를 검수 후 반영해 주세요.`;
                 }
             } catch (err) {
                 console.error("OCR 오류:", err);
@@ -6594,7 +6681,7 @@
 
                 updates[`attendance/${monthKey}/${slotKey}/participants/${uid}`] = {
                     name: mem.name,
-                    status: "참여 완료 (소급/캡처)",
+                    status: "참여 완료 (운영진 등록)",
                     startTime: recordTimeStr,
                     endTime: recordTimeStr,
                     score: score,
@@ -6614,9 +6701,8 @@
             alert(`[${targetDateStr}] ${slotTitle}\n신규 출석 반영: ${addedCount}명 (+${score}점씩)${skippedCount > 0 ? ` / 이미 등록됨: ${skippedCount}명 제외` : ''}`);
 
             toggleAllRetroCheckboxes(false);
-            onRetroSlotChange();
+            populateRetroSlotOptions();
             populateBonusCheckSlotSelect();
-            populateAttendanceManageSlotSelect();
             loadRankingData();
             updateDashboard();
         };
