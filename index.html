@@ -3424,7 +3424,6 @@
             const slotObj = monthObj[floorSlotKey] || {};
             const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
             if (isAdminReopened) return false;
-            if (slotObj.isClosed === true) return true;
 
             const participants = slotObj.participants || {};
             const validP = Object.entries(participants)
@@ -3435,12 +3434,21 @@
                 })
                 .map(([uid, data]) => ({ uid, ...data }));
 
-            if (validP.length === 0) return false;
-            const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
-            // 오만의 탑 층별 탭은 3명 이하 자동 마감 없이 4명 이상 과반수 완료 또는 운영진 강제/DB 마감 시 마감
+            const hasStaleAutoClose = Boolean(slotObj.closedReason && String(slotObj.closedReason).includes("자동 마감"));
+            const isExplicitOperatorClose = Boolean(slotObj.closedReason && String(slotObj.closedReason).includes("강제 마감"));
+
+            // 3명 이하 오만 층은 자동 마감 없음 (운영진 강제 마감만 마감으로 인정, 잔재 자동 마감 플래그는 해제)
             if (validP.length <= 3) {
+                if (isExplicitOperatorClose) return true;
+                if (slotObj.isClosed === true || hasStaleAutoClose) {
+                    slotObj.isClosed = false;
+                    slotObj.closedReason = "";
+                }
                 return false;
             }
+
+            if (slotObj.isClosed === true) return true;
+            const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
             return compP.length >= Math.ceil(validP.length / 2);
         }
 
@@ -3908,6 +3916,7 @@
                 if (slotData.reopenedManual || slotData.reopenedByAdmin) return;
 
                 const isOmanSlot = slotKey.includes('_oman_');
+                if (isOmanSlot) return;
                 let validParticipants = Object.values(slotData.participants).filter(p => p && p.name !== 'admin' && !p.optOutLocked);
                 let totalCount = validParticipants.length;
                 let completedCount = validParticipants.filter(p => p.status && p.status.includes("참여 완료")).length;
@@ -4231,7 +4240,7 @@
             const bottomGuideHtml = activeSched.isCustom
                 ? "'참여 예정'은 순수 인원 파악용이며 점수 및 랭킹에 영향을 주지 않습니다.<br>참여 종료는 참여 3분 후 가능 합니다."
                 : (sched.isOman
-                    ? "층별 개별 마감이며, 4명 이상 과반수 완료 / 3명 이하 전원 완료 시 마감됩니다.<br>참여 종료는 참여 3분 후 가능 합니다."
+                    ? "층별 개별 마감이며, 3명 이하 자동 마감 없음(개별 참여 종료 클릭 / 4명 이상 과반수 완료 또는 운영진 강제 마감).<br>참여 종료는 참여 3분 후 가능 합니다."
                     : "3명 이하 정각 +30분 자동 마감, 4명 이상 과반수 완료 또는 운영진 마감 시 완료됩니다.<br>참여 종료는 참여 3분 후 가능 합니다.");
 
             const bannerTitleText = sched.isOman ? sched.name : activeSched.name;
@@ -4272,6 +4281,7 @@
                         <span class="slot-db-diag-pill">DB 진단</span>
                         <span>slotKey: <code>${escapeHtml(activeSched.slotKey)}</code></span>
                         <span>isClosed: <b>${slotObj.isClosed === true ? 'true' : 'false'}</b></span>
+                        <span>reopened: <b>${Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin) ? 'true' : 'false'}</b></span>
                         <span>closedReason: <b>${escapeHtml(slotObj.closedReason || '없음')}</b></span>
                         <button type="button" class="slot-db-wipe-btn" onclick="wipeBossSlotRawNode('${encMonth}','${encSlot}')">🗑️ 슬롯 DB 비우기</button>
                     </div>` : ''}
@@ -4623,11 +4633,21 @@
                 const curSlotVal = slotSnap.val() || {};
                 const isExplicitAdminClose = Boolean(curSlotVal.closedReason && String(curSlotVal.closedReason).includes('강제 마감'));
                 const isStaleAutoReason = Boolean(curSlotVal.closedReason && String(curSlotVal.closedReason).includes('자동 마감'));
-                if ((curSlotVal.isClosed === true || isStaleAutoReason) && !isExplicitAdminClose && !curSlotVal.reopenedManual && !curSlotVal.reopenedByAdmin) {
+                const existingParts = curSlotVal.participants || {};
+                const existingValidCount = Object.entries(existingParts).filter(([uid, p]) => {
+                    if (uid === 'admin_account' || !p || p.name === 'admin' || p.optOutLocked) return false;
+                    const m = membersData[uid];
+                    return !m || m.approved !== false;
+                }).length;
+                if (!isExplicitAdminClose && (curSlotVal.isClosed === true || isStaleAutoReason || existingValidCount < 3)) {
                     await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
                         isClosed: false,
                         closedReason: null
                     });
+                    if (attendanceByMonth[monthKey] && attendanceByMonth[monthKey][slotKey]) {
+                        attendanceByMonth[monthKey][slotKey].isClosed = false;
+                        attendanceByMonth[monthKey][slotKey].closedReason = "";
+                    }
                 }
             }
             if (slotSnap.exists()) {
