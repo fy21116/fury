@@ -1936,6 +1936,39 @@
         let membersData = {};
         let attendanceByMonth = {};
         let allAttendanceCache = {};
+        let allBonusCache = null;
+        let lastAttFetchTs = 0;
+        let lastBonusFetchTs = 0;
+        const READ_CACHE_TTL_MS = 30000;
+
+        async function getAttendanceDataset(force = false) {
+            const nowMs = Date.now();
+            if (!force && allAttendanceCache && Object.keys(allAttendanceCache).length > 0 && (nowMs - lastAttFetchTs) < READ_CACHE_TTL_MS) {
+                return allAttendanceCache;
+            }
+            const snap = await get(ref(db, 'attendance'));
+            const val = snap.val() || {};
+            allAttendanceCache = val;
+            lastAttFetchTs = nowMs;
+            Object.entries(val).forEach(([mKey, mVal]) => {
+                if (!subscribedMonths[mKey]) {
+                    attendanceByMonth[mKey] = mVal || {};
+                }
+            });
+            return allAttendanceCache;
+        }
+
+        async function getBonusDataset(force = false) {
+            const nowMs = Date.now();
+            if (!force && allBonusCache !== null && (nowMs - lastBonusFetchTs) < READ_CACHE_TTL_MS) {
+                return allBonusCache;
+            }
+            const snap = await get(ref(db, 'bonus_scores'));
+            const val = snap.val() || {};
+            allBonusCache = val;
+            lastBonusFetchTs = nowMs;
+            return allBonusCache;
+        }
         let preSignupsBySlot = {};
         let subscribedMonths = {};
         let isSignupMode = false;
@@ -3402,6 +3435,7 @@
                 };
             });
 
+            const shortDateLabel = `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}`;
             const baseCardSlotKey = `${dateStr}_${hh}${mm}_oman_card`;
             return [{
                 isCustom: false,
@@ -3414,9 +3448,25 @@
                 pureTitle: '오만의 탑',
                 slotKey: baseCardSlotKey,
                 omanFloorSlots: floorSlots,
-                name: `${hh}:${mm} 오만의 탑`,
+                name: `(${shortDateLabel}) ${hh}:${mm} 오만의 탑`,
                 openBeforeMin: openBeforeMin
             }];
+        }
+
+        function getOmanSlotTargetEpoch(floorSlotKey, slotObj) {
+            if (slotObj && Number(slotObj.targetTimestamp) > 0) {
+                return Number(slotObj.targetTimestamp);
+            }
+            const dPart = String(floorSlotKey || '').split('_')[0];
+            const tPart = extractTimeFromSlotKey(floorSlotKey);
+            if (dPart && tPart) {
+                const [dy, dm, dd] = dPart.split('-').map(Number);
+                const [th, tm] = tPart.split(':').map(Number);
+                if (dy && dm && dd) {
+                    return createKSTEpoch(dy, dm, dd, th || 0, tm || 0, 0);
+                }
+            }
+            return 0;
         }
 
         function isOmanFloorClosed(monthKey, floorSlotKey) {
@@ -3424,6 +3474,16 @@
             const slotObj = monthObj[floorSlotKey] || {};
             const isAdminReopened = Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin);
             if (isAdminReopened) return false;
+
+            const now = getSyncedCurrentTime();
+            const targetTs = getOmanSlotTargetEpoch(floorSlotKey, slotObj);
+            const slotDateStr = String(floorSlotKey || '').split('_')[0];
+            const todayDateStr = getKSTDateString(now);
+
+            // 전날 등 날짜가 경과했거나 오만의 탑 정각 후 3시간이 지난 과거 일정은 자동 만료 처리
+            if ((slotDateStr && slotDateStr < todayDateStr) || (targetTs > 0 && now.getTime() >= targetTs + 3 * 60 * 60 * 1000)) {
+                return true;
+            }
 
             const participants = slotObj.participants || {};
             const validP = Object.entries(participants)
@@ -3437,9 +3497,9 @@
             const hasStaleAutoClose = Boolean(slotObj.closedReason && String(slotObj.closedReason).includes("자동 마감"));
             const isExplicitOperatorClose = Boolean(slotObj.closedReason && String(slotObj.closedReason).includes("강제 마감"));
 
-            // 3명 이하 오만 층은 자동 마감 없음 (운영진 강제 마감만 마감으로 인정, 잔재 자동 마감 플래그는 해제)
+            // 3명 이하 오만 층은 자동 마감 없음 (운영진 강제 마감 또는 명시적 isClosed=true만 마감으로 인정, 잔재 자동 마감 플래그는 해제)
             if (validP.length <= 3) {
-                if (isExplicitOperatorClose) return true;
+                if (isExplicitOperatorClose || (slotObj.isClosed === true && !hasStaleAutoClose)) return true;
                 if (slotObj.isClosed === true || hasStaleAutoClose) {
                     slotObj.isClosed = false;
                     slotObj.closedReason = "";
@@ -3465,6 +3525,12 @@
             const compP = validP.filter(p => p.status && p.status.includes("참여 완료"));
 
             if (sched && sched.isOman) {
+                const slotDateStr = String(sched.slotKey || '').split('_')[0];
+                const todayDateStr = getKSTDateString(now);
+                const targetTs = getOmanSlotTargetEpoch(sched.slotKey, slotObj);
+                if ((slotDateStr && slotDateStr < todayDateStr) || (targetTs > 0 && now.getTime() >= targetTs + 3 * 60 * 60 * 1000)) {
+                    return "일정 시간 경과 만료";
+                }
                 if (slotObj.isClosed === true) return "층별 마감 처리됨";
                 if (validP.length > 0 && validP.length <= 3 && compP.length === validP.length) {
                     return "3명 이하 전원 완료 마감";
@@ -4278,8 +4344,10 @@
                     </div>` : ''}
                     ${isOperator(currentUser) ? `
                     <div class="slot-db-diag-strip">
-                        <span class="slot-db-diag-pill">DB 진단</span>
+                        <span class="slot-db-diag-pill">DB 진단 · v13</span>
                         <span>slotKey: <code>${escapeHtml(activeSched.slotKey)}</code></span>
+                        <span>인원: <b>${pList.filter(p => !p.optOutLocked).length}명</b></span>
+                        <span>완료: <b>${pList.filter(p => !p.optOutLocked && p.status && p.status.includes("참여 완료")).length}명</b></span>
                         <span>isClosed: <b>${slotObj.isClosed === true ? 'true' : 'false'}</b></span>
                         <span>reopened: <b>${Boolean(slotObj.reopenedManual || slotObj.reopenedByAdmin) ? 'true' : 'false'}</b></span>
                         <span>closedReason: <b>${escapeHtml(slotObj.closedReason || '없음')}</b></span>
@@ -4898,10 +4966,9 @@
                 }
             }
 
-            updateDashboard(true);
             await update(ref(db), updates);
-            await remove(ref(db, `attendance/${monthKey}/${slotKey}/closedReason`));
-            updateDashboard();
+            updateDashboard(true);
+            loadRankingData();
         };
 
 
@@ -4969,11 +5036,11 @@
                 }
             }
 
-            updateDashboard();
             await update(ref(db), updates);
-            alert("슬롯 상태가 초기화되었습니다. (운영진이 강제 마감하기 전까지 30분 자동 마감이 적용되지 않습니다.)");
-            updateDashboard();
+            await remove(ref(db, `attendance/${monthKey}/${slotKey}/closedReason`));
+            updateDashboard(true);
             loadRankingData();
+            alert("슬롯 상태가 초기화되었습니다. (운영진이 강제 마감하기 전까지 30분 자동 마감이 적용되지 않습니다.)");
         };
 
         /* 보스 시간표: 다음 보스 타임 오픈 전까지는 현재 타임을 진행 중 또는 진행 완료로 유지, 다음 일정은 진행 예정으로 표시 (KST 기준) */
@@ -5760,19 +5827,10 @@
                 return true;
             }
 
-            const [allAttSnap, allBonusSnap] = await Promise.all([
-                get(ref(db, 'attendance')),
-                get(ref(db, 'bonus_scores'))
+            const [allAttData, allBonusData] = await Promise.all([
+                getAttendanceDataset(false),
+                getBonusDataset(false)
             ]);
-            const allAttData = allAttSnap.val() || {};
-            const allBonusData = allBonusSnap.val() || {};
-
-            allAttendanceCache = allAttData;
-            for (const [mKey, mVal] of Object.entries(allAttData)) {
-                if (!subscribedMonths[mKey]) {
-                    attendanceByMonth[mKey] = mVal || {};
-                }
-            }
 
             const myUid = currentUser.id;
             let lifetimeTotal = 0;
@@ -6041,19 +6099,12 @@
             }
             const selectedClassFilter = classFilterSelect ? classFilterSelect.value : '기사';
 
-            const allAttSnap = await get(ref(db, `attendance`));
-            const allAttData = allAttSnap.val() || {};
-            allAttendanceCache = allAttData;
-            for (const [mKey, mVal] of Object.entries(allAttData)) {
-                if (!subscribedMonths[mKey]) {
-                    attendanceByMonth[mKey] = mVal || {};
-                }
-            }
+            const [allAttData, allBonusData] = await Promise.all([
+                getAttendanceDataset(false),
+                getBonusDataset(false)
+            ]);
             const monthData = attendanceByMonth[selectedMonth] || allAttData[selectedMonth] || {};
             const dailyMonthData = attendanceByMonth[targetDateMonth] || allAttData[targetDateMonth] || {};
-
-            const allBonusSnap = await get(ref(db, `bonus_scores`));
-            const allBonusData = allBonusSnap.val() || {};
             const bonusData = allBonusData[selectedMonth] || {};
             const dailyBonusData = allBonusData[targetDateMonth] || {};
 
@@ -6730,6 +6781,8 @@
             if (!confirm("이 가감점 내역을 삭제하시겠습니까?")) return;
 
             await remove(ref(db, `bonus_scores/${monthKey}/${uid}/${logKey}`));
+            allBonusCache = null;
+            lastBonusFetchTs = 0;
             alert("가감점 내역이 삭제되었습니다.");
             renderRecentBonusLogs();
             loadRankingData();
