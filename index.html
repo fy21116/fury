@@ -1608,15 +1608,545 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-        const firebaseConfig = {
-            databaseURL: "https://fury-7-default-rtdb.asia-southeast1.firebasedatabase.app"
+        const SUPABASE_URL = "https://ckvcobidarpqzrmjmpvo.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_INpcLTNzCYqvvrvlgNPV8Q_LvKWJsMG";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        /* =========================================================================
+           Firebase Realtime Database 호환 어댑터 (Supabase PostgreSQL + Realtime 연동)
+           - 대상 테이블: members, items, board_posts, attendance_slots, bonus_scores, app_settings
+           - 제외 경로(로컬 메모리 처리): pre_signups, nickname_history
+           ========================================================================= */
+        const db = { _type: "supabase_adapter" };
+        const _localStore = {
+            pre_signups: {},
+            nickname_history: {}
         };
+        const _listeners = [];
+        let _realtimeInitialized = false;
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        function ref(dbInstance, path = "") {
+            const clean = String(path || "").replace(/^\/+|\/+$/g, "");
+            return { _db: dbInstance, path: clean };
+        }
+
+        function _makeSnap(val) {
+            return {
+                val: () => (val === undefined ? null : val),
+                exists: () => val !== null && val !== undefined
+            };
+        }
+
+        function _deepClone(obj) {
+            if (obj === null || obj === undefined) return obj;
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        function _getByPath(rootObj, parts) {
+            let cur = rootObj;
+            for (const p of parts) {
+                if (cur === null || cur === undefined || typeof cur !== "object") return null;
+                cur = cur[p];
+            }
+            return cur === undefined ? null : cur;
+        }
+
+        function _setByPath(rootObj, parts, val) {
+            if (parts.length === 0) return;
+            let cur = rootObj;
+            for (let i = 0; i < parts.length - 1; i++) {
+                const k = parts[i];
+                if (!cur[k] || typeof cur[k] !== "object") cur[k] = {};
+                cur = cur[k];
+            }
+            const last = parts[parts.length - 1];
+            if (val === null || val === undefined) {
+                delete cur[last];
+            } else {
+                cur[last] = val;
+            }
+        }
+
+        function _genPushId() {
+            const chars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+            let id = "-S";
+            const ts = Date.now();
+            id += ts.toString(36);
+            for (let i = 0; i < 10; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return id;
+        }
+
+        function push(parentRef, value) {
+            const newKey = _genPushId();
+            const childPath = parentRef.path ? `${parentRef.path}/${newKey}` : newKey;
+            const childRef = ref(parentRef._db, childPath);
+            childRef.key = newKey;
+            if (value !== undefined) {
+                return set(childRef, value).then(() => childRef);
+            }
+            return childRef;
+        }
+
+        function _memberRowToObj(row) {
+            const base = (row && row.raw_json && typeof row.raw_json === "object") ? { ...row.raw_json } : {};
+            if (row.id !== undefined) base.id = row.id;
+            if (row.name !== undefined) base.name = row.name;
+            if (row.class !== undefined) base.class = row.class || "기사";
+            if (row.code !== undefined) base.code = row.code;
+            if (row.role !== undefined) base.role = row.role || "member";
+            if (row.approved !== undefined) base.approved = row.approved;
+            if (row.last_login !== null && row.last_login !== undefined) base.lastLogin = Number(row.last_login);
+            if (row.created_at !== null && row.created_at !== undefined) base.createdAt = Number(row.created_at);
+            return base;
+        }
+
+        function _memberObjToRow(uid, obj) {
+            const raw = { ...(obj || {}), id: uid };
+            return {
+                id: uid,
+                name: String(raw.name || ""),
+                class: String(raw.class || "기사"),
+                code: String(raw.code || "0000"),
+                role: String(raw.role || "member"),
+                approved: raw.approved !== false,
+                last_login: raw.lastLogin ? Number(raw.lastLogin) : null,
+                created_at: raw.createdAt ? Number(raw.createdAt) : null,
+                raw_json: raw
+            };
+        }
+
+        function _itemRowToObj(row) {
+            const base = (row && row.raw_json && typeof row.raw_json === "object") ? { ...row.raw_json } : {};
+            if (row.boss !== null && row.boss !== undefined) base.boss = row.boss;
+            if (row.item !== null && row.item !== undefined) base.item = row.item;
+            if (row.count !== null && row.count !== undefined) base.count = String(row.count);
+            if (row.owner !== null && row.owner !== undefined) base.owner = row.owner;
+            if (row.writer !== null && row.writer !== undefined) base.writer = row.writer;
+            if (row.acquired_date !== null && row.acquired_date !== undefined) base.acquiredDate = row.acquired_date;
+            if (row.reg_date !== null && row.reg_date !== undefined) base.date = row.reg_date;
+            if (row.created_at !== null && row.created_at !== undefined) base.createdAt = Number(row.created_at);
+            return base;
+        }
+
+        function _itemObjToRow(itemId, obj) {
+            const raw = { ...(obj || {}) };
+            return {
+                id: itemId,
+                boss: raw.boss || "",
+                item: raw.item || "",
+                count: String(raw.count || "1"),
+                owner: raw.owner || "",
+                writer: raw.writer || "",
+                acquired_date: raw.acquiredDate || raw.date || "",
+                reg_date: raw.date || "",
+                created_at: raw.createdAt ? Number(raw.createdAt) : null,
+                raw_json: raw
+            };
+        }
+
+        function _boardRowToObj(row) {
+            const base = (row && row.raw_json && typeof row.raw_json === "object") ? { ...row.raw_json } : {};
+            if (row.title !== null && row.title !== undefined) base.title = row.title;
+            if (row.content !== null && row.content !== undefined) base.content = row.content;
+            if (row.image_url !== null && row.image_url !== undefined) base.imageUrl = row.image_url;
+            if (row.created_date !== null && row.created_date !== undefined) base.createdDate = row.created_date;
+            if (row.timestamp !== null && row.timestamp !== undefined) base.timestamp = Number(row.timestamp);
+            return base;
+        }
+
+        function _boardObjToRow(postId, obj) {
+            const raw = { ...(obj || {}) };
+            const rawMeta = { ...raw };
+            delete rawMeta.content;
+            delete rawMeta.imageUrl;
+            return {
+                id: postId,
+                title: String(raw.title || ""),
+                content: raw.content || "",
+                image_url: raw.imageUrl || null,
+                created_date: raw.createdDate || "",
+                timestamp: raw.timestamp ? Number(raw.timestamp) : Date.now(),
+                raw_json: rawMeta
+            };
+        }
+
+        function _slotRowToObj(row) {
+            const obj = {};
+            if (row.name !== null && row.name !== undefined) obj.name = row.name;
+            if (row.target_timestamp !== null && row.target_timestamp !== undefined) obj.targetTimestamp = Number(row.target_timestamp);
+            if (row.is_closed !== null && row.is_closed !== undefined) obj.isClosed = Boolean(row.is_closed);
+            if (row.closed_reason !== null && row.closed_reason !== undefined) obj.closedReason = row.closed_reason;
+            if (row.reopened_manual !== null && row.reopened_manual !== undefined) {
+                obj.reopenedManual = Boolean(row.reopened_manual);
+                obj.reopenedByAdmin = Boolean(row.reopened_manual);
+            }
+            if (row.participants && typeof row.participants === "object") {
+                obj.participants = row.participants;
+            }
+            return obj;
+        }
+
+        async function _fetchTopDomain(domain) {
+            if (domain === "members") {
+                const { data, error } = await supabase.from("members").select("*");
+                if (error) { console.error("Supabase members select:", error); return {}; }
+                const out = {};
+                (data || []).forEach(r => { out[r.id] = _memberRowToObj(r); });
+                return out;
+            }
+            if (domain === "items") {
+                const { data, error } = await supabase.from("items").select("*");
+                if (error) { console.error("Supabase items select:", error); return {}; }
+                const out = {};
+                (data || []).forEach(r => { out[r.id] = _itemRowToObj(r); });
+                return out;
+            }
+            if (domain === "board_posts") {
+                const { data, error } = await supabase.from("board_posts").select("*");
+                if (error) { console.error("Supabase board_posts select:", error); return {}; }
+                const out = {};
+                (data || []).forEach(r => { out[r.id] = _boardRowToObj(r); });
+                return out;
+            }
+            if (domain === "settings") {
+                const { data, error } = await supabase.from("app_settings").select("*");
+                if (error) { console.error("Supabase app_settings select:", error); return {}; }
+                const out = {};
+                (data || []).forEach(r => { out[r.key] = r.value; });
+                return out;
+            }
+            if (domain === "attendance") {
+                const { data, error } = await supabase.from("attendance_slots").select("*");
+                if (error) { console.error("Supabase attendance_slots select:", error); return {}; }
+                const out = {};
+                (data || []).forEach(r => {
+                    if (!out[r.month_key]) out[r.month_key] = {};
+                    out[r.month_key][r.slot_key] = _slotRowToObj(r);
+                });
+                return out;
+            }
+            if (domain === "bonus_scores") {
+                const { data, error } = await supabase.from("bonus_scores").select("*");
+                if (error) { console.error("Supabase bonus_scores select:", error); return {}; }
+                const out = {};
+                (data || []).forEach(r => {
+                    if (!out[r.month_key]) out[r.month_key] = {};
+                    if (!out[r.month_key][r.uid]) out[r.month_key][r.uid] = {};
+                    out[r.month_key][r.uid][r.log_key] = {
+                        score: Number(r.score) || 0,
+                        reason: r.reason || "",
+                        writer: r.writer || "운영진",
+                        timestamp: r.timestamp ? Number(r.timestamp) : 0
+                    };
+                });
+                return out;
+            }
+            if (domain === "pre_signups") return _deepClone(_localStore.pre_signups);
+            if (domain === "nickname_history") return _deepClone(_localStore.nickname_history);
+            return null;
+        }
+
+        async function get(targetRef) {
+            const p = targetRef.path;
+            if (!p) return _makeSnap(null);
+            if (p === ".info/serverTimeOffset") return _makeSnap(0);
+
+            const parts = p.split("/");
+            const domain = parts[0];
+
+            if (domain === "members") {
+                if (parts.length === 1) return _makeSnap(await _fetchTopDomain("members"));
+                const { data, error } = await supabase.from("members").select("*").eq("id", parts[1]).maybeSingle();
+                if (error || !data) return _makeSnap(null);
+                const obj = _memberRowToObj(data);
+                return _makeSnap(parts.length === 2 ? obj : _getByPath(obj, parts.slice(2)));
+            }
+
+            if (domain === "items") {
+                if (parts.length === 1) return _makeSnap(await _fetchTopDomain("items"));
+                const { data, error } = await supabase.from("items").select("*").eq("id", parts[1]).maybeSingle();
+                if (error || !data) return _makeSnap(null);
+                const obj = _itemRowToObj(data);
+                return _makeSnap(parts.length === 2 ? obj : _getByPath(obj, parts.slice(2)));
+            }
+
+            if (domain === "board_posts") {
+                if (parts.length === 1) return _makeSnap(await _fetchTopDomain("board_posts"));
+                const { data, error } = await supabase.from("board_posts").select("*").eq("id", parts[1]).maybeSingle();
+                if (error || !data) return _makeSnap(null);
+                const obj = _boardRowToObj(data);
+                return _makeSnap(parts.length === 2 ? obj : _getByPath(obj, parts.slice(2)));
+            }
+
+            if (domain === "settings") {
+                if (parts.length === 1) return _makeSnap(await _fetchTopDomain("settings"));
+                const { data, error } = await supabase.from("app_settings").select("*").eq("key", parts[1]).maybeSingle();
+                if (error || !data) return _makeSnap(null);
+                return _makeSnap(parts.length === 2 ? data.value : _getByPath(data.value, parts.slice(2)));
+            }
+
+            if (domain === "attendance") {
+                if (parts.length === 1) return _makeSnap(await _fetchTopDomain("attendance"));
+                if (parts.length === 2) {
+                    const { data, error } = await supabase.from("attendance_slots").select("*").eq("month_key", parts[1]);
+                    if (error) return _makeSnap({});
+                    const mOut = {};
+                    (data || []).forEach(r => { mOut[r.slot_key] = _slotRowToObj(r); });
+                    return _makeSnap(mOut);
+                }
+                const { data, error } = await supabase.from("attendance_slots").select("*").eq("month_key", parts[1]).eq("slot_key", parts[2]).maybeSingle();
+                if (error || !data) return _makeSnap(null);
+                const sObj = _slotRowToObj(data);
+                return _makeSnap(parts.length === 3 ? sObj : _getByPath(sObj, parts.slice(3)));
+            }
+
+            if (domain === "bonus_scores") {
+                if (parts.length === 1) return _makeSnap(await _fetchTopDomain("bonus_scores"));
+                if (parts.length === 2) {
+                    const { data, error } = await supabase.from("bonus_scores").select("*").eq("month_key", parts[1]);
+                    if (error) return _makeSnap({});
+                    const mOut = {};
+                    (data || []).forEach(r => {
+                        if (!mOut[r.uid]) mOut[r.uid] = {};
+                        mOut[r.uid][r.log_key] = {
+                            score: Number(r.score) || 0,
+                            reason: r.reason || "",
+                            writer: r.writer || "운영진",
+                            timestamp: r.timestamp ? Number(r.timestamp) : 0
+                        };
+                    });
+                    return _makeSnap(mOut);
+                }
+                const allB = await _fetchTopDomain("bonus_scores");
+                return _makeSnap(_getByPath(allB, parts.slice(1)));
+            }
+
+            if (domain === "pre_signups" || domain === "nickname_history") {
+                return _makeSnap(_getByPath(_localStore, parts));
+            }
+
+            return _makeSnap(null);
+        }
+
+        async function _notifyListenersForDomain(domain) {
+            const matching = _listeners.filter(l => l.domain === domain);
+            if (matching.length === 0) return;
+            const fullData = await _fetchTopDomain(domain);
+            for (const l of matching) {
+                const subVal = l.subParts.length === 0 ? fullData : _getByPath(fullData, l.subParts);
+                l.callback(_makeSnap(subVal));
+            }
+        }
+
+        async function _writeSinglePath(path, val, isMerge = false) {
+            const clean = String(path || "").replace(/^\/+|\/+$/g, "");
+            if (!clean) return;
+            const parts = clean.split("/");
+            const domain = parts[0];
+
+            if (domain === "members" && parts.length >= 2) {
+                const uid = parts[1];
+                if (parts.length === 2) {
+                    if (val === null) {
+                        await supabase.from("members").delete().eq("id", uid);
+                    } else {
+                        const { data: ex } = await supabase.from("members").select("*").eq("id", uid).maybeSingle();
+                        const base = (isMerge && ex) ? _memberRowToObj(ex) : {};
+                        const merged = { ...base, ...val };
+                        await supabase.from("members").upsert(_memberObjToRow(uid, merged));
+                    }
+                } else {
+                    const { data: ex } = await supabase.from("members").select("*").eq("id", uid).maybeSingle();
+                    const obj = ex ? _memberRowToObj(ex) : { id: uid };
+                    _setByPath(obj, parts.slice(2), val);
+                    await supabase.from("members").upsert(_memberObjToRow(uid, obj));
+                }
+                return "members";
+            }
+
+            if (domain === "items" && parts.length >= 2) {
+                const itemId = parts[1];
+                if (parts.length === 2) {
+                    if (val === null) {
+                        await supabase.from("items").delete().eq("id", itemId);
+                    } else {
+                        const { data: ex } = await supabase.from("items").select("*").eq("id", itemId).maybeSingle();
+                        const base = (isMerge && ex) ? _itemRowToObj(ex) : {};
+                        const merged = { ...base, ...val };
+                        await supabase.from("items").upsert(_itemObjToRow(itemId, merged));
+                    }
+                } else {
+                    const { data: ex } = await supabase.from("items").select("*").eq("id", itemId).maybeSingle();
+                    const obj = ex ? _itemRowToObj(ex) : {};
+                    _setByPath(obj, parts.slice(2), val);
+                    await supabase.from("items").upsert(_itemObjToRow(itemId, obj));
+                }
+                return "items";
+            }
+
+            if (domain === "board_posts" && parts.length >= 2) {
+                const postId = parts[1];
+                if (parts.length === 2) {
+                    if (val === null) {
+                        await supabase.from("board_posts").delete().eq("id", postId);
+                    } else {
+                        const { data: ex } = await supabase.from("board_posts").select("*").eq("id", postId).maybeSingle();
+                        const base = (isMerge && ex) ? _boardRowToObj(ex) : {};
+                        const merged = { ...base, ...val };
+                        await supabase.from("board_posts").upsert(_boardObjToRow(postId, merged));
+                    }
+                } else {
+                    const { data: ex } = await supabase.from("board_posts").select("*").eq("id", postId).maybeSingle();
+                    const obj = ex ? _boardRowToObj(ex) : {};
+                    _setByPath(obj, parts.slice(2), val);
+                    await supabase.from("board_posts").upsert(_boardObjToRow(postId, obj));
+                }
+                return "board_posts";
+            }
+
+            if (domain === "settings" && parts.length >= 2) {
+                const settingKey = parts[1];
+                if (parts.length === 2) {
+                    if (val === null) {
+                        await supabase.from("app_settings").delete().eq("key", settingKey);
+                    } else {
+                        let finalVal = val;
+                        if (isMerge && val && typeof val === "object" && !Array.isArray(val)) {
+                            const { data: ex } = await supabase.from("app_settings").select("*").eq("key", settingKey).maybeSingle();
+                            if (ex && ex.value && typeof ex.value === "object") {
+                                finalVal = { ...ex.value, ...val };
+                            }
+                        }
+                        await supabase.from("app_settings").upsert({ key: settingKey, value: finalVal });
+                    }
+                } else {
+                    const { data: ex } = await supabase.from("app_settings").select("*").eq("key", settingKey).maybeSingle();
+                    let curVal = (ex && ex.value && typeof ex.value === "object") ? _deepClone(ex.value) : {};
+                    _setByPath(curVal, parts.slice(2), val);
+                    await supabase.from("app_settings").upsert({ key: settingKey, value: curVal });
+                }
+                return "settings";
+            }
+
+            if (domain === "attendance" && parts.length >= 3) {
+                const monthKey = parts[1];
+                const slotKey = parts[2];
+                if (parts.length === 3 && val === null) {
+                    await supabase.from("attendance_slots").delete().eq("month_key", monthKey).eq("slot_key", slotKey);
+                    return "attendance";
+                }
+                const { data: ex } = await supabase.from("attendance_slots").select("*").eq("month_key", monthKey).eq("slot_key", slotKey).maybeSingle();
+                let sObj = ex ? _slotRowToObj(ex) : { participants: {} };
+                if (parts.length === 3) {
+                    sObj = isMerge ? { ...sObj, ...val } : { ...val };
+                } else {
+                    _setByPath(sObj, parts.slice(3), val);
+                }
+                await supabase.from("attendance_slots").upsert({
+                    month_key: monthKey,
+                    slot_key: slotKey,
+                    name: sObj.name || null,
+                    target_timestamp: sObj.targetTimestamp ? Number(sObj.targetTimestamp) : null,
+                    is_closed: Boolean(sObj.isClosed),
+                    closed_reason: sObj.closedReason || null,
+                    reopened_manual: Boolean(sObj.reopenedManual || sObj.reopenedByAdmin),
+                    participants: sObj.participants || {}
+                });
+                return "attendance";
+            }
+
+            if (domain === "bonus_scores" && parts.length >= 4) {
+                const monthKey = parts[1];
+                const uid = parts[2];
+                const logKey = parts[3];
+                if (val === null) {
+                    await supabase.from("bonus_scores").delete().eq("month_key", monthKey).eq("uid", uid).eq("log_key", logKey);
+                } else {
+                    await supabase.from("bonus_scores").upsert({
+                        month_key: monthKey,
+                        uid: uid,
+                        log_key: logKey,
+                        score: Number(val.score) || 0,
+                        reason: val.reason || "",
+                        writer: val.writer || "운영진",
+                        timestamp: val.timestamp ? Number(val.timestamp) : Date.now()
+                    });
+                }
+                return "bonus_scores";
+            }
+
+            if (domain === "pre_signups" || domain === "nickname_history") {
+                _setByPath(_localStore, parts, val);
+                return domain;
+            }
+            return null;
+        }
+
+        async function set(targetRef, value) {
+            const domain = await _writeSinglePath(targetRef.path, value, false);
+            if (domain) await _notifyListenersForDomain(domain);
+        }
+
+        async function remove(targetRef) {
+            const domain = await _writeSinglePath(targetRef.path, null, false);
+            if (domain) await _notifyListenersForDomain(domain);
+        }
+
+        async function update(targetRef, updatesObj) {
+            const basePath = targetRef.path;
+            const touchedDomains = new Set();
+            for (const [relKey, val] of Object.entries(updatesObj || {})) {
+                const fullPath = basePath ? `${basePath}/${relKey}` : relKey;
+                const d = await _writeSinglePath(fullPath, val, true);
+                if (d) touchedDomains.add(d);
+            }
+            for (const d of touchedDomains) {
+                await _notifyListenersForDomain(d);
+            }
+        }
+
+        function _ensureRealtimeSubscription() {
+            if (_realtimeInitialized) return;
+            _realtimeInitialized = true;
+            const tableToDomain = {
+                members: "members",
+                items: "items",
+                board_posts: "board_posts",
+                attendance_slots: "attendance",
+                bonus_scores: "bonus_scores",
+                app_settings: "settings"
+            };
+            const channel = supabase.channel("fury-clan-realtime");
+            Object.entries(tableToDomain).forEach(([tbl, domain]) => {
+                channel.on("postgres_changes", { event: "*", schema: "public", table: tbl }, () => {
+                    _notifyListenersForDomain(domain);
+                });
+            });
+            channel.subscribe();
+        }
+
+        function onValue(targetRef, callback) {
+            const p = targetRef.path;
+            if (p === ".info/serverTimeOffset") {
+                setTimeout(() => callback(_makeSnap(0)), 0);
+                return () => {};
+            }
+            const parts = p.split("/");
+            const domain = parts[0];
+            const entry = { domain, subParts: parts.slice(1), callback };
+            _listeners.push(entry);
+            _ensureRealtimeSubscription();
+
+            get(targetRef).then(snap => callback(snap));
+            return () => {
+                const idx = _listeners.indexOf(entry);
+                if (idx >= 0) _listeners.splice(idx, 1);
+            };
+        }
 
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
