@@ -5875,8 +5875,9 @@
             const keyword = decodeFbKey(encodedKw);
             delete bossImagesConfig[keyword];
             renderBossImageMappingList();
-            await set(ref(db, 'settings/bossImagesInitialized'), true);
+            updateDashboard();
             await set(ref(db, `settings/bossImages`), serializeKeyValueMap(bossImagesConfig));
+            await set(ref(db, 'settings/bossImagesInitialized'), true);
         };
 
         function renderBossImageMappingList() {
@@ -7471,8 +7472,12 @@
             const key = decodeFbKey(encodedKey);
             delete bossScoresConfig[key];
             renderBossScoreSettingsList();
-            await set(ref(db, 'settings/bossScoresInitialized'), true);
+            renderTimetable();
+            updateDashboard();
+            loadRankingData();
             await set(ref(db, `settings/bossScores`), serializeKeyValueMap(bossScoresConfig));
+            await set(ref(db, 'settings/bossScoresInitialized'), true);
+            alert(`[${key}] 배점 기준이 삭제되었습니다.`);
         };
 
         window.approveMember = async function(uid) {
