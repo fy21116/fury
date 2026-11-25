@@ -2099,11 +2099,48 @@
         async function update(targetRef, updatesObj) {
             const basePath = targetRef.path;
             const touchedDomains = new Set();
+            const slotBatchMap = new Map();
+            const remainingEntries = [];
+
             for (const [relKey, val] of Object.entries(updatesObj || {})) {
-                const fullPath = basePath ? `${basePath}/${relKey}` : relKey;
-                const d = await _writeSinglePath(fullPath, val, true);
+                const fullPath = (basePath ? `${basePath}/${relKey}` : relKey).replace(/^\/+|\/+$/g, "");
+                const parts = fullPath.split("/");
+                if (parts[0] === "attendance" && parts.length >= 4) {
+                    const slotKeyPair = `${parts[1]}/${parts[2]}`;
+                    if (!slotBatchMap.has(slotKeyPair)) {
+                        slotBatchMap.set(slotKeyPair, { monthKey: parts[1], slotKey: parts[2], patches: [] });
+                    }
+                    slotBatchMap.get(slotKeyPair).patches.push({ subParts: parts.slice(3), val });
+                } else {
+                    remainingEntries.push({ fullPath, val });
+                }
+            }
+
+            for (const [, batch] of slotBatchMap.entries()) {
+                const { monthKey, slotKey, patches } = batch;
+                const { data: ex } = await supabase.from("attendance_slots").select("*").eq("month_key", monthKey).eq("slot_key", slotKey).maybeSingle();
+                let sObj = ex ? _slotRowToObj(ex) : { participants: {} };
+                for (const p of patches) {
+                    _setByPath(sObj, p.subParts, p.val);
+                }
+                await supabase.from("attendance_slots").upsert({
+                    month_key: monthKey,
+                    slot_key: slotKey,
+                    name: sObj.name || null,
+                    target_timestamp: sObj.targetTimestamp ? Number(sObj.targetTimestamp) : null,
+                    is_closed: Boolean(sObj.isClosed),
+                    closed_reason: sObj.closedReason || null,
+                    reopened_manual: Boolean(sObj.reopenedManual || sObj.reopenedByAdmin),
+                    participants: sObj.participants || {}
+                });
+                touchedDomains.add("attendance");
+            }
+
+            for (const item of remainingEntries) {
+                const d = await _writeSinglePath(item.fullPath, item.val, true);
                 if (d) touchedDomains.add(d);
             }
+
             for (const d of touchedDomains) {
                 await _notifyListenersForDomain(d);
             }
@@ -4540,13 +4577,15 @@
                         ? "3명 이하 +30분 자동 마감"
                         : (shouldCloseByOmanAll ? "전원 참여 완료 마감" : "과반수 참여 완료 마감");
 
+                    const batchUpdates = {};
+                    let hasChanges = false;
+
                     if (!slotData.isClosed) {
                         slotData.isClosed = true;
                         slotData.closedReason = reasonText;
-                        update(ref(db, `attendance/${curMonth}/${slotKey}`), {
-                            isClosed: true,
-                            closedReason: reasonText
-                        });
+                        batchUpdates[`attendance/${curMonth}/${slotKey}/isClosed`] = true;
+                        batchUpdates[`attendance/${curMonth}/${slotKey}/closedReason`] = reasonText;
+                        hasChanges = true;
                     }
                     Object.entries(slotData.participants).forEach(([uid, pData]) => {
                         if (pData && pData.status === "참여 중") {
@@ -4558,13 +4597,16 @@
                                 : (shouldCloseByMajority ? "참여 완료 (과반수)" : "참여 완료 (마감)");
                             pData.endTime = endStr;
                             pData.endTimestamp = endEpoch;
-                            update(ref(db, `attendance/${curMonth}/${slotKey}/participants/${uid}`), {
-                                status: pData.status,
-                                endTime: endStr,
-                                endTimestamp: endEpoch
-                            });
+                            batchUpdates[`attendance/${curMonth}/${slotKey}/participants/${uid}/status`] = pData.status;
+                            batchUpdates[`attendance/${curMonth}/${slotKey}/participants/${uid}/endTime`] = endStr;
+                            batchUpdates[`attendance/${curMonth}/${slotKey}/participants/${uid}/endTimestamp`] = endEpoch;
+                            hasChanges = true;
                         }
                     });
+
+                    if (hasChanges) {
+                        update(ref(db), batchUpdates);
+                    }
                 }
             });
         }
@@ -4629,7 +4671,11 @@
             const slotObj = getSlotDataObj(activeSched);
             const participants = slotObj.participants || {};
             const pList = getValidParticipantsList(activeSched);
-            pList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            pList.sort((a, b) => {
+                const tsA = Number(a.timestamp) || Number.MAX_SAFE_INTEGER;
+                const tsB = Number(b.timestamp) || Number.MAX_SAFE_INTEGER;
+                return tsA - tsB;
+            });
 
             const isSlotClosed = sched.isOman
                 ? isOmanFloorClosed(activeSched.monthKey, activeSched.slotKey)
@@ -4783,16 +4829,36 @@
                     const latestName = mem ? mem.name : item.name;
                     const latestClass = mem ? (mem.class || '기사') : '기사';
                     const isMe = currentUser && item.uid === currentUser.id;
-                    const startTs = Number(item.timestamp) || now.getTime();
+                    const hasValidStart = Boolean(item.startTime && Number(item.timestamp) > 0);
+                    const startTs = Number(item.timestamp) || 0;
+
+                    let effEndTime = item.endTime || '';
+                    let effEndTs = Number(item.endTimestamp) || 0;
+                    if ((!effEndTime || !effEndTs) && item.status && item.status.includes('참여 완료') && !item.optOutLocked) {
+                        const siblingClosed = pList.find(other =>
+                            other.uid !== item.uid &&
+                            other.endTime &&
+                            Number(other.endTimestamp) > 0 &&
+                            other.status &&
+                            (other.status.includes('과반수') || other.status.includes('마감') || other.status.includes('전원'))
+                        );
+                        if (siblingClosed) {
+                            effEndTime = siblingClosed.endTime;
+                            effEndTs = Number(siblingClosed.endTimestamp);
+                        }
+                    }
 
                     // 참여 시간은 실시간으로 측정하지 않고, 참여가 끝난 뒤(종료 시점 확정 후)에만 계산·표시
                     let durationStr = `<span style="color:#a0aec0;">-</span>`;
-                    if (item.endTime && item.endTimestamp) {
-                        const rawEndTs = Number(item.endTimestamp);
-                        const elapsedSec = Math.max(0, Math.floor((rawEndTs - startTs) / 1000));
-                        const elMin = Math.floor(elapsedSec / 60);
-                        const elSec = elapsedSec % 60;
-                        durationStr = `${elMin}분 ${elSec}초 (${escapeHtml(item.endTime)} 종료)`;
+                    if (effEndTime && effEndTs > 0) {
+                        if (hasValidStart && effEndTs >= startTs) {
+                            const elapsedSec = Math.max(0, Math.floor((effEndTs - startTs) / 1000));
+                            const elMin = Math.floor(elapsedSec / 60);
+                            const elSec = elapsedSec % 60;
+                            durationStr = `${elMin}분 ${elSec}초 (${escapeHtml(effEndTime)} 종료)`;
+                        } else {
+                            durationStr = `- (${escapeHtml(effEndTime)} 종료)`;
+                        }
                     } else if (item.optOutLocked) {
                         durationStr = `-`;
                     }
@@ -5276,30 +5342,32 @@
                 score = getScoreForBossName(bossName);
             }
 
-            await update(ref(db, `attendance/${monthKey}/${slotKey}`), { name: bossName, targetTimestamp: targetTs });
-            await set(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
+            const prevMyPart = (slotSnap.exists() && slotSnap.val().participants && slotSnap.val().participants[currentUser.id])
+                ? slotSnap.val().participants[currentUser.id]
+                : null;
+            const finalStartTime = (prevMyPart && prevMyPart.startTime) ? prevMyPart.startTime : timeStr;
+            const finalStartTs = (prevMyPart && Number(prevMyPart.timestamp) > 0) ? Number(prevMyPart.timestamp) : kp.epochMs;
+            const myJoinObj = {
                 name: currentUser.name,
                 status: "참여 중",
-                startTime: timeStr,
+                startTime: finalStartTime,
                 endTime: "",
                 score: score,
                 optOutLocked: false,
-                timestamp: kp.epochMs
+                timestamp: finalStartTs
+            };
+
+            await update(ref(db), {
+                [`attendance/${monthKey}/${slotKey}/name`]: bossName,
+                [`attendance/${monthKey}/${slotKey}/targetTimestamp`]: targetTs,
+                [`attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`]: myJoinObj
             });
             if (!attendanceByMonth[monthKey]) attendanceByMonth[monthKey] = {};
             if (!attendanceByMonth[monthKey][slotKey]) attendanceByMonth[monthKey][slotKey] = {};
             if (!attendanceByMonth[monthKey][slotKey].participants) attendanceByMonth[monthKey][slotKey].participants = {};
             attendanceByMonth[monthKey][slotKey].name = bossName;
             attendanceByMonth[monthKey][slotKey].targetTimestamp = targetTs;
-            attendanceByMonth[monthKey][slotKey].participants[currentUser.id] = {
-                name: currentUser.name,
-                status: "참여 중",
-                startTime: timeStr,
-                endTime: "",
-                score: score,
-                optOutLocked: false,
-                timestamp: kp.epochMs
-            };
+            attendanceByMonth[monthKey][slotKey].participants[currentUser.id] = myJoinObj;
 
             populateBonusCheckSlotSelect();
             populateRetroSlotOptions();
@@ -5416,11 +5484,16 @@
 
             const kp = getKSTParts(now.getTime());
             const timeStr = `${String(kp.hour).padStart(2, '0')}:${String(kp.minute).padStart(2, '0')}:${String(kp.second).padStart(2, '0')}`;
-            await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), {
+            const myEndPayload = {
+                name: (myPartData && myPartData.name) ? myPartData.name : currentUser.name,
                 status: "참여 완료",
                 endTime: timeStr,
                 endTimestamp: kp.epochMs
-            });
+            };
+            if (myPartData && myPartData.startTime) myEndPayload.startTime = myPartData.startTime;
+            if (myPartData && Number(myPartData.timestamp) > 0) myEndPayload.timestamp = Number(myPartData.timestamp);
+
+            await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${currentUser.id}`), myEndPayload);
 
             const refreshedSnap = await get(ref(db, `attendance/${monthKey}/${slotKey}`));
             if (refreshedSnap.exists()) {
@@ -5435,19 +5508,19 @@
                 const shouldCloseMajority = (!isAdminReopened && validP.length >= 4 && compP.length >= Math.ceil(validP.length / 2));
 
                 if (shouldCloseOmanSmall || shouldCloseMajority) {
-                    await update(ref(db, `attendance/${monthKey}/${slotKey}`), {
-                        isClosed: true,
-                        closedReason: shouldCloseOmanSmall ? "전원 참여 완료 마감" : "과반수 참여 완료 마감"
-                    });
+                    const closeReason = shouldCloseOmanSmall ? "전원 참여 완료 마감" : "과반수 참여 완료 마감";
+                    const atomicUpdates = {
+                        [`attendance/${monthKey}/${slotKey}/isClosed`]: true,
+                        [`attendance/${monthKey}/${slotKey}/closedReason`]: closeReason
+                    };
                     for (const [uid, pData] of validP) {
                         if (pData.status === "참여 중") {
-                            await update(ref(db, `attendance/${monthKey}/${slotKey}/participants/${uid}`), {
-                                status: shouldCloseOmanSmall ? "참여 완료 (전원)" : "참여 완료 (과반수)",
-                                endTime: timeStr,
-                                endTimestamp: kp.epochMs
-                            });
+                            atomicUpdates[`attendance/${monthKey}/${slotKey}/participants/${uid}/status`] = shouldCloseOmanSmall ? "참여 완료 (전원)" : "참여 완료 (과반수)";
+                            atomicUpdates[`attendance/${monthKey}/${slotKey}/participants/${uid}/endTime`] = timeStr;
+                            atomicUpdates[`attendance/${monthKey}/${slotKey}/participants/${uid}/endTimestamp`] = kp.epochMs;
                         }
                     }
+                    await update(ref(db), atomicUpdates);
                 }
             }
             loadRankingData();
@@ -5875,9 +5948,8 @@
             const keyword = decodeFbKey(encodedKw);
             delete bossImagesConfig[keyword];
             renderBossImageMappingList();
-            updateDashboard();
-            await set(ref(db, `settings/bossImages`), serializeKeyValueMap(bossImagesConfig));
             await set(ref(db, 'settings/bossImagesInitialized'), true);
+            await set(ref(db, `settings/bossImages`), serializeKeyValueMap(bossImagesConfig));
         };
 
         function renderBossImageMappingList() {
@@ -7472,12 +7544,8 @@
             const key = decodeFbKey(encodedKey);
             delete bossScoresConfig[key];
             renderBossScoreSettingsList();
-            renderTimetable();
-            updateDashboard();
-            loadRankingData();
-            await set(ref(db, `settings/bossScores`), serializeKeyValueMap(bossScoresConfig));
             await set(ref(db, 'settings/bossScoresInitialized'), true);
-            alert(`[${key}] 배점 기준이 삭제되었습니다.`);
+            await set(ref(db, `settings/bossScores`), serializeKeyValueMap(bossScoresConfig));
         };
 
         window.approveMember = async function(uid) {
