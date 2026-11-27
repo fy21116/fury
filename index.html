@@ -4972,7 +4972,7 @@
                     </div>` : ''}
                     ${isOperator(currentUser) ? `
                     <div class="slot-db-diag-strip">
-                        <span class="slot-db-diag-pill">DB 진단 · v14</span>
+                        <span class="slot-db-diag-pill">DB 진단 · v15</span>
                         <span>slotKey: <code>${escapeHtml(activeSched.slotKey)}</code></span>
                         <span>인원: <b>${pList.filter(p => !p.optOutLocked).length}명</b></span>
                         <span>완료: <b>${pList.filter(p => !p.optOutLocked && p.status && p.status.includes("참여 완료")).length}명</b></span>
@@ -5268,6 +5268,14 @@
             return found ? (Number(found.score) || 3) : null;
         }
 
+        function resolveSlotScore(slotKey, bossTitle) {
+            let score = getOmanFloorScoreFromSlotKey(slotKey);
+            if (score !== null) return score;
+            score = getCustomScheduleScore(slotKey);
+            if (score !== null) return score;
+            return getScoreForBossName(bossTitle || '');
+        }
+
         window.joinBossSlot = async function(monthKey, slotKey, bossName, targetTs, openBeforeMin) {
             if (!currentUser) return;
             const pendingKey = `${monthKey}::${slotKey}`;
@@ -5348,13 +5356,7 @@
             const kp = getKSTParts(now.getTime());
             const timeStr = `${String(kp.hour).padStart(2, '0')}:${String(kp.minute).padStart(2, '0')}:${String(kp.second).padStart(2, '0')}`;
             
-            let score = getOmanFloorScoreFromSlotKey(slotKey);
-            if (score === null) {
-                score = getCustomScheduleScore(slotKey);
-            }
-            if (score === null) {
-                score = getScoreForBossName(bossName);
-            }
+            const score = resolveSlotScore(slotKey, bossName);
 
             const prevMyPart = (slotSnap.exists() && slotSnap.val().participants && slotSnap.val().participants[currentUser.id])
                 ? slotSnap.val().participants[currentUser.id]
@@ -6470,8 +6472,7 @@
 
                     let sc = Number(myPart.score);
                     if (isNaN(sc)) {
-                        sc = getCustomScheduleScore(slotKey);
-                        if (sc === null) sc = getScoreForBossName(bossTitle);
+                        sc = resolveSlotScore(slotKey, bossTitle);
                     }
                     if (isCanceled) sc = 0;
 
@@ -6870,8 +6871,7 @@
 
                     let sc = Number(pInfo.score);
                     if (isNaN(sc)) {
-                        sc = getCustomScheduleScore(slotKey);
-                        if (sc === null) sc = getScoreForBossName(bossTitle);
+                        sc = resolveSlotScore(slotKey, bossTitle);
                     }
                     userStats[uid].slotsRecord[slotKey] = { score: sc, time: pInfo.startTime || 'O', title: bossTitle };
                     userStats[uid].monthlyTotal += sc;
@@ -6900,8 +6900,7 @@
 
                     let sc = Number(pInfo.score);
                     if (isNaN(sc)) {
-                        sc = getCustomScheduleScore(slotKey);
-                        if (sc === null) sc = getScoreForBossName(bossTitle);
+                        sc = resolveSlotScore(slotKey, bossTitle);
                     }
 
                     userStats[uid].dailyTotal += sc;
@@ -6944,8 +6943,7 @@
 
                             let sc = Number(pInfo.score);
                             if (isNaN(sc)) {
-                                sc = getCustomScheduleScore(slotKey);
-                                if (sc === null) sc = getScoreForBossName(bossTitle);
+                                sc = resolveSlotScore(slotKey, bossTitle);
                             }
 
                             userStats[uid].weeklyTotal += sc;
@@ -7966,7 +7964,8 @@
                 : '';
 
             const slotDisplayTitle = slotObj.name || slotSelect.options[slotSelect.selectedIndex]?.getAttribute('data-title') || slotKey;
-            infoEl.innerHTML = `선택된 타임: <b style="color:#e9d8fd;">${escapeHtml(slotDisplayTitle)}</b> · 기존 등록 인원: <b style="color:#68d391;">${existingUids.size}명</b>${unclosedWarn}`;
+            const expectedScore = resolveSlotScore(slotKey, slotDisplayTitle);
+            infoEl.innerHTML = `선택된 타임: <b style="color:#e9d8fd;">${escapeHtml(slotDisplayTitle)}</b> · 적용 배점: <b style="color:#fbd38d;">${expectedScore}점</b> · 기존 등록 인원: <b style="color:#68d391;">${existingUids.size}명</b>${unclosedWarn}`;
 
             populateRetroMemberCheckboxes(existingUids);
             if (lastOcrRecognizedText) {
@@ -8344,10 +8343,7 @@
             const slotEpoch = createKSTEpoch(dY, dM, dD, tH || 0, tMin || 0, 0);
             const recordTimeStr = `${String(tH || 0).padStart(2, '0')}:${String(tMin || 0).padStart(2, '0')}:00`;
 
-            let score = getCustomScheduleScore(slotKey);
-            if (score === null) {
-                score = getScoreForBossName(slotTitle);
-            }
+            const score = resolveSlotScore(slotKey, slotTitle);
 
             const updates = {};
             if (!existingSlotObj.name) {
